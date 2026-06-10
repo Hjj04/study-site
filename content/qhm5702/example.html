@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>示例 · 中心性度量</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+         max-width: 820px; margin: 0 auto; padding: 32px 22px; color: #1f2430; line-height: 1.75; }
+  h1 { color: #4f46e5; margin-bottom: .2em; }
+  .lead { color: #6b7280; margin-top: 0; }
+  h2 { border-left: 4px solid #6366f1; padding-left: 10px; margin-top: 1.8em; }
+  .formula { background: #f5f6f8; border-radius: 10px; padding: 14px 18px; font-style: italic; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; }
+  th { background: #eef0ff; }
+  .demo { border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; margin: 16px 0; text-align: center; }
+  button { background: #4f46e5; color: #fff; border: 0; padding: 9px 16px; border-radius: 9px; cursor: pointer; font: inherit; }
+  .note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 16px; color: #92400e; }
+  circle { transition: fill .25s; }
+</style>
+</head>
+<body>
+  <p class="note">📌 这是一个「知识点页」示例，用来展示页面能有什么效果。你可以参考它的写法，之后删掉换成自己的内容。</p>
+
+  <h1>中心性度量 Centrality</h1>
+  <p class="lead">衡量节点在网络中的重要性。Complex Networks · 示例页</p>
+
+  <h2>三种常见中心性</h2>
+  <table>
+    <thead><tr><th>名称</th><th>直觉</th></tr></thead>
+    <tbody>
+      <tr><td>度中心性 Degree</td><td>连接数越多越重要</td></tr>
+      <tr><td>接近中心性 Closeness</td><td>到其他节点的平均距离越短越重要</td></tr>
+      <tr><td>介数中心性 Betweenness</td><td>越多最短路径经过它越重要</td></tr>
+    </tbody>
+  </table>
+
+  <h2>度中心性公式</h2>
+  <p class="formula">C<sub>D</sub>(v) = deg(v) / (n − 1)</p>
+  <p>其中 deg(v) 是节点 v 的度，n 是网络中的节点总数。</p>
+
+  <h2>小演示（点按钮看 JS 效果）</h2>
+  <div class="demo">
+    <svg id="net" width="260" height="160" viewBox="0 0 260 160">
+      <line x1="130" y1="80" x2="50" y2="40" stroke="#cbd2e0"/>
+      <line x1="130" y1="80" x2="50" y2="120" stroke="#cbd2e0"/>
+      <line x1="130" y1="80" x2="210" y2="40" stroke="#cbd2e0"/>
+      <line x1="130" y1="80" x2="210" y2="120" stroke="#cbd2e0"/>
+      <circle cx="50" cy="40" r="14" fill="#9aa0ac"/>
+      <circle cx="50" cy="120" r="14" fill="#9aa0ac"/>
+      <circle cx="210" cy="40" r="14" fill="#9aa0ac"/>
+      <circle cx="210" cy="120" r="14" fill="#9aa0ac"/>
+      <circle id="hub" cx="130" cy="80" r="16" fill="#9aa0ac"/>
+    </svg>
+    <div><button onclick="document.getElementById('hub').setAttribute('fill', '#ec4899')">高亮度最大的节点</button></div>
+  </div>
+</body>
+</html>

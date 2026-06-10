@@ -1,0 +1,12 @@
+{
+  "name": "study-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "课程学习资料分享站（静态版，部署于 GitHub Pages）",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "preview": "node scripts/build.mjs && python3 -m http.server -d dist 8000"
+  },
+  "license": "MIT"
+}

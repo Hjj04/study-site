@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>课程资料 · 学习资料分享平台</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="course">
+  <header class="site-header compact">
+    <div class="wrap">
+      <a href="index.html" class="brand">📚 学习资料分享平台</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <nav class="crumbs"><a href="index.html">首页</a> / <span id="crumb-course">课程</span></nav>
+
+    <div class="course-head">
+      <div>
+        <span class="code-badge" id="course-code">QHM</span>
+        <h2 id="course-name">课程</h2>
+      </div>
+    </div>
+
+    <section class="panel">
+      <h3>如何添加资料</h3>
+      <p style="margin:0;color:var(--muted)">
+        把单个 <code>.html</code>（或 PDF、图片）放进仓库的
+        <code>content/<span id="cdir">课程</span>/</code> 文件夹即可——
+        可在 GitHub 网页点 <strong>Add file → Upload files</strong> 直接拖拽上传并提交，
+        约 1 分钟后自动发布更新。
+      </p>
+    </section>
+
+    <h3 style="margin:0 0 12px;">资料列表</h3>
+    <section id="materials" class="materials">
+      <p class="loading">加载中…</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">GitHub Pages 发布 · 仅供学习交流使用</div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
