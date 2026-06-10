@@ -126,9 +126,9 @@ async function initView() {
 
   const body = $('#v-body');
   if (m.kind === 'html') {
-    // 沙箱 iframe：允许其自身脚本运行，但与本站隔离
+    // 资料由站点拥有者上传，可信；给 iframe 完整同源能力，保证带交互脚本/MathJax 等的页面正常渲染
     body.innerHTML = `<iframe class="viewer-frame" src="${esc(m.file)}"
-      sandbox="allow-scripts allow-popups allow-forms allow-modals"></iframe>`;
+      sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads"></iframe>`;
   } else if (m.kind === 'pdf') {
     body.innerHTML = `<iframe class="viewer-frame" src="${esc(m.file)}"></iframe>`;
   } else if (m.kind === 'image') {

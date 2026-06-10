@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>贝叶斯统计与条件概率 · 第1讲复习指南</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]'],['$$','$$']] },
+  chtml: { scale: 1.0 }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.js" async></script>
+<style>
+:root{
+  --paper:#F8F5EE; --card:#FFFFFF; --ink:#2B2A33; --muted:#6E6B78;
+  --line:#E6DFD0;
+  --indigo:#34508C; --indigo-d:#26396A; --indigo-soft:#ECF1FA;
+  --green:#2F7D4F; --green-soft:#EAF5EE;
+  --red:#BF3B3B; --red-soft:#FBECEC;
+  --amber:#A86A12; --amber-soft:#FCF3E2;
+  --purple:#6B4FA0; --purple-soft:#F2EDFA;
+  --radius:14px;
+  --serif:'Noto Serif SC','Songti SC','STSong','SimSun',Georgia,'Times New Roman',serif;
+  --sans:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.85;
+     -webkit-font-smoothing:antialiased}
+main{max-width:920px;margin:0 auto;padding:0 20px 90px}
+section{scroll-margin-top:74px}
+p{margin:10px 0}
+strong{color:var(--indigo-d)}
+em{font-style:normal;background:linear-gradient(transparent 62%, #F4E4BC 62%);padding:0 1px}
+ul.plain{margin:8px 0 8px 1.4em}
+ul.plain li{margin:5px 0}
+ol.plain{margin:8px 0 8px 1.5em}
+ol.plain li{margin:6px 0}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:60;background:rgba(248,245,238,.93);backdrop-filter:blur(10px);
+        border-bottom:1px solid var(--line)}
+.topbar-inner{max-width:980px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--serif);font-weight:700;color:var(--indigo-d);text-decoration:none;font-size:15px;white-space:nowrap}
+.topbar nav{display:flex;gap:2px;flex-wrap:wrap}
+.topbar nav a{padding:5px 10px;border-radius:8px;font-size:13.5px;color:var(--muted);text-decoration:none;white-space:nowrap}
+.topbar nav a:hover{background:var(--indigo-soft);color:var(--indigo-d)}
+.progress-chip{margin-left:auto;font-size:12.5px;background:var(--indigo);color:#fff;border-radius:999px;
+               padding:4px 13px;white-space:nowrap;font-weight:600;letter-spacing:.02em}
+
+/* ---------- hero ---------- */
+.hero{max-width:980px;margin:0 auto;padding:52px 20px 6px}
+.kicker{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:700}
+h1{font-family:var(--serif);font-size:clamp(27px,4.6vw,42px);color:var(--indigo-d);line-height:1.28;margin:10px 0 4px}
+h1 .sub{display:block;font-size:.5em;color:var(--muted);font-weight:500;margin-top:10px;letter-spacing:.02em}
+.meta{color:var(--muted);font-size:14px;margin-top:10px}
+.notice{display:none;max-width:980px;margin:14px auto 0;background:var(--amber-soft);border:1px solid #EAD3A8;
+        border-radius:10px;padding:10px 16px;font-size:14px;color:var(--amber)}
+details.assume{max-width:980px;margin:18px auto 0;background:#FFFDF7;border:1px dashed var(--line);
+               border-radius:12px;padding:12px 18px;font-size:14.5px}
+details.assume summary{cursor:pointer;font-weight:700;color:var(--indigo-d)}
+details.assume li{margin:6px 0 6px 1.2em}
+
+/* ---------- section headings ---------- */
+.sec-title{display:flex;align-items:center;gap:14px;margin:64px 0 4px}
+.sec-num{font-family:var(--serif);background:var(--indigo);color:#fff;width:42px;height:42px;border-radius:11px;
+         display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex:none}
+h2{font-family:var(--serif);font-size:clamp(22px,3.4vw,30px);color:var(--indigo-d)}
+.sec-sub{color:var(--muted);font-size:14.5px;margin:4px 0 18px 56px}
+h3{font-family:var(--serif);font-size:19.5px;color:var(--indigo-d);margin:36px 0 12px;
+   padding-left:12px;border-left:4px solid var(--indigo)}
+h4{font-family:var(--serif);font-size:16.5px;color:var(--ink);margin:18px 0 6px}
+
+/* ---------- cards & boxes ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+      padding:18px 22px;margin:14px 0;box-shadow:0 1px 2px rgba(70,58,30,.05)}
+.box{border-radius:11px;padding:13px 17px;margin:14px 0;border:1px solid;font-size:15.2px}
+.box .lab{display:block;font-size:12.5px;letter-spacing:.1em;font-weight:800;margin-bottom:4px}
+.box.def{background:var(--indigo-soft);border-color:#C9D6F0}.box.def .lab{color:var(--indigo)}
+.box.warn{background:var(--amber-soft);border-color:#EAD3A8}.box.warn .lab{color:var(--amber)}
+.box.tip{background:var(--green-soft);border-color:#BFE0CC}.box.tip .lab{color:var(--green)}
+.box.ex{background:var(--purple-soft);border-color:#D9CCEF}.box.ex .lab{color:var(--purple)}
+.box.formula{background:#FFFDF7;border-color:var(--line);overflow-x:auto;padding:15px 17px}
+mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+mjx-container[display="true"]{margin:10px 0 !important}
+
+/* ---------- tables ---------- */
+.tbl-wrap{overflow-x:auto;margin:14px 0;border:1px solid var(--line);border-radius:11px;background:#fff}
+table{width:100%;border-collapse:collapse;font-size:14.6px}
+th{background:var(--indigo-soft);color:var(--indigo-d);text-align:left;padding:10px 13px;font-weight:700;
+   border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 13px;border-bottom:1px solid #F0EBDF;vertical-align:top}
+tr:last-child td{border-bottom:none}
+
+/* ---------- flow diagram ---------- */
+.flow{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:18px 0}
+.flow-step{background:#fff;border:1.5px solid var(--indigo);color:var(--indigo-d);border-radius:10px;
+           padding:7px 13px;font-size:13.5px;font-weight:700;line-height:1.5}
+.flow-step.alt{border-color:var(--amber);color:var(--amber)}
+.flow-arrow{color:var(--amber);font-weight:800;font-size:16px}
+
+/* ---------- knowledge points (Part 2) ---------- */
+.kp{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--indigo);
+    border-radius:12px;padding:16px 20px;margin:14px 0;scroll-margin-top:80px}
+.kp-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.kp-id{background:var(--indigo-d);color:#fff;border-radius:7px;padding:2px 10px;font-size:13px;font-weight:800;letter-spacing:.04em}
+.kp h4{margin:0;font-size:17px}
+.stars{margin-left:auto;font-size:12.5px;font-weight:800;border-radius:999px;padding:3px 11px;white-space:nowrap}
+.s3{background:#FBE7E4;color:#B23B2E}.s2{background:var(--amber-soft);color:var(--amber)}.s1{background:#EFEDE6;color:#7A776F}
+.kp-tags{display:flex;gap:6px;margin:9px 0 4px;flex-wrap:wrap}
+.tag{font-size:12px;border-radius:6px;padding:2px 9px;font-weight:700}
+.tag.mem{background:var(--indigo-soft);color:var(--indigo-d)}
+.tag.und{background:var(--purple-soft);color:var(--purple)}
+.tag.cal{background:var(--green-soft);color:var(--green)}
+.kp-body{font-size:15.2px}
+.kp-warn{margin-top:10px;background:var(--amber-soft);border-left:3px solid var(--amber);
+         padding:8px 13px;border-radius:0 9px 9px 0;font-size:14.2px}
+
+/* ---------- quiz cards (Part 3 / 4) ---------- */
+.q-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+        padding:18px 22px;margin:16px 0;box-shadow:0 1px 2px rgba(70,58,30,.05)}
+.q-head{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.q-num{font-family:var(--serif);font-weight:800;color:var(--indigo-d);font-size:16.5px}
+.q-card[data-answered="right"] .q-num::after{content:"  ✓";color:var(--green)}
+.q-card[data-answered="wrong"] .q-num::after{content:"  ✗";color:var(--red)}
+.chip{font-size:12px;border-radius:999px;padding:2px 11px;font-weight:700}
+.chip.type{background:var(--indigo-soft);color:var(--indigo-d)}
+.chip.diff-1{background:var(--green-soft);color:var(--green)}
+.chip.diff-2{background:var(--amber-soft);color:var(--amber)}
+.chip.diff-3{background:#FBE7E4;color:#B23B2E}
+a.chip.point{background:#F1EEE6;color:#6E6B78;text-decoration:none}
+a.chip.point:hover{background:var(--indigo-soft);color:var(--indigo-d)}
+.q-body{margin:4px 0 8px;font-size:15.4px}
+.options{list-style:none;display:grid;gap:8px;margin:10px 0}
+.opt{border:1.5px solid var(--line);background:#FDFCF8;border-radius:10px;padding:9px 14px;
+     cursor:pointer;transition:border-color .15s, background .15s;font-size:15px}
+.opt:hover{border-color:var(--indigo);background:var(--indigo-soft)}
+.options.locked .opt{cursor:default}
+.options.locked .opt:hover{border-color:var(--line);background:#FDFCF8}
+.opt.right, .options.locked .opt.right, .options.locked .opt.right:hover{
+  border-color:var(--green);background:var(--green-soft);font-weight:700}
+.opt.wrong, .options.locked .opt.wrong, .options.locked .opt.wrong:hover{
+  border-color:var(--red);background:var(--red-soft)}
+.opt.right::after{content:"  ✓ 正确";color:var(--green);font-size:13px;font-weight:800}
+.opt.wrong::after{content:"  ✗ 错误";color:var(--red);font-size:13px;font-weight:800}
+.ans-btn{margin-top:9px;background:#fff;border:1.5px solid var(--indigo);color:var(--indigo-d);
+         border-radius:999px;padding:7px 19px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+.ans-btn:hover{background:var(--indigo);color:#fff}
+.answer{margin-top:9px}
+.answer summary.ans-btn{margin-top:0;display:inline-block;list-style:none;cursor:pointer;-webkit-user-select:none;user-select:none}
+.answer summary.ans-btn::-webkit-details-marker{display:none}
+.answer summary.ans-btn::marker{content:""}
+.answer .when-open{display:none}
+.answer[open] .when-open{display:inline}
+.answer[open] .when-closed{display:none}
+.ans-inner{margin-top:13px;border-top:1px dashed var(--line);padding-top:12px;animation:fadeIn .25s}
+.ans-line{font-weight:800;color:var(--green);font-size:15.4px}
+.explain{margin-top:6px;font-size:15px}
+.pitfall{margin-top:10px;background:var(--amber-soft);border-left:3px solid var(--amber);
+         padding:8px 13px;border-radius:0 9px 9px 0;font-size:14.2px}
+.steps{margin:8px 0 8px 1.4em}
+.steps li{margin:7px 0}
+
+/* ---------- toolbars & buttons ---------- */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 6px}
+.btn{border-radius:999px;padding:8px 19px;font-size:14px;font-weight:700;cursor:pointer;
+     border:1.5px solid var(--indigo);background:var(--indigo);color:#fff;transition:.15s}
+.btn:hover{background:var(--indigo-d)}
+.btn.ghost{background:#fff;color:var(--indigo-d)}
+.btn.ghost:hover{background:var(--indigo-soft)}
+.btn.danger{border-color:var(--red);background:#fff;color:var(--red)}
+.btn.danger:hover{background:var(--red-soft)}
+.diff-band{margin:30px 0 4px;font-family:var(--serif);font-size:17px;color:var(--indigo-d);font-weight:800;
+           display:flex;align-items:center;gap:10px}
+.diff-band::after{content:"";flex:1;height:1px;background:var(--line)}
+
+#toTop{position:fixed;right:18px;bottom:20px;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--indigo);
+       background:#fff;color:var(--indigo-d);font-size:19px;cursor:pointer;display:none;align-items:center;
+       justify-content:center;box-shadow:0 3px 10px rgba(40,50,90,.15);z-index:70}
+#toTop:hover{background:var(--indigo);color:#fff}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 20px 50px;text-align:center;
+       color:var(--muted);font-size:13.5px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.ans-inner{animation:none}}
+@media (max-width:640px){
+  body{font-size:15px}
+  .topbar-inner{padding:8px 12px;gap:8px}
+  .progress-chip{margin-left:0}
+  .topbar nav a{padding:4px 7px;font-size:12.5px}
+  .sec-sub{margin-left:0}
+  th,td{padding:8px 9px;font-size:13.4px}
+  .card,.q-card,.kp{padding:15px 15px}
+  .stars{margin-left:0}
+}
+</style>
+</head>
+<body id="top">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#top">贝叶斯 · 第1讲</a>
+    <nav>
+      <a href="#part1">① 课程讲解</a>
+      <a href="#part2">② 考点梳理</a>
+      <a href="#part3">③ 自测题</a>
+      <a href="#part4">④ 习题精解</a>
+    </nav>
+    <span class="progress-chip" id="progressChip">自测进度 0/20 · 答对 0</span>
+  </div>
+</header>
+
+<div class="hero">
+  <p class="kicker">Bayesian Statistics &amp; Conditional Probability · Lecture 1</p>
+  <h1>贝叶斯统计与条件概率<span class="sub">第 1 讲 · 期末复习全攻略（讲解 + 考点 + 交互式自测）</span></h1>
+  <p class="meta">依据 Dr. Nivedita Viswanathan 的课件《Lecture 1 Slides》与配套《Problem Sheet》整理 · 点击选项即时判分 · 答案与解析可展开/收起</p>
+</div>
+<div class="notice" id="mjx-warn">⚠ 当前处于离线状态，数学公式渲染器（MathJax CDN）未能加载。公式将以 LaTeX 源码形式显示，内容仍可正常阅读；联网后刷新即可恢复美观排版。</div>
+
+<main>
+
+<details class="assume">
+  <summary>📌 编写说明与假设（点击展开）</summary>
+  <ul class="plain">
+    <li>本指南<strong>严格基于上传的两份材料</strong>（第 1 讲幻灯片 + Problem Sheet）整理，未引入材料之外的课程内容。</li>
+    <li>课件学习目标中提到"陈述<em>离散与连续</em>随机变量的贝叶斯定理"，但本讲幻灯片实际只展开了<strong>离散情形</strong>（连续情形应在后续讲次），本指南以课件实际内容为准。</li>
+    <li>Problem Sheet 第 1 题为开放式讨论题，给出的是<strong>参考思路</strong>而非唯一答案。</li>
+    <li>Problem Sheet 第 16 题计算"两件产品都是次品"的概率时，按本讲层次<strong>假设两件产品是否为次品相互独立</strong>（产品基数大的近似）；解析中同时给出不放回的精确算法以供对照，结论不变。</li>
+    <li>课件中的 Mentimeter 互动投票（menti.com）为课堂活动，无实质知识内容，未列入考点。</li>
+  </ul>
+</details>
+
+<!-- ================= PART 1 ================= -->
+<section id="part1">
+  <div class="sec-title"><div class="sec-num">①</div><h2>课程内容讲解</h2></div>
+  <p class="sec-sub">面向第一次接触的同学：先看整体脉络，再分模块吃透每个概念。</p>
+
+  <h3>1.0 这节课到底在讲什么？（整体脉络）</h3>
+  <div class="card">
+    <p>这节课回答一个根本问题：<strong>"概率"到底是什么？我们该如何度量不确定性？</strong>课程给出了两套答案——<strong>频率学派</strong>（Frequentist）与<strong>贝叶斯学派</strong>（Bayesian），并引出贝叶斯学派的数学引擎：<strong>贝叶斯定理</strong>。</p>
+    <div class="flow">
+      <div class="flow-step">概率的基本语言<br><span style="font-weight:400">试验·结果·样本空间·事件·随机变量</span></div>
+      <div class="flow-arrow">➜</div>
+      <div class="flow-step">频率学派<br><span style="font-weight:400">概率 = 长期频率</span></div>
+      <div class="flow-arrow">➜</div>
+      <div class="flow-step alt">碰壁！<br><span style="font-weight:400">独特事件无法重复</span></div>
+      <div class="flow-arrow">➜</div>
+      <div class="flow-step">贝叶斯学派<br><span style="font-weight:400">概率 = 可更新的信念</span></div>
+      <div class="flow-arrow">➜</div>
+      <div class="flow-step">贝叶斯定理<br><span style="font-weight:400">先验 × 似然 → 后验</span></div>
+      <div class="flow-arrow">➜</div>
+      <div class="flow-step">升华<br><span style="font-weight:400">一切概率皆条件概率</span></div>
+    </div>
+    <p>逻辑链条很清晰：先建立描述随机现象的<strong>语言</strong>（§1.1）；再用"重复试验中的频率"给概率下第一个定义（§1.2）；接着发现这个定义对"只发生一次的事件"无能为力，于是引入"概率是基于已有信息的信念，且能被新证据更新"的<strong>贝叶斯观</strong>（§1.3）；贝叶斯定理就是这种"更新"的精确数学公式（§1.4）；最后对比两派差异（§1.5），并点题：所有概率本质上都是<strong>有条件的</strong>（§1.6）。</p>
+    <div class="box tip"><span class="lab">学完本讲你应能（课件 Session Outcomes）</span>
+      <ol class="plain">
+        <li><strong>识别</strong>一个随机试验的样本空间、事件、随机变量与结果；</li>
+        <li><strong>区分</strong>频率学派与贝叶斯学派两种统计思路；</li>
+        <li><strong>选择</strong>不同现实场景下合适的统计推断框架；</li>
+        <li><strong>陈述</strong>贝叶斯定理（本讲展开了离散情形）；</li>
+        <li><strong>应用</strong>贝叶斯定理求解简单问题；</li>
+        <li><strong>分析</strong>"概率"这一概念所依赖的条件与假设。</li>
+      </ol>
+    </div>
+  </div>
+
+  <h3>1.1 概率的基本语言：五个必会术语</h3>
+  <div class="card">
+    <div class="box def"><span class="lab">概率是什么（课件引用 Peter D. Hoff）</span>
+      "概率是对<strong>未知但确定的量</strong>的不确定性的一种度量。"概率的取值<strong>依赖于我们所知道、所相信、所假设的东西</strong>。
+    </div>
+    <p><strong>怎么理解"未知但确定"？</strong>明天要么下雨、要么不下——这件事本身将成为一个确定的事实；不确定的是<em>我们</em>，因为我们现在掌握的信息不够。概率量化的正是这种"信息不足造成的不确定性"。所以课件强调：<strong>掌握的信息不同，概率就不同。</strong></p>
+    <ul class="plain">
+      <li><strong>预测明天是否下雨</strong>：若知道海南过去一个月每天的降雨数据，就能据此预测；</li>
+      <li><strong>判断自己是否缺维生素 D</strong>：若有以往的体检化验结果，就能据此估计；</li>
+      <li><strong>预测候选人 A 还是 B 胜选</strong>：若对随机抽取的 1000 人做民调，就能据此推断。</li>
+    </ul>
+    <h4>五个基本术语（务必能在具体例子中识别）</h4>
+    <div class="tbl-wrap"><table>
+      <tr><th>术语</th><th>定义（课件）</th><th>掷骰子的例子</th></tr>
+      <tr><td><strong>随机试验</strong><br>Random experiment</td><td>我们借以观察某种不确定现象的<strong>过程</strong></td><td>"掷一次骰子并观察朝上点数"这个过程</td></tr>
+      <tr><td><strong>结果</strong><br>Outcome</td><td>随机试验的<strong>一次结果</strong></td><td>这一次掷出了 5</td></tr>
+      <tr><td><strong>样本空间</strong><br>Sample space \(S\)</td><td><strong>所有</strong>可能结果组成的集合</td><td>\(S=\{1,2,3,4,5,6\}\)</td></tr>
+      <tr><td><strong>事件</strong><br>Event</td><td>可能结果的<strong>一个集合</strong>（不必是全部！）</td><td>"掷出偶数" \(=\{2,4,6\}\)；"掷出 6" \(=\{6\}\)</td></tr>
+      <tr><td><strong>随机变量</strong><br>Random variable</td><td>取值由试验结果决定的量</td><td>\(X=\) 朝上的点数（掷硬币例中：朝上的那一面）</td></tr>
+    </table></div>
+    <div class="box warn"><span class="lab">课件特别强调的易混点</span>
+      事件 ≠ 样本空间！课件原话：事件"不是全部可能结果，只是可能结果的<strong>一个集合</strong>"。层级关系要记牢：<strong>结果 ∈ 事件 ⊆ 样本空间</strong>。
+    </div>
+  </div>
+
+  <h3>1.2 频率学派：概率 = 长期频率</h3>
+  <div class="card">
+    <div class="box ex"><span class="lab">课件情境：百万赌局</span>
+      入场费 10,000 元；掷<strong>一次</strong>硬币，掷出正面（H）即赢 100 万。这里：随机试验 = 掷一次硬币；随机变量 = 朝上的面；样本空间 \(S=\{H,T\}\)；我们关心的事件 = "得到正面"。问：\(p(\text{正面})=?\)
+    </div>
+    <p><strong>用数据回答：</strong>假设把这枚硬币掷 10 次，得到 7 次正面、3 次反面。于是<strong>经验概率</strong>（empirical probability）为</p>
+    <div class="box formula">\[ p(\text{正面})=\frac{\text{正面出现的次数}}{\text{试验总次数}}=\frac{7}{10}=0.7 \]</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>结果</th><th>频数</th><th>频率（经验概率）</th></tr>
+      <tr><td>H（正面）</td><td>7</td><td>0.7</td></tr>
+      <tr><td>T（反面）</td><td>3</td><td>0.3</td></tr>
+      <tr><td><strong>合计</strong></td><td><strong>10</strong></td><td><strong>1</strong></td></tr>
+    </table></div>
+    <p><strong>继续掷下去会怎样？</strong>掷 100 次、1000 次、100 万次……若假设硬币是<strong>公平的</strong>（每个结果等可能），由<strong>大数定律</strong>（Law of Large Numbers）：<em>试验次数越多，由原始数据得到的经验概率会越来越接近真实概率</em>，即趋向 \(p(\text{正面})=\tfrac12=0.5\)。结论：你有 50% 的机会赢下这场赌局。</p>
+    <div class="box def"><span class="lab">频率学派（Frequentist Approach）的三大特征</span>
+      <ol class="plain">
+        <li><strong>总体参数固定但未知</strong>——参数不是随机的（我们并不真的知道骰子公平，是<em>假设</em>它公平）；</li>
+        <li><strong>概率由事件发生的频率来定义</strong>——回答的是"这个事件发生得有多频繁？"；</li>
+        <li><strong>假设随机试验可以在完全相同的条件下被无限次重复</strong>——并非真的做无限次试验，而是"假如能做，事件将以该频率发生"。</li>
+      </ol>
+    </div>
+    <div class="box warn"><span class="lab">课件自带判断题（必考思路）</span>
+      "随机试验中，事件的概率只取决于试验进行一次时该事件是否发生。"——<strong>错误！</strong>我们也许只实际做一次试验，但在定义真实概率时，假设的是试验可在相同条件下<strong>重复无限次</strong>。
+    </div>
+    <h4>频率学派的"阿喀琉斯之踵"：独特事件</h4>
+    <p>课件设问：能否用同样的方法判断<em>"未来 5 年一场飓风是否会摧毁附近的村庄"</em>？在频率学派里，量化不确定性的唯一途径是<strong>重复试验</strong>——但"飓风摧毁这个村庄"是无法重复的独特事件，这条路走不通。我们只能<strong>基于已有知识给出主观的不确定性度量</strong>：也许这个地区根本不来飓风，也许我们有历史上类似事件的数据……这正是贝叶斯思想的起点：<strong>数据与先验知识共同决定我们的概率度量。</strong></p>
+  </div>
+
+  <h3>1.3 贝叶斯学派：概率 = 会被证据更新的信念</h3>
+  <div class="card">
+    <div class="box def"><span class="lab">贝叶斯学派（Bayesian Approach）一句话定义</span>
+      贝叶斯统计是<strong>用观察到的数据，去更新我们对总体参数的先验信念/假设</strong>的一套方法。在这一框架下，概率取决于：① 我们对参数的<strong>信念</strong>；② 关于参数取值的<strong>信息的可得与不可得</strong>。
+    </div>
+    <h4>经典演示：伊巴丹（Ibadan）人口估计——亲眼看着信念被一步步更新</h4>
+    <p>背景（课件）：尼日利亚有 12 个人口至少 50 万的城区，最大城区人口 1200 万。要估计城市 Ibadan 的人口。定义四个事件：\(A_1\)：人口 &lt; 100 万；\(A_2\)：100–400 万；\(A_3\)：400–600 万；\(A_4\)：&gt; 600 万（注意四者概率之和恒为 1）。</p>
+    <div class="tbl-wrap"><table>
+      <tr><th>步骤</th><th>得到的新信息</th><th>信念（概率）如何变化</th></tr>
+      <tr><td>Step 1</td><td>除背景外一无所知</td><td>无偏起点（均匀先验）：\(p(A_1)=p(A_2)=p(A_3)=p(A_4)=\tfrac14\)</td></tr>
+      <tr><td>Step 2</td><td>Ibadan 是 12 城中<strong>第 4 大</strong>城区</td><td>排名靠前 → 更可能人口较大：\(p(A_3),p(A_4)\) 上调</td></tr>
+      <tr><td>Step 3</td><td><strong>第 9 大</strong>城区人口已超 100 万</td><td>第 4 大的 Ibadan 必然超过 100 万 → \(p(A_1)=0\)</td></tr>
+      <tr><td>Step 4</td><td><strong>第 3 大</strong>城区人口约 350 万</td><td>Ibadan（第 4 大）人口必在 100 万–350 万之间，落在 \(A_2\) 区间内 → \(p(A_2)=1\)</td></tr>
+    </table></div>
+    <p>真实答案：Ibadan 人口约 <strong>300 万</strong>——恰在我们最终锁定的区间里。✔</p>
+    <div class="box tip"><span class="lab">这个例子的精髓</span>
+      每来一条信息，概率分布就被<strong>修正一次</strong>：从"完全无知"的均匀分布，逐步收缩到确定的区间。这就是贝叶斯更新的直观图景——<strong>概率不是固定的物理常数，而是随信息演化的信念状态。</strong>
+    </div>
+    <h4>再看硬币：频率学派答不上来的问题</h4>
+    <p>还是那组数据：掷 10 次得 7 正 3 反。<strong>问：这枚硬币是公平的还是有偏的？</strong></p>
+    <ul class="plain">
+      <li><strong>频率学派的困境：</strong>"硬币是否公平"是一个<strong>固定的</strong>总体参数——它要么公平、要么有偏。多掷几次也许能给点感觉，但在频率框架下 \(p(\text{硬币公平})\) 只能是 <strong>0 或 1</strong>，给不出别的有用回答。</li>
+      <li><strong>贝叶斯学派的做法：</strong>把"公平/有偏"本身当作<strong>随机变量</strong> \(\theta\in\{\text{公平},\text{有偏}\}\)。假设已知先验 \(p(\text{有偏})=0.62\)，再结合"10 掷 7 正"这份数据，就能算出一个有意义的更新后概率：\(p(\text{有偏}\mid\text{数据})\approx 0.7637\)（完整计算见 §1.4）。</li>
+    </ul>
+    <div class="box def"><span class="lab">贝叶斯设定的两个关键点（与频率学派针锋相对）</span>
+      ① <strong>未知总体参数不固定</strong>——它也是随机变量，我们对它的信念由数据更新；② <strong>概率度量只依赖手头的数据</strong>——不假设"可在相同条件下重复试验"。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>1.4 贝叶斯定理：把"更新信念"变成一条公式</h3>
+    <p>Ibadan 的例子里我们是"凭直觉"更新概率的。贝叶斯定理（Bayes' Theorem）把这种更新变成<strong>精确的数学运算</strong>。</p>
+
+    <h4>1.4.1 定理的表述（事件版）</h4>
+    <p>设：</p>
+    <ul>
+      <li>\(A\)：样本空间中的某个事件 / 我们相信的<strong>假设</strong>（hypothesis）；</li>
+      <li>\(\sim A\)：事件 \(A\) 不发生。于是样本空间 \(S = A \cup (\sim A)\)；</li>
+      <li>\(B\)：我们收集到的<strong>数据</strong>，即一个<em>可观测</em>（observable）的事件。</li>
+    </ul>
+    <div class="box formula"><span class="lab">贝叶斯定理</span>
+      \[ p(A\mid B)=\frac{p(A\cap B)}{p(B)}=\frac{p(B\mid A)\,p(A)}{p(B\mid A)\,p(A)+p(B\mid\,\sim A)\,p(\sim A)} \]
+      <p style="margin-top:8px">一句话：贝叶斯定理告诉我们如何在<strong>看到数据 \(B\) 之后</strong>，更新对事件 \(A\) 的信念。</p>
+    </div>
+    <div class="box tip"><span class="lab">怎么理解分母？</span>
+      分母 \(p(B)=p(B\mid A)p(A)+p(B\mid\sim A)p(\sim A)\) 就是<strong>全概率公式</strong>：数据 \(B\) 的发生只有两条路——"\(A\) 真时看到 \(B\)" 或 "\(A\) 假时看到 \(B\)"，把两条路的概率加起来，就是看到 \(B\) 的总概率。它的作用是<strong>归一化</strong>，保证算出的后验是合法概率。
+    </div>
+
+    <h4>1.4.2 一般记号：\(\theta\)、\(\Omega\)、\(Y\)</h4>
+    <p>把"事件版"推广到统计推断的标准写法：</p>
+    <ul>
+      <li>\(\theta\)：我们关心的<strong>未知总体参数</strong>——注意：我们<strong>永远观测不到</strong>它的真值；</li>
+      <li>\(\Omega\)：\(\theta\) 的<strong>参数空间</strong>，即 \(\theta\) 所有可能取值的集合；</li>
+      <li>\(Y_i\)：依赖于 \(\theta\) 的随机变量，是我们<strong>能观测到</strong>的"数据"；\(y_1,\dots,y_I\) 是它们的取值，共 \(I\) 个数据点。</li>
+    </ul>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>例子</th><th>参数 \(\theta\)</th><th>参数空间 \(\Omega\)</th><th>数据 \(Y\)</th></tr></thead>
+      <tbody>
+        <tr><td>Ibadan 人口</td><td>Ibadan 的人口数</td><td>\(\mathbb{Z}_{\ge 0}\)（非负整数）</td><td>关于各城区排名/人口的信息</td></tr>
+        <tr><td>抛硬币</td><td>硬币是公平还是有偏</td><td>\(\{\text{fair},\ \text{biased}\}\)</td><td>10 次抛掷结果，\(y_i\in\{H,T\}\)</td></tr>
+        <tr><td>癌症筛查</td><td>是否患癌</td><td>\(\{\text{cancer},\ \sim\text{cancer}\}\)</td><td>\(I\) 位女性的检测结果，\(y_i\in\{+,-\}\)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box formula"><span class="lab">贝叶斯定理（参数版）</span>
+      \[ p(\theta\mid Y)=\frac{p(\theta\cap Y)}{p(Y)}=\frac{p(\theta)\,p(Y\mid\theta)}{p(Y)},\qquad p(Y)=\sum_{\theta\in\Omega}p(\theta)\,p(Y\mid\theta) \]
+    </div>
+
+    <h4>1.4.3 公式里的四个角色（必须背！）</h4>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>记号</th><th>名称</th><th>含义</th><th>从哪里来</th></tr></thead>
+      <tbody>
+        <tr><td>\(p(\theta)\)</td><td><strong>先验</strong> PRIOR</td><td>看数据<strong>之前</strong>对 \(\theta\) 的信念</td><td>由我们的先验知识/假设给出</td></tr>
+        <tr><td>\(p(Y\mid\theta)\)</td><td><strong>似然</strong> LIKELIHOOD</td><td>若参数取 \(\theta\)，看到这份数据 \(Y\) 的概率</td><td>由收集的数据决定（似然函数）</td></tr>
+        <tr><td>\(p(Y)\)</td><td><strong>边际</strong> MARGINAL</td><td>不论 \(\theta\) 取什么值，看到 \(Y\) 的总概率</td><td>对未知参数 \(\theta\) 求和"边际化"</td></tr>
+        <tr><td>\(p(\theta\mid Y)\)</td><td><strong>后验</strong> POSTERIOR</td><td>看到数据 \(Y\) <strong>之后</strong>对 \(\theta\) 的信念</td><td>用贝叶斯定理由前三者算出</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box tip"><span class="lab">记忆口诀</span>"<strong>先</strong>验 × <strong>似</strong>然 ÷ <strong>边</strong>际 = <strong>后</strong>验"——后验正比于先验乘似然，边际只是归一化常数。</div>
+
+    <h4>1.4.4 经典算例 ①：乳腺癌筛查（基率谬误）</h4>
+    <p>课件给出的已知条件：</p>
+    <ul>
+      <li>40 岁参加常规筛查的女性中 1% 患乳腺癌：\(p(\text{cancer})=0.01\)；</li>
+      <li>患癌女性 80% 检测呈阳性：\(p(+\mid\text{cancer})=0.8\)；</li>
+      <li>未患癌女性 9.6% 也会呈阳性（假阳性）：\(p(+\mid\sim\text{cancer})=0.096\)。</li>
+    </ul>
+    <p>问：某女性筛查呈阳性，她<strong>真的患癌</strong>的概率 \(p(\text{cancer}\mid +)\) 是多少？</p>
+    <div class="box ex"><span class="lab">完整计算</span>
+      \[ p(\text{cancer}\mid +)=\frac{p(+\mid\text{cancer})\,p(\text{cancer})}{p(+\mid\text{cancer})\,p(\text{cancer})+p(+\mid\sim\text{cancer})\,p(\sim\text{cancer})} \]
+      \[ =\frac{(0.8)(0.01)}{(0.8)(0.01)+(0.096)(0.99)}=\frac{0.008}{0.008+0.095}\approx 0.078 \]
+      <p style="margin-top:8px">即阳性者真正患癌的概率只有约 <strong>7.8%</strong>！</p>
+    </div>
+    <div class="box tip"><span class="lab">为什么这么低？（频数直觉）</span>
+      设想 10000 名女性：约 100 人患癌，其中约 \(100\times0.8=80\) 人呈阳性；其余 9900 人未患癌，但仍有约 \(9900\times0.096\approx 950\) 人假阳性。于是阳性者共约 \(80+950=1030\) 人，其中真患癌的只占 \(80/1030\approx 7.8\%\)。<strong>低基率（1%）把阳性结果"稀释"了。</strong>
+    </div>
+    <div class="box warn"><span class="lab">高频易错</span>
+      千万不要把 \(p(+\mid\text{cancer})=0.8\) 当成 \(p(\text{cancer}\mid +)\)！条件方向相反，含义完全不同——这正是贝叶斯定理存在的意义：<strong>\(p(A\mid B)\neq p(B\mid A)\)</strong>。
+    </div>
+
+    <h4>1.4.5 经典算例 ②：硬币是否有偏（完整四步）</h4>
+    <p>条件：先验 \(p(\text{biased})=0.62\)（从而 \(p(\text{fair})=0.38\)）；<strong>有偏硬币正面概率也是 0.62</strong>，即 \(p(H\mid\text{biased})=0.62\)；公平硬币 \(p(H\mid\text{fair})=0.5\)。数据 \(Y\)：10 次抛掷得 7 正 3 反。</p>
+    <div class="box warn"><span class="lab">注意 0.62 的双重身份</span>课件中 0.62 同时是"硬币有偏的先验概率"和"有偏硬币抛出正面的概率"，两者恰好相等纯属题设，<strong>别混为一谈</strong>。</div>
+    <div class="steps"><ol>
+      <li><strong>先验</strong>：\(p(\text{biased})=0.62,\ p(\text{fair})=0.38\)。</li>
+      <li><strong>似然</strong>（二项结构）：
+        \[ p(Y\mid\text{biased})=\binom{10}{7}(0.62)^7(0.38)^3\approx 0.2319 \]
+        \[ p(Y\mid\text{fair})=\binom{10}{7}(0.5)^7(0.5)^3=120\times(0.5)^{10}\approx 0.1172 \]
+      </li>
+      <li><strong>边际</strong>：\[ p(Y)=(0.62)(0.2319)+(0.38)(0.1172)\approx 0.1438+0.0445=0.1883 \]</li>
+      <li><strong>后验</strong>：\[ p(\text{biased}\mid Y)=\frac{(0.62)\times\binom{10}{7}(0.62)^7(0.38)^3}{0.1883}\approx\frac{0.1438}{0.1883}\approx 0.7637 \]</li>
+    </ol></div>
+    <p>结论：看到"10 抛 7 正"后，"硬币有偏"的信念从 62% 上升到约 <strong>76.37%</strong>——数据让我们更相信硬币有偏。</p>
+    <div class="box tip"><span class="lab">可交换性 (exchangeability)</span>课件脚注指出：<strong>哪 7 次</strong>是正面并不重要，只要总数是 7 正 3 反，似然都一样。这叫随机变量的可交换性，也是似然里出现组合数 \(\binom{10}{7}=120\) 的原因。</div>
+
+    <h4>1.4.6 贝叶斯推断的标准工作流（四步法）</h4>
+    <div class="box def"><span class="lab">做任何贝叶斯计算题都按这四步走</span>
+      ① 写出<strong>先验</strong>：明确 \(\theta\)、\(\Omega\) 和 \(p(\theta)\)；②（收集数据后）写出<strong>似然</strong> \(p(Y\mid\theta)\)——对 \(\Omega\) 中每个取值各写一个；③ 用全概率公式算<strong>边际</strong> \(p(Y)=\sum_\theta p(\theta)p(Y\mid\theta)\)；④ 代入贝叶斯定理得<strong>后验</strong> \(p(\theta\mid Y)\)，并用一句话解读"信念如何被数据更新"。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>1.5 两大学派对比总表（必背！）</h3>
+    <p>课件用三组对照说明两种方法论的根本分歧：</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>维度</th><th>频率学派 Frequentist</th><th>贝叶斯学派 Bayesian</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>① 参数的地位</strong></td>
+          <td>总体参数未知但<strong>固定</strong>，不被随机化、<strong>不是</strong>随机变量。<br>例：直接设 \(\theta=\)fair，于是 \(p(H)=\frac12\)。</td>
+          <td>总体参数被随机化，<strong>本身是随机变量</strong>。<br>例：\(\theta\in\Omega=\{\text{fair},\text{biased}\}\)。</td>
+        </tr>
+        <tr>
+          <td><strong>② 概率与样本的关系</strong></td>
+          <td>概率描述关于总体的事件，但<strong>不直接联系所抽样本</strong>。<br>例：样本 10 抛 7 正给出 \(7/10\)，但我们仍说真概率是 \(\frac12\)（默认硬币公平）。</td>
+          <td>概率是对总体参数算的，且<strong>直接依赖所抽样本</strong>——数据用于更新先验。<br>例：\(p(\theta=\text{fair}\mid Y)\) 会随数据 \(Y\) 真实变化。</td>
+        </tr>
+        <tr>
+          <td><strong>③ 重复试验假设</strong></td>
+          <td>假设样本可在<strong>相同条件下无限次抽取</strong>；因此<strong>不能</strong>用于独特（一次性）事件，只能用于可重复事件。</td>
+          <td>后验只依赖<strong>当下手头的数据</strong>；因此<strong>可以</strong>用于独特事件。</td>
+        </tr>
+      </tbody>
+    </table></div>
+    <div class="box tip"><span class="lab">选择框架的一句话指南</span>事件<strong>可重复、机制明确</strong>（抛硬币、掷骰子、彩票）→ 频率学派够用；事件<strong>独特/数据稀缺/已有先验知识需要结合新证据</strong>（飓风、罕见病、营销效果更新）→ 贝叶斯方法。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>1.6 一切概率皆是条件概率</h3>
+    <p>课件最后点出一个深刻观点：无论频率学派还是贝叶斯学派，我们计算概率时<strong>总是带着假设</strong>在工作。例如：</p>
+    <ul>
+      <li>\(p(\text{掷出 4})=\frac16\)：前提是<strong>假设骰子公平</strong>、六个结果等可能；</li>
+      <li>\(p(\text{今天下雨})=\frac1{10}\)：前提是依据"过去 10 天下了 1 天雨"这一信息。</li>
+    </ul>
+    <div class="box formula"><span class="lab">核心表述</span>
+      我们一直写的 \(p(A)\) 其实都应写成 \[ p(A\mid K) \] 其中 \(K\) 是我们所做的全部<strong>假设/已知信息</strong>。<strong>所以：一切概率实际上都是条件概率！</strong>
+    </div>
+    <div class="box tip"><span class="lab">和前面内容的呼应</span>这解释了为什么 PS1 里"明天是否下雨"的答案会随信息（历史频率 → 风暴预报）不断变化：变的不是天气，而是条件 \(K\)。</div>
+  </div>
+</section>
+
+<section id="part2">
+  <div class="sec-title"><div class="sec-num">②</div><h2>考点梳理</h2></div>
+
+  <div class="card">
+    <h3>使用说明（图例）</h3>
+    <p>本部分系统列出课件<strong>全部</strong>考点。每个考点标注：</p>
+    <ul>
+      <li><strong>重要程度</strong>：<span class="stars s3">★★★ 核心高频</span>（课件反复强调/有完整算例）、<span class="stars s2">★★ 中等</span>、<span class="stars s1">★ 低频</span>（了解即可）；</li>
+      <li><strong>掌握方式</strong>：<span class="tag mem">记忆</span> 需要准确背诵；<span class="tag und">理解</span> 需要能解释、能判断；<span class="tag cal">计算</span> 需要会动手算。</li>
+    </ul>
+    <p>第三、四部分每道题都标注了对应考点编号（如 D4），点击题目上的考点标签可跳回此处复习。</p>
+  </div>
+
+  <div class="card">
+    <h3>模块 A · 概率的基本语言</h3>
+
+    <div class="kp" id="kp-a1">
+      <div class="kp-head"><span class="kp-id">A1</span><strong>概率的本质</strong><span class="stars s2">★★</span><span class="tag und">理解</span></div>
+      <p><strong>定义</strong>：概率是对"某事物"<strong>不确定性的度量</strong>，它基于我们<strong>所知 / 所信 / 所假设</strong>的信息（课件引 Peter D. Hoff："概率是关于未知但确定的量的不确定性度量"）。</p>
+      <p><strong>课件三个引入例子</strong>：明天是否下雨（用海南过去一个月降雨数据预测）、是否缺乏维生素 D（用既往化验结果预测）、候选人 A 能否胜选（用 1000 人随机民调预测）——共同点：<strong>都用已有信息量化不确定性</strong>。</p>
+      <div class="kp-warn">易混淆：概率不是"客观存在于事物之中"的固定属性，它依赖于我们掌握的信息（见考点 F）。</div>
+    </div>
+
+    <div class="kp" id="kp-a2">
+      <div class="kp-head"><span class="kp-id">A2</span><strong>五大基本术语</strong><span class="stars s3">★★★</span><span class="tag mem">记忆</span><span class="tag und">理解</span></div>
+      <p><strong>必须准确背出并能在具体实验中识别</strong>（对应 Session Outcome 1）：</p>
+      <ul>
+        <li><strong>随机试验</strong> random experiment：观察某个不确定事物的<strong>过程</strong>；</li>
+        <li><strong>结果</strong> outcome：随机试验的<strong>一个结果</strong>；</li>
+        <li><strong>样本空间</strong> sample space：<strong>所有</strong>可能结果组成的集合；</li>
+        <li><strong>事件</strong> event：可能结果的<strong>一个集合</strong>（a collection）——课件特别强调：<strong>不是全部</strong>可能结果，只是"一部分"的集合；</li>
+        <li><strong>随机变量</strong> random variable：随试验结果取值的量（如"硬币朝上的那一面"）。</li>
+      </ul>
+      <p><strong>识别示范（抛硬币赌局）</strong>：随机试验=抛一次硬币；随机变量=朝上的面；样本空间 \(S=\{H,T\}\)；关心的事件="得到正面"。</p>
+      <div class="kp-warn">高频易错：把"事件"说成"所有可能结果的集合"——那是<strong>样本空间</strong>的定义！关系：结果 ∈ 事件 ⊆ 样本空间。</div>
+    </div>
+
+    <div class="kp" id="kp-a3">
+      <div class="kp-head"><span class="kp-id">A3</span><strong>经验概率与大数定律</strong><span class="stars s3">★★★</span><span class="tag und">理解</span><span class="tag cal">计算</span></div>
+      <p><strong>经验（频率）概率</strong>：\[ p(\text{事件})=\frac{\text{事件发生的频数}}{\text{试验总次数}} \] 课件例：10 次抛掷得 7 正 → \(p(H)=7/10=0.7\)。</p>
+      <p><strong>大数定律</strong> (Law of Large Numbers)：随着试验次数不断增大（100 次、1000 次、100 万次……），<strong>由原始数据得到的经验概率趋近真实概率</strong>。若假设硬币公平（每个结果等可能），真实概率 \(p(H)=\frac12=0.5\)。</p>
+      <div class="kp-warn">易错：经验概率 0.7 ≠ 真实概率 0.5 并不矛盾——前者来自有限样本，后者是等可能假设下的理论值；次数足够多时前者收敛于后者。</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>模块 B · 频率学派</h3>
+
+    <div class="kp" id="kp-b1">
+      <div class="kp-head"><span class="kp-id">B1</span><strong>频率学派三大特征</strong><span class="stars s3">★★★</span><span class="tag mem">记忆</span></div>
+      <p>课件原文归纳的三条（必背）：</p>
+      <ul>
+        <li>① 总体参数<strong>固定但未知</strong>（如：我们并不知道骰子公平，是<strong>假设</strong>它公平）；</li>
+        <li>② 事件的概率由其<strong>发生频率</strong>定义——问"这个事件发生得有多频繁？"；</li>
+        <li>③ 假设随机试验可以在<strong>完全相同条件下被无限重复</strong>（并非真做无穷次，而是"假如做了，事件会以此频率发生"）。</li>
+      </ul>
+    </div>
+
+    <div class="kp" id="kp-b2">
+      <div class="kp-head"><span class="kp-id">B2</span><strong>频率学派的适用面与局限（独特事件）</strong><span class="stars s3">★★★</span><span class="tag und">理解</span></div>
+      <p><strong>适用</strong>：结果定义清晰、机制可重复的随机试验（掷骰、抛硬币、<strong>彩票</strong>等）。</p>
+      <p><strong>局限（课件飓风例）</strong>："未来 5 年飓风是否会摧毁附近村庄"——频率学派量化不确定性的唯一方式是<strong>重复试验</strong>，而飓风摧毁村庄这种事件<strong>无法重复</strong>，故频率方法失效；只能基于已知信息给出<strong>主观的不确定性度量</strong> → 引出贝叶斯思想。</p>
+      <div class="kp-warn">考试判断点：凡"独特事件 / 一次性事件 / 无法重复"，频率学派<strong>不可用</strong>，应选贝叶斯。</div>
+    </div>
+
+    <div class="kp" id="kp-b3">
+      <div class="kp-head"><span class="kp-id">B3</span><strong>经典判断题："概率只取决于一次试验"</strong><span class="stars s2">★★</span><span class="tag und">理解</span></div>
+      <p>课件原题："随机试验中事件的概率仅取决于试验<strong>执行一次</strong>时该事件的发生情况。" 答案：<strong>False（错误）</strong>。</p>
+      <p><strong>理由</strong>：我们也许只做一次试验，但定义真实概率时，假设的是试验可在相同条件下<strong>重复多次</strong>。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>模块 C · 贝叶斯学派</h3>
+
+    <div class="kp" id="kp-c1">
+      <div class="kp-head"><span class="kp-id">C1</span><strong>贝叶斯方法核心思想</strong><span class="stars s3">★★★</span><span class="tag mem">记忆</span><span class="tag und">理解</span></div>
+      <p><strong>定义（必背）</strong>：贝叶斯统计是<strong>用观测到的数据来更新我们对总体参数先验信念/假设</strong>的方法。数据与先验知识共同影响概率度量。</p>
+      <p>此设定下概率取决于：① 我们对参数的<strong>信念</strong>；② 关于参数取值的信息的<strong>可得性（与不可得性）</strong>。</p>
+    </div>
+
+    <div class="kp" id="kp-c2">
+      <div class="kp-head"><span class="kp-id">C2</span><strong>参数是随机变量；概率只依赖手头数据</strong><span class="stars s3">★★★</span><span class="tag und">理解</span></div>
+      <p>贝叶斯设定的两个关键（与频率学派逐条相反）：① 未知总体参数<strong>不固定</strong>——它本身是<strong>随机变量</strong>，我们对它的信念被数据更新（如硬币：\(\theta\in\{\text{fair},\text{biased}\}\)，不预先钦定）；② 概率度量<strong>只依赖手头数据</strong>，不假设可在相同条件下重复试验。</p>
+      <div class="kp-warn">对比记忆：频率学派"参数固定、靠重复"；贝叶斯"参数随机、靠数据"。</div>
+    </div>
+
+    <div class="kp" id="kp-c3">
+      <div class="kp-head"><span class="kp-id">C3</span><strong>贝叶斯方法的适用场景与优点</strong><span class="stars s3">★★★</span><span class="tag mem">记忆</span></div>
+      <p>来自课件与习题册的归纳（选择/判断题高频）：</p>
+      <ul>
+        <li>能<strong>随时间纳入新信息</strong>（new evidence 出现 → 由先验+新证据<strong>重新计算</strong>概率）；</li>
+        <li>适合<strong>数据稀缺</strong>或难以获取的情形；</li>
+        <li>适合<strong>独特事件</strong>（飓风）、<strong>罕见事件</strong>（特定基因突变）；</li>
+        <li>适合<strong>已有先验知识 + 新数据更新</strong>的情形（基于既往检测结果+新症状判断患病；用新销售数据更新对营销活动效果的信念）；</li>
+        <li>相比频率方法能对不确定性给出<strong>更直观的洞察</strong>。</li>
+      </ul>
+    </div>
+
+    <div class="kp" id="kp-c4">
+      <div class="kp-head"><span class="kp-id">C4</span><strong>Ibadan 人口案例（信念更新示范）</strong><span class="stars s1">★</span><span class="tag und">理解</span></div>
+      <p>尼日利亚 12 个城区（各 ≥50 万人，最大 1200 万）。事件：\(A_1\)<100 万、\(A_2\) 100–400 万、\(A_3\) 400–600 万、\(A_4\)>600 万。四步更新：</p>
+      <ul>
+        <li>Step 1 无信息 → <strong>均匀先验</strong> \(p(A_i)=\frac14\)（注意四者之和恒为 1）；</li>
+        <li>Step 2 Ibadan 是第 4 大 → 概率向 \(A_3,A_4\) 偏移；</li>
+        <li>Step 3 第 9 大城区也超 100 万 → \(p(A_1)=0\)；</li>
+        <li>Step 4 第 3 大约 350 万 → Ibadan 必在 100–350 万之间，\(p(A_2)=1\)。真实人口约 300 万。</li>
+      </ul>
+      <p><strong>考查方式</strong>：理解"每条新信息如何改变概率分布"即可，不要求背数字。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>模块 D · 贝叶斯定理（本讲核心）</h3>
+
+    <div class="kp" id="kp-d1">
+      <div class="kp-head"><span class="kp-id">D1</span><strong>贝叶斯定理的表述</strong><span class="stars s3">★★★</span><span class="tag mem">记忆</span><span class="tag cal">计算</span></div>
+      <p>设 \(A\) 为事件/假设，\(\sim A\) 为其不发生，\(S=A\cup(\sim A)\)，\(B\) 为可观测数据：</p>
+      \[ p(A\mid B)=\frac{p(A\cap B)}{p(B)}=\frac{p(B\mid A)p(A)}{p(B\mid A)p(A)+p(B\mid\sim A)p(\sim A)} \]
+      <p>含义：在数据 \(B\) 之下<strong>更新</strong>对 \(A\) 的信念。（对应 Session Outcomes 4、5：能<strong>陈述</strong>并<strong>应用</strong>。）</p>
+      <div class="kp-warn">书写时分母两项缺一不可；漏掉 \(p(B\mid\sim A)p(\sim A)\) 是最常见的失分点。</div>
+    </div>
+
+    <div class="kp" id="kp-d2">
+      <div class="kp-head"><span class="kp-id">D2</span><strong>先验 / 似然 / 边际 / 后验</strong><span class="stars s3">★★★</span><span class="tag mem">记忆</span></div>
+      <p>对 \(p(\theta\mid Y)=\dfrac{p(\theta)\,p(Y\mid\theta)}{p(Y)}\)：\(p(\theta)\)=<strong>先验</strong>（见数据前的信念）；\(p(Y\mid\theta)\)=<strong>似然函数</strong>（给定参数看到该数据的概率）；\(p(Y)\)=<strong>边际</strong>（不论 \(\theta\) 取何值看到 \(Y\) 的概率）；\(p(\theta\mid Y)\)=<strong>后验</strong>（见数据后的信念）。</p>
+      <p><strong>各量来源</strong>：先验←先验信念；似然←数据；边际←对 \(\theta\) 边际化（求和）；后验←代入定理算出。</p>
+    </div>
+
+    <div class="kp" id="kp-d3">
+      <div class="kp-head"><span class="kp-id">D3</span><strong>边际概率与全概率公式</strong><span class="stars s3">★★★</span><span class="tag cal">计算</span></div>
+      \[ p(Y)=\sum_{\theta\in\Omega}p(\theta)\,p(Y\mid\theta) \]
+      <p>离散情形下，对参数空间内每个取值"先验 × 似然"再求和。两值参数空间时即 \(p(Y)=p(\theta_1)p(Y\mid\theta_1)+p(\theta_2)p(Y\mid\theta_2)\)。</p>
+    </div>
+
+    <div class="kp" id="kp-d4">
+      <div class="kp-head"><span class="kp-id">D4</span><strong>贝叶斯计算四步流程</strong><span class="stars s3">★★★</span><span class="tag cal">计算</span></div>
+      <p>课件以癌症例总结的标准流程（计算大题按此组织答案）：① 写<strong>先验</strong> \(p(\theta)\)（含 \(\Omega\)）→ ② 收集数据，写<strong>似然</strong> \(p(Y\mid\theta)\)（每个 \(\theta\) 取值各一条）→ ③ 全概率求<strong>边际</strong> \(p(Y)\) → ④ 代入定理得<strong>后验</strong>并解读更新。</p>
+    </div>
+
+    <div class="kp" id="kp-d5">
+      <div class="kp-head"><span class="kp-id">D5</span><strong>一般记号：\(\theta\)、\(\Omega\)、\(Y_i\)</strong><span class="stars s2">★★</span><span class="tag mem">记忆</span></div>
+      <p>\(\theta\)：未知总体参数（<strong>永远观测不到</strong>）；\(\Omega\)：参数空间（\(\theta\) 全部可能取值）；\(Y_i\)：依赖 \(\theta\) 的可观测随机变量（数据），取值 \(y_1,\dots,y_I\)。三个标准例子的 \(\Omega\)：Ibadan 人口 \(\mathbb{Z}_{\ge0}\)；硬币 \(\{\text{fair},\text{biased}\}\)；癌症 \(\{\text{cancer},\sim\text{cancer}\}\)。</p>
+      <div class="kp-warn">注意课件的记号约定：随机变量与其在 \(\Omega\) 中的取值用同一符号 \(\theta\) 表示。</div>
+    </div>
+
+    <div class="kp" id="kp-d6">
+      <div class="kp-head"><span class="kp-id">D6</span><strong>癌症筛查算例与基率直觉</strong><span class="stars s3">★★★</span><span class="tag cal">计算</span><span class="tag und">理解</span></div>
+      <p>已知 \(p(\text{cancer})=0.01\)、\(p(+\mid\text{cancer})=0.8\)、\(p(+\mid\sim\text{cancer})=0.096\)，求得 \(p(\text{cancer}\mid+)=\dfrac{0.008}{0.008+0.095}\approx0.078\)。</p>
+      <p><strong>必懂结论</strong>：即使检测"看起来很准"，由于患病<strong>基率极低</strong>（1%），阳性后真患癌概率也只有 7.8%。会用"想象 10000 人"的频数法解释（80 真阳 vs ≈950 假阳）。</p>
+    </div>
+
+    <div class="kp" id="kp-d7">
+      <div class="kp-head"><span class="kp-id">D7</span><strong>似然的二项结构与可交换性</strong><span class="stars s2">★★</span><span class="tag und">理解</span><span class="tag cal">计算</span></div>
+      <p>"10 抛 7 正"的似然要乘组合数：\(p(Y\mid\theta)=\binom{10}{7}q^7(1-q)^3\)，其中 \(q\) 是该 \(\theta\) 下单次正面概率（biased: 0.62；fair: 0.5）。<strong>可交换性</strong>：哪 7 次出正面不影响似然，只看正反总数。</p>
+      <div class="kp-warn">易错：忘乘 \(\binom{10}{7}=120\)。本例中分子分母同乘组合数会约掉、不影响后验，但<strong>似然与边际本身的数值会算错</strong>，分步给分时照样丢分。</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>模块 E · 两学派对比</h3>
+    <div class="kp" id="kp-e1">
+      <div class="kp-head"><span class="kp-id">E1</span><strong>频率 vs 贝叶斯三维对比</strong><span class="stars s3">★★★</span><span class="tag mem">记忆</span></div>
+      <p>三组对照（详表见 §1.5，必须能完整复述）：① 参数：固定非随机 vs 随机变量；② 概率与样本：不直接联系所抽样本 vs 直接依赖样本数据更新先验；③ 重复性：假设可无限重复、<strong>不可用于独特事件</strong> vs 只依赖手头数据、<strong>可用于独特事件</strong>。（对应 Session Outcomes 2、3：能区分两学派并为现实情景<strong>选择框架</strong>。）</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>模块 F · 概率的条件性</h3>
+    <div class="kp" id="kp-f1">
+      <div class="kp-head"><span class="kp-id">F1</span><strong>一切概率皆条件概率</strong><span class="stars s2">★★</span><span class="tag und">理解</span></div>
+      <p>任何学派计算概率都基于假设：\(p(\text{掷出4})=\frac16\) 基于"骰子公平"假设；\(p(\text{今日下雨})=\frac1{10}\) 基于"过去 10 天下雨 1 天"的信息。故 \(p(A)\) 实为 \(p(A\mid K)\)，\(K\) 为全部假设/已知信息——<strong>一切概率都是条件概率</strong>。（对应 Session Outcome 6。）</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>⚠ 高频易错清单（考前最后过一遍）</h3>
+    <div class="box warn"><span class="lab">六大坑</span>
+      <ul style="margin:6px 0 0 18px">
+        <li>① <strong>条件方向颠倒</strong>：\(p(A\mid B)\neq p(B\mid A)\)（敏感度 0.8 ≠ 阳性预测值 0.078）。</li>
+        <li>② <strong>分母漏项</strong>：边际必须含 \(\sim A\)（或 \(\Omega\) 中所有取值）那一项。</li>
+        <li>③ <strong>预报准确率取补</strong>：如 PS15 中"3/5 的晴天被正确预报（报晴）"，则晴天被<strong>报雨</strong>的概率是 \(1-\frac35=\frac25\)，不是 \(\frac35\)。</li>
+        <li>④ <strong>似然忘乘先验</strong>：分子是 \(p(Y\mid\theta)\times p(\theta)\)，不能只写似然。</li>
+        <li>⑤ <strong>事件 ≠ 样本空间</strong>：事件只是结果的"一个集合"，不是全部。</li>
+        <li>⑥ <strong>误解频率学派</strong>：它不是"只做一次试验"，而是"假设可无限重复"。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="part3">
+  <div class="sec-title"><div class="sec-num">③</div><h2>复习自测题（16 题）</h2></div>
+
+  <div class="card">
+    <p>本套题<strong>基于第二部分考点原创设计</strong>，难度三档：<span class="chip diff-1">基础</span>→<span class="chip diff-2">进阶</span>→<span class="chip diff-3">综合</span>。选择/判断题<strong>直接点击选项</strong>作答（正确变绿、错误变红并自动展开解析）；其余题型建议先在纸上作答再点「显示答案」。顶部进度条实时统计作答情况。</p>
+    <div class="toolbar">
+      <button class="btn" data-action="open-all" data-scope="part3">▼ 展开本节全部答案</button>
+      <button class="btn ghost" data-action="close-all" data-scope="part3">▲ 收起本节全部答案</button>
+      <button class="btn danger" data-action="reset">⟳ 重置所有选择题</button>
+    </div>
+  </div>
+
+  <div class="diff-band"><span>基础题 · Q1–Q6</span>（概念识别与术语，先把地基打牢）</div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">Q1</span><span class="chip type">选择题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-a2">考点 A2 基本术语</a></div>
+    <p class="q-text">考虑随机试验"掷一枚六面骰子一次"。下列术语对应关系中<strong>错误</strong>的是：</p>
+    <div class="options">
+      <div class="opt">A. "掷一次骰子"对应——随机试验</div>
+      <div class="opt">B. "朝上的点数"对应——随机变量</div>
+      <div class="opt">C. "掷出偶数点 {2,4,6}"对应——事件</div>
+      <div class="opt" data-correct="1">D. 集合 {1,2,3,4,5,6} 对应——结果（outcome）</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：D</p>
+      <div class="explain"><strong>考查点</strong>：五大基本术语（A2）。<strong>思路</strong>：{1,2,3,4,5,6} 是<strong>全部</strong>可能结果的集合，这是<strong>样本空间</strong>的定义，不是"结果"——单个结果是其中一个元素，如"掷出 3"。A、B、C 的对应均正确：过程=随机试验；随结果取值的量=随机变量；结果的一个集合 {2,4,6}=事件。</div>
+      <div class="pitfall">⚠ 易错提醒：三层关系要记牢——<strong>结果 ∈ 事件 ⊆ 样本空间</strong>。课件特别强调事件只是"a collection"，不是全部结果。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">Q2</span><span class="chip type">选择题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-a3">考点 A3 / B1</a></div>
+    <p class="q-text">在频率学派情景下，掷一枚<strong>公平</strong>六面骰子，掷出 3 的概率是：</p>
+    <div class="options">
+      <div class="opt">A. 1/3</div>
+      <div class="opt" data-correct="1">B. 1/6</div>
+      <div class="opt">C. 1/2</div>
+      <div class="opt">D. 1/12</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：B（1/6）</p>
+      <div class="explain"><strong>考查点</strong>：等可能假设下的经典概率（A3、B1）。<strong>思路</strong>：样本空间 {1,…,6} 共 6 个结果，"公平"意味着<strong>假设</strong>每个结果等可能，故 \(p(3)=\frac16\)。注意频率学派第一条特征：我们并不"知道"骰子公平，是假设了它公平（参数固定但未知）。</div>
+      <div class="pitfall">⚠ 易错提醒：本题与习题册第 4 题同源；若题面改为"掷出偶数点"，答案则是事件 {2,4,6} 的概率 \(\frac36=\frac12\)。看清问的是单个结果还是事件。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">Q3</span><span class="chip type">判断题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-b3">考点 B3</a></div>
+    <p class="q-text">判断：随机试验中事件的概率，仅取决于试验<strong>执行一次</strong>时该事件是否发生。</p>
+    <div class="options">
+      <div class="opt">正确</div>
+      <div class="opt" data-correct="1">错误</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：错误（False）</p>
+      <div class="explain"><strong>考查点</strong>：频率学派的"无限重复"假设（B3、B1③）。<strong>思路</strong>：课件原题。我们实际可能只做一次试验，但<strong>定义真实概率</strong>时，假设的是该试验能在完全相同的条件下重复许多次——概率是长期频率的极限，不是"这一次发生与否"。</div>
+      <div class="pitfall">⚠ 易错提醒：别把"只做了一次试验"与"概率只由一次试验决定"混为一谈，后者才是题干的（错误）说法。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">Q4</span><span class="chip type">选择题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-d2">考点 D2</a></div>
+    <p class="q-text">在贝叶斯统计中，"在考虑新证据<strong>之前</strong>的初始概率"的术语是：</p>
+    <div class="options">
+      <div class="opt">A. 后验概率（posterior）</div>
+      <div class="opt">B. 似然（likelihood）</div>
+      <div class="opt" data-correct="1">C. 先验概率（prior）</div>
+      <div class="opt">D. 条件概率（conditional）</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：C（先验概率）</p>
+      <div class="explain"><strong>考查点</strong>：四大角色的命名（D2）。<strong>思路</strong>："prior"=之前——看到数据之前对 \(\theta\) 的信念 \(p(\theta)\)。后验是看到数据<strong>之后</strong>的 \(p(\theta\mid Y)\)；似然是给定参数下看到数据的概率 \(p(Y\mid\theta)\)。</div>
+      <div class="pitfall">⚠ 易错提醒：D 选项有迷惑性——后验确实"是一种"条件概率，但题目问的是<strong>专有术语</strong>，标准答案是先验（prior）。本题与习题册第 7 题同源。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card">
+    <div class="q-head"><span class="q-num">Q5</span><span class="chip type">填空题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-d2">考点 D2</a></div>
+    <p class="q-text">在公式 \(p(\theta\mid Y)=\dfrac{p(\theta)\,p(Y\mid\theta)}{p(Y)}\) 中，请写出四个量的中文名称：<br>
+    \(p(\theta)\) 称为 ＿＿＿＿；\(p(Y\mid\theta)\) 称为 ＿＿＿＿；\(p(Y)\) 称为 ＿＿＿＿；\(p(\theta\mid Y)\) 称为 ＿＿＿＿。</p>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 标准答案：先验（概率）；似然（函数）；边际（概率）；后验（概率）</p>
+      <div class="explain"><strong>考查点</strong>：D2 必背内容。<strong>逐个理解</strong>：先验=看数据前对参数的信念；似然=给定参数值时看到这份数据的概率；边际=不论参数取何值看到数据的总概率（由 \(\sum_{\theta}p(\theta)p(Y\mid\theta)\) 算得）；后验=看到数据后被更新的信念。</div>
+      <div class="pitfall">⚠ 易错提醒：英文术语也要会写：PRIOR / LIKELIHOOD / MARGINAL / POSTERIOR。考试可能中英任考一种。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">Q6</span><span class="chip type">判断题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-c3">考点 C3</a></div>
+    <p class="q-text">判断：贝叶斯方法在<strong>数据稀缺或难以获取</strong>的情形下特别有用。</p>
+    <div class="options">
+      <div class="opt" data-correct="1">正确</div>
+      <div class="opt">错误</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：正确（True）</p>
+      <div class="explain"><strong>考查点</strong>：贝叶斯方法的适用场景（C3）。<strong>思路</strong>：习题册第 9 题原题。频率学派依赖大量重复试验来逼近真实概率；数据稀缺时无法重复，而贝叶斯方法可以把<strong>先验知识</strong>与<strong>仅有的少量数据</strong>结合，依然给出有意义的概率更新。</div>
+      <div class="pitfall">⚠ 易错提醒：同系列判断还有：贝叶斯能提供更直观的不确定性洞察（True）、后验由先验与似然结合算出（True）、频率学派常用于结果定义明确的随机试验（True）。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="diff-band"><span>进阶题 · Q7–Q12</span>（学派辨析与单步计算，开始上强度）</div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">Q7</span><span class="chip type">选择题</span><span class="chip diff-2">进阶</span><a class="chip point" href="#kp-c1">考点 C1 / C3</a></div>
+    <p class="q-text">在贝叶斯框架中，当出现<strong>新证据</strong>时，事件的概率会发生什么变化？</p>
+    <div class="options">
+      <div class="opt">A. 保持不变</div>
+      <div class="opt" data-correct="1">B. 基于新证据与先验概率重新计算</div>
+      <div class="opt">C. 变为 0 或 1</div>
+      <div class="opt">D. 新证据被忽略</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：B</p>
+      <div class="explain"><strong>考查点</strong>：贝叶斯更新机制（C1）。<strong>思路</strong>：习题册第 2 题原题。贝叶斯的本质是 先验 + 新证据（似然）→ 后验，每来一份新证据就重算一次。C 选项描述的恰是课件批评的情形：用<strong>频率方法</strong>判断硬币真假时，每次只能得到 p=0 或 1 的无用结论。</div>
+      <div class="pitfall">⚠ 易错提醒：概率"被更新"不等于"必然变成确定值"；Ibadan 例中 \(p(A_2)=1\) 是信息恰好足够强的特例。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">Q8</span><span class="chip type">选择题</span><span class="chip diff-2">进阶</span><a class="chip point" href="#kp-b2">考点 B2 / C3 / E1</a></div>
+    <p class="q-text">下列哪个情景<strong>最适合</strong>使用频率学派方法？</p>
+    <div class="options">
+      <div class="opt">A. 预测某村庄未来 5 年是否会被飓风摧毁</div>
+      <div class="opt" data-correct="1">B. 确定某彩票的中奖概率</div>
+      <div class="opt">C. 基于既往研究评估一种新药的有效性</div>
+      <div class="opt">D. 结合家族病史评估某罕见基因突变的可能性</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：B（彩票）</p>
+      <div class="explain"><strong>考查点</strong>：为现实情景选择统计框架（E1、Session Outcome 3）。<strong>思路</strong>：彩票是<strong>机制完全明确、可大量重复</strong>的随机试验，结果定义清晰——频率学派的主场（对应习题册第 6 题）。A 是<strong>独特事件</strong>无法重复（课件飓风例）；C 含"既往研究"=先验知识需结合新数据；D 是<strong>罕见事件</strong>且含先验信息（家族史）——三者都指向贝叶斯（对应习题册第 13 题）。</div>
+      <div class="pitfall">⚠ 易错提醒：判断口诀——看到"独特/一次性/罕见/已有先验要更新"选贝叶斯；看到"机制明确可重复"选频率。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card">
+    <div class="q-head"><span class="q-num">Q9</span><span class="chip type">简答题</span><span class="chip diff-2">进阶</span><a class="chip point" href="#kp-e1">考点 E1</a></div>
+    <p class="q-text">请从「参数的地位」「概率与样本的关系」「对重复试验的假设」三个角度，对比频率学派与贝叶斯学派，并各举课件中的一个例子。</p>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 参考答案（要点齐全即可）</p>
+      <div class="explain">
+        <strong>① 参数的地位</strong>：频率学派——总体参数未知但<strong>固定</strong>，不是随机变量（例：直接设 \(\theta=\)fair，则 \(p(H)=\frac12\)）；贝叶斯——参数被随机化，<strong>是随机变量</strong>（例：\(\theta\in\{\text{fair},\text{biased}\}\)，不预先钦定）。<br><br>
+        <strong>② 概率与样本的关系</strong>：频率学派——概率描述总体事件，但<strong>不直接联系</strong>所抽样本（例：10 抛 7 正给出样本频率 7/10，但仍说真概率是 1/2，因为默认硬币公平）；贝叶斯——概率<strong>直接依赖样本</strong>，数据用于更新先验（例：\(p(\theta=\text{biased}\mid Y)\) 随数据真实变化，62%→76.37%）。<br><br>
+        <strong>③ 重复试验假设</strong>：频率学派——假设可在相同条件下<strong>无限重复</strong>抽样，故不能用于独特事件；贝叶斯——后验只依赖<strong>手头数据</strong>，可用于独特事件（例：飓风问题）。
+      </div>
+      <div class="pitfall">⚠ 易错提醒：答"频率学派只看数据、贝叶斯只看信念"是错的——贝叶斯同样用数据（似然），区别在于是否引入先验、参数是否随机化。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card">
+    <div class="q-head"><span class="q-num">Q10</span><span class="chip type">计算题</span><span class="chip diff-2">进阶</span><a class="chip point" href="#kp-a3">考点 A3</a></div>
+    <p class="q-text">抛一枚硬币 10 次，得到 7 次正面、3 次反面。<br>(1) 求"得到正面"的经验概率；<br>(2) 若假设硬币公平，"得到正面"的真实概率是多少？<br>(3) 两个数值不一致是否矛盾？用大数定律解释。</p>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 标准答案：(1) 0.7；(2) 0.5；(3) 不矛盾，试验次数→∞ 时经验概率收敛于真实概率</p>
+      <div class="explain"><strong>完整步骤</strong>：
+        <div class="steps"><ol>
+          <li>经验概率 = 事件频数 ÷ 试验总次数 = \(\frac{7}{10}=0.7\)。</li>
+          <li>"公平"即假设每个结果等可能，样本空间 \(\{H,T\}\) 有 2 个结果，故 \(p(H)=\frac12=0.5\)。</li>
+          <li>不矛盾。0.7 来自<strong>有限</strong>的 10 次样本，存在抽样波动；由<strong>大数定律</strong>，继续抛 100 次、1000 次、100 万次……经验概率将<strong>趋近</strong>真实概率 0.5。课件结论：原始数据给出的经验概率随试验次数增加而逼近真概率。</li>
+        </ol></div>
+      </div>
+      <div class="pitfall">⚠ 易错提醒：(2) 的前提"假设公平"必须写出——这正是频率学派"参数固定但未知、靠假设"的体现，也呼应"一切概率皆条件"（F1）。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card">
+    <div class="q-head"><span class="q-num">Q11</span><span class="chip type">计算题</span><span class="chip diff-2">进阶</span><a class="chip point" href="#kp-d6">考点 D1 / D6</a></div>
+    <p class="q-text">某疾病在人群中的患病率为 2%。检测对患者呈阳性的概率为 90%；对未患病者也有 5% 的概率误报阳性。某人检测呈<strong>阳性</strong>，求他真正患病的概率。（保留三位小数）</p>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 标准答案：约 0.269（26.9%）</p>
+      <div class="explain"><strong>完整步骤</strong>（按四步法 D4）：
+        <div class="steps"><ol>
+          <li><strong>先验</strong>：\(p(\text{病})=0.02,\ p(\sim\text{病})=0.98\)。</li>
+          <li><strong>似然</strong>：\(p(+\mid\text{病})=0.9,\ p(+\mid\sim\text{病})=0.05\)。</li>
+          <li><strong>边际</strong>：\[ p(+)=0.9\times0.02+0.05\times0.98=0.018+0.049=0.067 \]</li>
+          <li><strong>后验</strong>：\[ p(\text{病}\mid +)=\frac{0.018}{0.067}\approx 0.269 \]</li>
+        </ol></div>
+        即阳性后真正患病的概率仅约 26.9%——再次体现<strong>低基率</strong>对阳性结果的稀释（与课件 7.8% 的癌症例同理）。
+      </div>
+      <div class="pitfall">⚠ 易错提醒：① 别答成 90%（那是 \(p(+\mid\text{病})\)，方向反了）；② 分母勿漏 \(0.05\times0.98\) 一项。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card">
+    <div class="q-head"><span class="q-num">Q12</span><span class="chip type">简答题</span><span class="chip diff-2">进阶</span><a class="chip point" href="#kp-f1">考点 F1</a></div>
+    <p class="q-text">如何理解课件所说的"一切概率实际上都是条件概率"？写出对应的记号表述，并举课件中的两个例子说明。</p>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 参考答案</p>
+      <div class="explain">无论采用频率学派还是贝叶斯学派，计算概率时我们总是在<strong>某些假设/已知信息之下</strong>工作。因此平时写的 \(p(A)\) 严格来说应写作 \(p(A\mid K)\)，其中 \(K\) 代表我们所做的全部假设与掌握的信息。<br><br><strong>课件例子</strong>：① \(p(\text{掷出 4})=\frac16\) ——条件是"假设骰子公平、六个结果等可能"；② \(p(\text{今天下雨})=\frac1{10}\) ——条件是"过去 10 天中下了 1 天雨"这一信息。条件 \(K\) 变了，概率就会变（如 PS1 中下雨概率随风暴预报而改变）。</div>
+      <div class="pitfall">⚠ 易错提醒：这一观点对<strong>两个学派都成立</strong>，不要答成"只有贝叶斯的概率才是条件的"。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="diff-band"><span>综合题 · Q13–Q16</span>（完整四步贝叶斯计算与论述，模拟大题）</div>
+
+  <div class="q-card">
+    <div class="q-head"><span class="q-num">Q13</span><span class="chip type">计算题</span><span class="chip diff-3">综合</span><a class="chip point" href="#kp-d4">考点 D1 / D3 / D4</a></div>
+    <p class="q-text">某城市平均每 4 天有 1 天下雨。一款天气 App 的历史表现：下雨的日子里它有 80% 的概率预报"有雨"；不下雨的日子里它也有 30% 的概率误报"有雨"。今天 App 预报"有雨"，求今天<strong>真的下雨</strong>的概率。（用分数与小数各表示一次）</p>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 标准答案：\(\dfrac{8}{17}\approx 0.471\)</p>
+      <div class="explain"><strong>完整步骤</strong>（四步法）：
+        <div class="steps"><ol>
+          <li><strong>设定与先验</strong>：\(\theta\)=今天是否下雨，\(\Omega=\{\text{雨},\text{无雨}\}\)；\(p(\text{雨})=\frac14,\ p(\text{无雨})=\frac34\)。</li>
+          <li><strong>似然</strong>：数据 \(Y\)="App 报雨"。\(p(\text{报雨}\mid\text{雨})=0.8,\ p(\text{报雨}\mid\text{无雨})=0.3\)。</li>
+          <li><strong>边际</strong>：\[ p(\text{报雨})=0.8\times\tfrac14+0.3\times\tfrac34=0.2+0.225=0.425 \]</li>
+          <li><strong>后验</strong>：\[ p(\text{雨}\mid\text{报雨})=\frac{0.2}{0.425}=\frac{200}{425}=\frac{8}{17}\approx 0.471 \]</li>
+        </ol></div>
+        解读：先验 25% 被"报雨"这一证据更新到约 47.1%——信念上调，但因 App 误报率不低，仍不足一半。
+      </div>
+      <div class="pitfall">⚠ 易错提醒：勿直接答 80%（条件方向颠倒）；边际中 \(0.3\times\frac34\) 这一误报项不可漏。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card">
+    <div class="q-head"><span class="q-num">Q14</span><span class="chip type">计算题</span><span class="chip diff-3">综合</span><a class="chip point" href="#kp-d4">考点 D1 / D3 / D4</a></div>
+    <p class="q-text">某电商有 A、B 两个仓库：40% 的订单由 A 仓发出，60% 由 B 仓发出。A 仓商品次品率 10%，B 仓次品率 4%。客户收到一件<strong>次品</strong>，求它来自 A 仓的概率。</p>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 标准答案：0.625（62.5%）</p>
+      <div class="explain"><strong>完整步骤</strong>：
+        <div class="steps"><ol>
+          <li><strong>先验</strong>：\(\theta\)=发货仓库，\(\Omega=\{A,B\}\)；\(p(A)=0.4,\ p(B)=0.6\)。</li>
+          <li><strong>似然</strong>：\(p(\text{次品}\mid A)=0.10,\ p(\text{次品}\mid B)=0.04\)。</li>
+          <li><strong>边际</strong>：\[ p(\text{次品})=0.10\times0.4+0.04\times0.6=0.04+0.024=0.064 \]</li>
+          <li><strong>后验</strong>：\[ p(A\mid\text{次品})=\frac{0.04}{0.064}=0.625 \]</li>
+        </ol></div>
+        解读：虽然 A 仓只占 40% 的发货量（先验较小），但其次品率高得多（似然大），看到次品后信念向 A 仓显著倾斜。
+      </div>
+      <div class="pitfall">⚠ 易错提醒：本题结构与课件习题 16 一致（先验=货源分布，似然=次品率）。别把 0.10 当成最终答案——它是似然不是后验。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card">
+    <div class="q-head"><span class="q-num">Q15</span><span class="chip type">计算题</span><span class="chip diff-3">综合</span><a class="chip point" href="#kp-d7">考点 D4 / D7</a></div>
+    <p class="q-text">（课件核心算例完整重做）已知硬币有偏的先验概率为 0.62，且有偏硬币单次掷出正面的概率也是 0.62；公平硬币正面概率 0.5。现将该硬币抛 10 次，观测到 7 正 3 反。求后验概率 \(p(\text{biased}\mid Y)\)，写出全部四步。（\(\binom{10}{7}=120\)）</p>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 标准答案：约 0.7637（76.37%）</p>
+      <div class="explain"><strong>完整步骤</strong>：
+        <div class="steps"><ol>
+          <li><strong>先验</strong>：\(\theta\in\Omega=\{\text{fair},\text{biased}\}\)；\(p(\text{biased})=0.62,\ p(\text{fair})=0.38\)。</li>
+          <li><strong>似然</strong>（二项结构，注意乘组合数）：
+            \[ p(Y\mid\text{biased})=\binom{10}{7}(0.62)^7(0.38)^3=120\times(0.62)^7(0.38)^3\approx 0.2319 \]
+            \[ p(Y\mid\text{fair})=\binom{10}{7}(0.5)^7(0.5)^3=120\times(0.5)^{10}\approx 0.1172 \]</li>
+          <li><strong>边际</strong>：\[ p(Y)=0.62\times0.2319+0.38\times0.1172\approx 0.1438+0.0445=0.1883 \]</li>
+          <li><strong>后验</strong>：\[ p(\text{biased}\mid Y)=\frac{0.62\times0.2319}{0.1883}\approx\frac{0.1438}{0.1883}\approx 0.7637 \]</li>
+        </ol></div>
+        解读：数据"10 抛 7 正"使"硬币有偏"的信念从 62% 升至约 76.37%。
+      </div>
+      <div class="pitfall">⚠ 易错提醒：① 0.62 身兼两职（先验 & 有偏硬币的正面概率），代入位置不同含义不同；② \(p(Y\mid\text{fair})\) 中先验配的是 0.38 而不是 0.5——0.38 是"公平"的先验，0.5 是公平硬币的正面概率；③ 似然别忘乘 \(\binom{10}{7}\)；④ 哪 7 次为正面不影响结果（可交换性）。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card">
+    <div class="q-head"><span class="q-num">Q16</span><span class="chip type">论述题</span><span class="chip diff-3">综合</span><a class="chip point" href="#kp-b2">考点 B2 / C1 / E1</a></div>
+    <p class="q-text">"评估某村庄未来 5 年被飓风摧毁的概率"。请论述：(1) 为什么频率学派方法在此失效；(2) 贝叶斯方法如何处理该问题；(3) 由此总结两种框架各自的适用情形。</p>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 参考答案（论述要点）</p>
+      <div class="explain">
+        <strong>(1) 频率学派为何失效</strong>：频率学派把概率定义为事件在<strong>相同条件下无限重复试验</strong>中的发生频率。"飓风摧毁该村庄"是<strong>独特（一次性）事件</strong>——既不能重复发生，也无法在相同条件下反复观察，因此"以频率量化不确定性"这条唯一路径被堵死，频率定义无法给出概率。<br><br>
+        <strong>(2) 贝叶斯如何处理</strong>：贝叶斯方法给出<strong>基于已知信息的主观不确定性度量</strong>：先依据现有知识设定先验（例如该地区是否历史上有飓风、是否有既往受灾数据），再用可获得的数据（气象记录、地理信息等）作为证据，通过贝叶斯定理把先验更新为后验。数据与先验知识共同决定概率，且只依赖<strong>手头的数据</strong>，不要求事件可重复。<br><br>
+        <strong>(3) 适用情形总结</strong>：机制明确、可大量重复、结果定义清晰的试验（掷骰、抛硬币、彩票）→ 频率学派；独特/罕见事件、数据稀缺、或已有先验知识需要被新证据更新的情形（飓风、罕见基因突变、结合既往研究评估新药、用新销售数据更新营销信念）→ 贝叶斯方法。
+      </div>
+      <div class="pitfall">⚠ 易错提醒：论述时务必点出"无限重复假设"这个频率学派失效的<strong>根因</strong>；只说"飓风很少见"不得满分——罕见但可重复的事件（如彩票头奖）频率学派照样能处理。</div>
+    </div>
+    </details>
+  </div>
+</section>
+
+<section id="part4">
+  <div class="sec-title"><div class="sec-num">④</div><h2>课件习题精解（Problem Sheet 1–16）</h2></div>
+
+  <div class="card">
+    <p>本节题号与课件配套 <strong>Problem Sheet - Lecture 1</strong> 完全对应（课件提示：随堂练习 1–14 题，课后加做 15、16 题）。选择/判断题可<strong>点击选项</strong>自测；15、16 为完整贝叶斯计算大题，附逐步详解。</p>
+    <div class="toolbar">
+      <button class="btn" data-action="open-all" data-scope="part4">▼ 展开本节全部答案</button>
+      <button class="btn ghost" data-action="close-all" data-scope="part4">▲ 收起本节全部答案</button>
+      <button class="btn danger" data-action="reset">⟳ 重置所有选择题</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-head"><span class="q-num">PS1</span><span class="chip type">讨论题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-c1">考点 A1 / C1 / F1</a></div>
+    <p class="q-text">你在为明天的野餐做准备，要决定是否带伞。<br>a) 明天下雨的概率是多少？<br>b) 已知过去 100 天中有 30 天下雨，现在你认为明天下雨的概率是多少？<br>c) 气象部门指出有风暴正在逼近，现在你认为明天下雨的概率是多少？</p>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 参考答案（开放讨论题，重在体现"概率随信息更新"）</p>
+      <div class="explain">
+        <strong>a)</strong> 没有任何数据时，只能给出<strong>主观先验</strong>——例如在"下雨/不下雨"之间无偏好地取 0.5，或凭个人经验给一个信念值。这一步对应贝叶斯流程的"设定先验"。<br><br>
+        <strong>b)</strong> 有了历史频率数据，可用<strong>经验概率</strong>更新信念：\(p(\text{雨})\approx\frac{30}{100}=0.3\)。<br><br>
+        <strong>c)</strong> "风暴逼近"是强有力的新证据，应把下雨概率<strong>大幅上调</strong>（远高于 0.3，接近 1，具体数值见仁见智）。<br><br>
+        <strong>本题用意</strong>：三问展示同一事件的概率随<strong>所掌握信息</strong>不断变化——先验 → 数据更新 → 新证据再更新，正是贝叶斯思想；同时呼应"一切概率都是 \(p(A\mid K)\)"（F1）。
+      </div>
+      <div class="pitfall">⚠ 易错提醒：a) 答"无法确定"不如给出一个明确的主观先验并说明理由；c) 关键是"上调"的方向与理由，而非某个精确数字。<em>（假设说明：本题为开放题，课件未给唯一标准数值答案。）</em></div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS2</span><span class="chip type">选择题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-c1">考点 C1</a></div>
+    <p class="q-text">在贝叶斯框架中，当出现新证据时，事件的概率会怎样？</p>
+    <div class="options">
+      <div class="opt">a) 保持不变</div>
+      <div class="opt" data-correct="1">b) 基于新证据和先验概率重新计算</div>
+      <div class="opt">c) 变为 0 或 1</div>
+      <div class="opt">d) 被忽略</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：b</p>
+      <div class="explain"><strong>解析</strong>：贝叶斯更新 = 先验 × 似然 ÷ 边际 → 后验；新证据到来即重算。c) 恰是课件批评频率方法判断硬币真伪时的缺陷（每轮只能得 0 或 1，"没有更有用的结论"）。</div>
+      <div class="pitfall">⚠ 易错提醒：与自测 Q7 同题——若 Q7 做对了，这里应秒选。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS3</span><span class="chip type">选择题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-c1">考点 C1</a></div>
+    <p class="q-text">下列哪项最好地描述了贝叶斯概率？</p>
+    <div class="options">
+      <div class="opt">a) 只考虑单一事件的结果</div>
+      <div class="opt" data-correct="1">b) 纳入先验信念，并用新证据更新它们</div>
+      <div class="opt">c) 假设所有结果等可能</div>
+      <div class="opt">d) 仅适用于理论情景</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：b</p>
+      <div class="explain"><strong>解析</strong>：b 正是贝叶斯定义——"用观测数据更新对参数的先验信念"（C1）。c) 描述的是经典等可能假设（频率学派常用的设定）；d) 恰恰相反，贝叶斯特别适用于现实中的独特事件；a) 与"结合先验+数据"的精神相悖。</div>
+      <div class="pitfall">⚠ 易错提醒：勿被 c 干扰——"等可能"是 Ibadan 例中<strong>先验的一种取法</strong>（均匀先验），不是贝叶斯概率的定义。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS4</span><span class="chip type">选择题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-a3">考点 A3 / B1</a></div>
+    <p class="q-text">在频率学派情景中，掷一枚公平六面骰子掷出 3 的概率是？</p>
+    <div class="options">
+      <div class="opt">a) 1/3</div>
+      <div class="opt" data-correct="1">b) 1/6</div>
+      <div class="opt">c) 1/2</div>
+      <div class="opt">d) 1/12</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：b（1/6）</p>
+      <div class="explain"><strong>解析</strong>：公平 = 假设 6 个结果等可能，单一结果"3"的概率为 \(\frac16\)。注意这里隐含了"骰子公平"的假设（K），呼应 F1。</div>
+      <div class="pitfall">⚠ 易错提醒：与自测 Q2 同题。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS5</span><span class="chip type">选择题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-c3">考点 C3</a></div>
+    <p class="q-text">在决策中使用贝叶斯方法的一个<strong>关键优势</strong>是？</p>
+    <div class="options">
+      <div class="opt">a) 比频率方法更容易计算</div>
+      <div class="opt">b) 提供一个固定不变的概率</div>
+      <div class="opt" data-correct="1">c) 允许随时间纳入新信息</div>
+      <div class="opt">d) 需要更少的数据就能做预测</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：c</p>
+      <div class="explain"><strong>解析</strong>：课件明确强调的优势是"数据与先验知识共同影响概率度量"、新证据到来即可更新（C1、C3）——即<strong>随时间纳入新信息</strong>。b 与贝叶斯精神相反（不变的是频率学派的固定参数观）；a 不成立（贝叶斯计算往往更繁）。</div>
+      <div class="pitfall">⚠ 易错提醒：d 有较强迷惑性——课件确实说贝叶斯"在数据稀缺时特别有用"（PS9 为 True），但那是<strong>适用场景</strong>；作为"关键优势"的标准表述，课件指向的是<strong>纳入新信息</strong>这一更新机制本身。c 是更准确、更直接的答案。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS6</span><span class="chip type">选择题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-b2">考点 B2 / E1</a></div>
+    <p class="q-text">下列哪种情形<strong>最适合</strong>使用频率学派概率？</p>
+    <div class="options">
+      <div class="opt">a) 预测股票市场走势</div>
+      <div class="opt" data-correct="1">b) 确定中彩票的可能性</div>
+      <div class="opt">c) 基于既往研究评估新药的有效性</div>
+      <div class="opt">d) 评估天气预报的可靠性</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：b（彩票）</p>
+      <div class="explain"><strong>解析</strong>：彩票的抽取机制完全明确、结果定义清晰、可大量重复——正是"结果定义良好的随机试验"（PS10 表述），频率学派的典型场景。a) 市场条件不断变化，无法"相同条件下重复"；c) 含先验研究需结合新数据，是贝叶斯典型（与 PS14 同思路）；d) 评估预报可靠性涉及用历史表现更新对预报系统的信念（参见 PS15 报纸预报问题的贝叶斯解法）。</div>
+      <div class="pitfall">⚠ 易错提醒：判断框架先找关键词："机制明确可重复"→频率；"既往/先验/更新/独特/罕见"→贝叶斯。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS7</span><span class="chip type">选择题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-d2">考点 D2</a></div>
+    <p class="q-text">在贝叶斯统计中，"考虑新证据之前的初始概率"的术语是？</p>
+    <div class="options">
+      <div class="opt">a) 后验概率</div>
+      <div class="opt">b) 似然</div>
+      <div class="opt" data-correct="1">c) 先验概率</div>
+      <div class="opt">d) 条件概率</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：c（先验概率 prior）</p>
+      <div class="explain"><strong>解析</strong>：prior = 见数据之前的 \(p(\theta)\)。与自测 Q4 同题；四个角色的完整对照见考点 D2。</div>
+      <div class="pitfall">⚠ 易错提醒：d) "条件概率"是宽泛概念，不是这里的专有名词答案。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS8</span><span class="chip type">判断题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-c3">考点 C3</a></div>
+    <p class="q-text">判断：与频率学派相比，贝叶斯方法能对不确定性提供<strong>更直观的洞察</strong>。</p>
+    <div class="options">
+      <div class="opt" data-correct="1">True（正确）</div>
+      <div class="opt">False（错误）</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：True</p>
+      <div class="explain"><strong>解析</strong>：贝叶斯直接回答"在已见数据下，参数取某值的概率是多少"（如"硬币有偏的概率为 76.37%"），这种对信念的直接量化比频率学派"假想无限重复下的长期频率"更贴近人的直觉。课件硬币例正是对照：频率方法只能得到 0 或 1 的无用结论，贝叶斯给出 0.62→0.7637 的有意义更新。</div>
+      <div class="pitfall">⚠ 易错提醒：PS8–PS11 四道判断题在本课件语境下<strong>全部为 True</strong>，但要能说出各自理由，不能裸背。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS9</span><span class="chip type">判断题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-c3">考点 C3</a></div>
+    <p class="q-text">判断：贝叶斯方法在<strong>数据稀缺或难以获取</strong>的情形下特别有用。</p>
+    <div class="options">
+      <div class="opt" data-correct="1">True（正确）</div>
+      <div class="opt">False（错误）</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：True</p>
+      <div class="explain"><strong>解析</strong>：频率学派靠大量重复逼近真值；数据稀缺时此路不通。贝叶斯把先验知识与仅有数据结合即可推断（飓风例：没有可重复数据，仍能给出主观不确定性度量并更新）。与自测 Q6 同题。</div>
+      <div class="pitfall">⚠ 易错提醒：注意"数据稀缺时可用"≠"不需要数据"——有数据仍要用（似然）。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS10</span><span class="chip type">判断题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-b2">考点 B2</a></div>
+    <p class="q-text">判断：频率学派概率常用于<strong>结果定义良好</strong>的随机试验情景。</p>
+    <div class="options">
+      <div class="opt" data-correct="1">True（正确）</div>
+      <div class="opt">False（错误）</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：True</p>
+      <div class="explain"><strong>解析</strong>：掷骰、抛硬币、彩票——样本空间清晰、机制可重复，事件频率有明确含义，频率定义运转良好（B1、B2 的"适用面"）。</div>
+      <div class="pitfall">⚠ 易错提醒：该命题的反面情形（结果难以重复观察的独特事件）正是频率学派失效之处。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS11</span><span class="chip type">判断题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-d2">考点 D2 / D1</a></div>
+    <p class="q-text">判断：在贝叶斯统计中，后验概率由<strong>先验概率</strong>与<strong>新证据的似然</strong>结合计算得到。</p>
+    <div class="options">
+      <div class="opt" data-correct="1">True（正确）</div>
+      <div class="opt">False（错误）</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：True</p>
+      <div class="explain"><strong>解析</strong>：正是贝叶斯定理 \(p(\theta\mid Y)=\dfrac{p(\theta)p(Y\mid\theta)}{p(Y)}\)：分子=先验×似然，分母为归一化的边际概率。</div>
+      <div class="pitfall">⚠ 易错提醒：表述里"结合"指相乘再除以边际；若考试要求写出公式，分母 \(p(Y)\) 不能省。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS12</span><span class="chip type">选择题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-c3">考点 C3 / E1</a></div>
+    <p class="q-text">以下哪种情景中，贝叶斯方法对做预测<strong>更有利</strong>？</p>
+    <div class="options">
+      <div class="opt">A) 估计公平骰子掷出某个特定数字的概率</div>
+      <div class="opt" data-correct="1">B) 基于既往检测结果和新症状，预测病人患某疾病的可能性</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：B</p>
+      <div class="explain"><strong>解析</strong>：B 含两大贝叶斯标志——<strong>先验信息</strong>（既往检测结果）+ <strong>新证据</strong>（新症状）需要结合更新，正是课件癌症筛查例的现实版。A 是机制明确的等可能试验，频率方法即可。</div>
+      <div class="pitfall">⚠ 易错提醒：PS12–14 三题同一套路：找"既往/先验 + 新数据"或"罕见/独特"字眼。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS13</span><span class="chip type">选择题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-c3">考点 C3 / B2</a></div>
+    <p class="q-text">确定<strong>罕见事件</strong>（如人群中某特定基因突变）的概率，哪种方法最合适？</p>
+    <div class="options">
+      <div class="opt">A) 频率学派框架</div>
+      <div class="opt" data-correct="1">B) 贝叶斯方法</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：B</p>
+      <div class="explain"><strong>解析</strong>：罕见事件意味着<strong>观测数据极少</strong>——频率方法需要大量发生次数才能稳定估计频率，对罕见事件几乎无能为力；贝叶斯可引入先验（如已知人群基因频率、家族史）并用有限数据更新（呼应 PS9：数据稀缺时贝叶斯有用）。</div>
+      <div class="pitfall">⚠ 易错提醒："罕见"与"独特"都指向贝叶斯，但理由略不同：罕见=数据稀缺；独特=不可重复。答题时按题面措辞选理由。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card interactive">
+    <div class="q-head"><span class="q-num">PS14</span><span class="chip type">选择题</span><span class="chip diff-1">基础</span><a class="chip point" href="#kp-c3">考点 C3 / E1</a></div>
+    <p class="q-text">你已有关于某营销活动效果的<strong>先验知识</strong>，并想用<strong>新的销售数据</strong>更新你的信念。哪种方法更合适？</p>
+    <div class="options">
+      <div class="opt">A) 频率学派框架</div>
+      <div class="opt" data-correct="1">B) 贝叶斯方法</div>
+    </div>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 正确答案：B</p>
+      <div class="explain"><strong>解析</strong>：题面就是贝叶斯定义本身——"用观测数据更新先验信念"。先验=对营销效果的已有认识；数据=新销售数据；所求=更新后的后验信念。</div>
+      <div class="pitfall">⚠ 易错提醒：题干出现"prior knowledge / update beliefs"几乎可直接锁定贝叶斯。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card">
+    <div class="q-head"><span class="q-num">PS15</span><span class="chip type">计算题</span><span class="chip diff-3">综合</span><a class="chip point" href="#kp-d4">考点 D1–D5</a></div>
+    <p class="q-text">某地有 \(\frac13\) 的日子下雨。当地晚报会预测明天是否下雨。<br>a) 指出本题中未知的关注变量 \(\theta\)；<br>b) 写出先验概率 \(p(\theta)\)；<br>c) 雨天有四分之三被前一晚的报纸正确预报，旱天有五分之三被正确预报。已知今晚报纸<strong>预报有雨</strong>，求明天<strong>真的下雨</strong>的概率。</p>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 标准答案：a) \(\theta\)=明天是否下雨；b) \(p(\text{雨})=\frac13,\ p(\text{旱})=\frac23\)；c) \(\dfrac{15}{31}\approx 0.484\)</p>
+      <div class="explain"><strong>完整步骤</strong>：
+        <div class="steps"><ol>
+          <li><strong>a) 参数</strong>：\(\theta\)=明天是否下雨（未知、不可直接观测），\(\Omega=\{\text{雨},\text{旱}\}\)。可观测数据 \(Y\)=今晚报纸的预报。</li>
+          <li><strong>b) 先验</strong>："三分之一的日子下雨"⇒ \[ p(\text{雨})=\tfrac13,\qquad p(\text{旱})=1-\tfrac13=\tfrac23 \]</li>
+          <li><strong>c) 似然</strong>（关键一步，注意取补）：
+            <ul>
+              <li>雨天被正确预报（即报"雨"）：\(p(\text{报雨}\mid\text{雨})=\frac34\)；</li>
+              <li>旱天被正确预报是报"<strong>晴</strong>"，正确率 \(\frac35\)，故旱天被<strong>误报有雨</strong>的概率为 \[ p(\text{报雨}\mid\text{旱})=1-\tfrac35=\tfrac25 \]</li>
+            </ul></li>
+          <li><strong>边际</strong>：\[ p(\text{报雨})=\tfrac34\cdot\tfrac13+\tfrac25\cdot\tfrac23=\tfrac14+\tfrac{4}{15}=\tfrac{15}{60}+\tfrac{16}{60}=\tfrac{31}{60} \]</li>
+          <li><strong>后验</strong>：\[ p(\text{雨}\mid\text{报雨})=\frac{\tfrac34\cdot\tfrac13}{\tfrac{31}{60}}=\frac{\tfrac{15}{60}}{\tfrac{31}{60}}=\frac{15}{31}\approx 0.484 \]</li>
+        </ol></div>
+        解读：预报有雨把下雨信念从先验 \(\frac13\approx0.333\) 上调至约 0.484。
+      </div>
+      <div class="pitfall">⚠ 易错提醒：① 最大坑——\(p(\text{报雨}\mid\text{旱})\) 是 \(\frac25\) 不是 \(\frac35\)（\(\frac35\) 是旱天被正确报<strong>晴</strong>的概率，必须取补！）；② 结果<strong>小于一半</strong>是合理的：旱天先验占 \(\frac23\) 且误报率不低，别因"直觉上预报雨就该大于 0.5"而怀疑答案；③ 分数运算建议通分到 60。</div>
+    </div>
+    </details>
+  </div>
+
+  <div class="q-card">
+    <div class="q-head"><span class="q-num">PS16</span><span class="chip type">计算题</span><span class="chip diff-3">综合</span><a class="chip point" href="#kp-d4">考点 D1–D5 / D7</a></div>
+    <p class="q-text">本地工厂促销：库存 500 件旧产品、1500 件新产品。旧产品次品率 15%，新产品次品率 5%。接单时工厂随机取货，你是促销后第一位顾客。<br>a) 你抛一枚公平硬币决定买旧产品还是新产品，并据此订购<strong>两件</strong>。<br>&nbsp;&nbsp;i. 指出未知的关注变量 \(\theta\)；&nbsp;&nbsp;ii. 写出 \(\theta\) 的先验分布；&nbsp;&nbsp;iii. 求两件<strong>都是次品</strong>的概率。<br>b) 已知两件都是次品，求它们是<strong>旧产品</strong>的概率。</p>
+    <details class="answer">
+      <summary class="ans-btn"><span class="when-closed">显示答案与解析 ▼</span><span class="when-open">收起答案 ▲</span></summary>
+      <div class="ans-inner">
+      <p class="ans-line">✅ 标准答案：i. \(\theta\)=所购产品类型（旧/新）；ii. \(p(\text{旧})=p(\text{新})=\frac12\)；iii. \(0.0125\)；b) \(0.9\)</p>
+      <div class="explain"><strong>完整步骤</strong>：
+        <div class="steps"><ol>
+          <li><strong>i. 参数</strong>：\(\theta\)=本次订购的产品类型，\(\Omega=\{\text{旧},\text{新}\}\)。可观测数据 \(Y\)=两件产品是否为次品。</li>
+          <li><strong>ii. 先验</strong>：由<strong>公平硬币</strong>决定 ⇒ \[ p(\theta=\text{旧})=\tfrac12,\qquad p(\theta=\text{新})=\tfrac12 \]</li>
+          <li><strong>iii. 似然</strong>（设两件是否为次品近似独立）：
+            \[ p(\text{两件皆次}\mid\text{旧})=(0.15)^2=0.0225 \]
+            \[ p(\text{两件皆次}\mid\text{新})=(0.05)^2=0.0025 \]
+            <strong>边际</strong>（即所求"两件都是次品"的总概率）：
+            \[ p(\text{两件皆次})=\tfrac12(0.0225)+\tfrac12(0.0025)=0.01125+0.00125=0.0125 \]</li>
+          <li><strong>b) 后验</strong>：\[ p(\text{旧}\mid\text{两件皆次})=\frac{\tfrac12\times0.0225}{0.0125}=\frac{0.01125}{0.0125}=0.9 \]</li>
+        </ol></div>
+        解读：先验五五开；但"两件全次"在旧产品下的可能性是新产品下的 9 倍（0.0225 vs 0.0025），证据强烈指向旧产品，后验升至 <strong>90%</strong>。
+      </div>
+      <div class="pitfall">⚠ 易错提醒：① 分子必须乘先验 \(\frac12\)（虽然本题先验对称、约分后不影响最终比值，但 iii 的数值会错）；② <em>假设说明：以上按"次品率视作单件抽中次品的概率、两件近似独立"计算（500、1500 件库存量大，近似合理）。若严格按不放回超几何计算：\(p(\text{两件皆次}\mid\text{旧})=\frac{75}{500}\times\frac{74}{499}\approx0.02224\)，\(p(\text{两件皆次}\mid\text{新})=\frac{75}{1500}\times\frac{74}{1499}\approx0.00247\)，后验 \(\approx0.900\)，结论不变；</em>③ b) 问的是后验不是似然，别答 0.0225。</div>
+    </div>
+    </details>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p><strong>说明</strong>：本复习指南基于《Bayesian Statistics and Conditional Probability · Lecture 1》课件（Dr. Nivedita Viswanathan）与配套 Problem Sheet 整理生成，讲解、考点与答案严格忠于原材料；原创自测题为针对性巩固设计。建议配合原课件食用，祝复习顺利！</p>
+</footer>
+
+<button id="toTop" title="回到顶部">↑</button>
+
+<script>
+(function(){
+  /* 答案展开/收起由原生 <details> 完成，无需任何 JS；
+     以下脚本仅负责增强功能：选项判分、全部展开/收起、重置、进度统计。 */
+
+  function openAnswer(card, open){
+    var d = card.querySelector('details.answer');
+    if(d){ d.open = !!open; }
+  }
+
+  function pickOption(el){
+    var box = el.closest('.options');
+    var card = el.closest('.q-card');
+    if(!box || !card) return;
+    if(box.classList.contains('locked')) return; /* 已作答，锁定 */
+    box.classList.add('locked');
+    var correct = (el.getAttribute('data-correct') === '1');
+    if(!correct){ el.classList.add('wrong'); }
+    var opts = box.querySelectorAll('.opt');
+    for(var i=0;i<opts.length;i++){
+      if(opts[i].getAttribute('data-correct') === '1'){ opts[i].classList.add('right'); }
+    }
+    card.setAttribute('data-answered', correct ? '1' : '0');
+    openAnswer(card, true); /* 作答后自动展开解析 */
+    updateProgress();
+  }
+
+  function setAllAnswers(open, scope){
+    var root = scope ? document.getElementById(scope) : document;
+    if(!root) return;
+    var cards = root.querySelectorAll('.q-card');
+    for(var i=0;i<cards.length;i++){ openAnswer(cards[i], open); }
+  }
+
+  function resetQuiz(){
+    var cards = document.querySelectorAll('.q-card.interactive');
+    for(var i=0;i<cards.length;i++){
+      var card = cards[i];
+      card.removeAttribute('data-answered');
+      var box = card.querySelector('.options');
+      if(box){
+        box.classList.remove('locked');
+        var opts = box.querySelectorAll('.opt');
+        for(var j=0;j<opts.length;j++){
+          opts[j].classList.remove('right');
+          opts[j].classList.remove('wrong');
+        }
+      }
+      openAnswer(card, false);
+    }
+    updateProgress();
+  }
+
+  function updateProgress(){
+    var all = document.querySelectorAll('.q-card.interactive');
+    var done = 0, good = 0;
+    for(var i=0;i<all.length;i++){
+      var a = all[i].getAttribute('data-answered');
+      if(a !== null){ done++; if(a === '1'){ good++; } }
+    }
+    var chip = document.getElementById('progressChip');
+    if(chip){ chip.textContent = '自测进度 ' + done + '/' + all.length + ' · 答对 ' + good; }
+  }
+
+  document.addEventListener('click', function(e){
+    var el = e.target;
+    if(!el || !el.closest) return;
+
+    var opt = el.closest('.opt');
+    if(opt){ pickOption(opt); return; }
+
+    var act = el.closest('[data-action]');
+    if(act){
+      var a = act.getAttribute('data-action');
+      if(a === 'open-all'){ setAllAnswers(true, act.getAttribute('data-scope')); }
+      else if(a === 'close-all'){ setAllAnswers(false, act.getAttribute('data-scope')); }
+      else if(a === 'reset'){ resetQuiz(); }
+      return;
+    }
+
+    if(el.closest('#toTop')){ window.scrollTo({top:0, behavior:'smooth'}); }
+  }, false);
+
+  window.addEventListener('scroll', function(){
+    var b = document.getElementById('toTop');
+    if(!b) return;
+    b.style.display = (window.scrollY > 600) ? 'block' : 'none';
+  });
+
+  window.addEventListener('load', function(){
+    if(!window.MathJax || !window.MathJax.version){
+      var w = document.getElementById('mjx-warn');
+      if(w){ w.style.display = 'block'; }
+    }
+  });
+
+  updateProgress();
+})();
+</script>
+</body>
+</html>
