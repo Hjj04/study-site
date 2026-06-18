@@ -75,7 +75,9 @@ async function initCourse() {
   $('#course-name').textContent = course.name;
   $('#cdir').textContent = course.id;
 
-  const list = mats.filter((m) => m.course === id).sort((a, b) => b.uploadedAt - a.uploadedAt);
+  // 按文件名自然排序（lec1, lec2, … lec10, … lec14），适合按讲次顺序浏览
+  const list = mats.filter((m) => m.course === id)
+    .sort((a, b) => a.originalName.localeCompare(b.originalName, undefined, { numeric: true, sensitivity: 'base' }));
   const box = $('#materials');
   if (!list.length) {
     box.innerHTML = `<p class="empty">这个课程还没有资料。<br>把 .html 放进 <code>content/${esc(id)}/</code> 即可在此显示 👆</p>`;

@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 3 · 贝叶斯定理的组成部分 — 复习指南</title>
+<style>
+  :root{
+    --bg:#F6F4EF;          /* 暖纸底,护眼 */
+    --card:#FFFFFF;
+    --ink:#24323F;          /* 深蓝灰正文 */
+    --ink-soft:#5B6B79;
+    --teal:#0F766E;         /* 主强调:墨绿青 */
+    --teal-soft:#E4F1EF;
+    --amber:#B45309;        /* 警示/易错 */
+    --amber-soft:#FBF1E2;
+    --red:#B42318;
+    --red-soft:#FBEAE8;
+    --green:#15803D;
+    --green-soft:#E7F3EB;
+    --violet:#5B4B8A;       /* 类比框 */
+    --violet-soft:#EFECF7;
+    --line:#E3DFD5;
+    --radius:12px;
+    --serif:"Source Han Serif SC","Noto Serif CJK SC","Noto Serif SC","Songti SC",SimSun,serif;
+    --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",-apple-system,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    *{transition:none !important;animation:none !important}
+  }
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);font-size:16.5px;line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--teal)}
+  a:focus-visible,button:focus-visible,summary:focus-visible{
+    outline:3px solid var(--teal);outline-offset:2px;border-radius:6px;
+  }
+
+  /* ---------- 顶部 ---------- */
+  .hero{
+    background:linear-gradient(160deg,#15433F 0%,#0F766E 70%,#13857C 100%);
+    color:#F2FBF9;padding:46px 20px 38px;
+  }
+  .hero-inner{max-width:960px;margin:0 auto}
+  .hero .eyebrow{
+    font-size:13px;letter-spacing:.28em;text-transform:uppercase;
+    color:#A9D8D2;margin:0 0 10px;
+  }
+  .hero h1{
+    font-family:var(--serif);font-weight:700;
+    font-size:clamp(26px,4.5vw,40px);line-height:1.3;margin:0 0 10px;
+  }
+  .hero p.sub{margin:0;color:#CFEAE6;font-size:15.5px;max-width:46em}
+  .hero .meta{margin-top:14px;font-size:13.5px;color:#9CCFC9}
+
+  /* ---------- 导航 ---------- */
+  nav.toc{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.96);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.toc .toc-inner{
+    max-width:960px;margin:0 auto;display:flex;align-items:center;gap:6px;
+    padding:8px 14px;overflow-x:auto;white-space:nowrap;
+  }
+  nav.toc a{
+    display:inline-block;padding:7px 14px;border-radius:999px;
+    text-decoration:none;color:var(--ink);font-size:14.5px;font-weight:500;
+  }
+  nav.toc a:hover{background:var(--teal-soft)}
+  nav.toc a .dot{color:var(--teal);margin-right:5px;font-weight:700}
+  #nav-progress{
+    margin-left:auto;font-size:13px;color:var(--ink-soft);
+    background:var(--teal-soft);border-radius:999px;padding:5px 12px;flex:none;
+  }
+
+  /* ---------- 版面 ---------- */
+  main{max-width:960px;margin:0 auto;padding:10px 18px 90px}
+  section.block{scroll-margin-top:64px;margin-top:46px}
+  .section-head{display:flex;align-items:baseline;gap:12px;border-bottom:3px solid var(--teal);padding-bottom:8px;margin-bottom:6px}
+  .section-head .no{
+    font-family:var(--serif);color:var(--teal);font-size:15px;letter-spacing:.15em;
+  }
+  .section-head h2{
+    font-family:var(--serif);font-size:clamp(22px,3.4vw,30px);margin:0;
+  }
+  .section-intro{color:var(--ink-soft);font-size:15px;margin:8px 0 20px}
+
+  h3.topic{
+    font-family:var(--serif);font-size:21px;margin:36px 0 10px;
+    padding-left:12px;border-left:5px solid var(--teal);line-height:1.4;
+  }
+  h4{font-size:17px;margin:22px 0 6px}
+
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 22px;margin:14px 0;
+  }
+
+  /* ---------- 高亮框 ---------- */
+  .box{border-radius:10px;padding:13px 16px;margin:14px 0;border-left:5px solid;font-size:15.5px}
+  .box .box-label{display:block;font-weight:700;font-size:13.5px;letter-spacing:.06em;margin-bottom:4px}
+  .box-def{background:var(--teal-soft);border-color:var(--teal)}
+  .box-def .box-label{color:var(--teal)}
+  .box-formula{background:#EEF1F6;border-color:#3D5A80}
+  .box-formula .box-label{color:#3D5A80}
+  .box-warn{background:var(--amber-soft);border-color:var(--amber)}
+  .box-warn .box-label{color:var(--amber)}
+  .box-analogy{background:var(--violet-soft);border-color:var(--violet)}
+  .box-analogy .box-label{color:var(--violet)}
+  .box-key{background:var(--green-soft);border-color:var(--green)}
+  .box-key .box-label{color:var(--green)}
+
+  /* ---------- 贝叶斯管线图(签名元素) ---------- */
+  .pipeline{
+    display:flex;align-items:stretch;justify-content:center;gap:10px;flex-wrap:wrap;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px 16px;margin:18px 0;
+  }
+  .pipe-node{
+    border-radius:10px;padding:12px 16px;text-align:center;min-width:120px;
+    display:flex;flex-direction:column;justify-content:center;
+  }
+  .pipe-node .pn-title{font-weight:700;font-size:15px}
+  .pipe-node .pn-sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px}
+  .pn-prior{background:var(--teal-soft);border:1.5px solid var(--teal)}
+  .pn-like{background:#EEF1F6;border:1.5px solid #3D5A80}
+  .pn-post{background:var(--green-soft);border:2px solid var(--green)}
+  .pipe-op{align-self:center;font-size:22px;color:var(--ink-soft);font-weight:600;padding:0 2px}
+  .pipe-note{flex-basis:100%;text-align:center;font-size:13px;color:var(--ink-soft);margin-top:6px}
+
+  /* ---------- 表格 ---------- */
+  .table-wrap{overflow-x:auto;margin:14px 0}
+  table.nice{border-collapse:collapse;width:100%;min-width:480px;background:var(--card);font-size:15px}
+  table.nice th,table.nice td{border:1px solid var(--line);padding:8px 12px;text-align:center}
+  table.nice th{background:var(--teal-soft);font-weight:700}
+  table.nice tbody tr:nth-child(even){background:#FAF9F5}
+
+  /* ---------- 考点卡 ---------- */
+  .kp{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:14px 0}
+  .kp-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}
+  .kp-head .kp-title{font-weight:700;font-size:16.5px;margin-right:auto}
+  .stars{font-size:14px;letter-spacing:1px;border-radius:999px;padding:3px 10px;font-weight:700;flex:none}
+  .imp-3{color:#fff;background:var(--red)}
+  .imp-2{color:#7C3E00;background:var(--amber-soft);border:1px solid var(--amber)}
+  .imp-1{color:var(--ink-soft);background:#EEEDE8;border:1px solid var(--line)}
+  .mode{font-size:12.5px;border-radius:999px;padding:3px 10px;flex:none;font-weight:600}
+  .mode-mem{background:var(--violet-soft);color:var(--violet)}
+  .mode-und{background:var(--teal-soft);color:var(--teal)}
+  .kp p{margin:7px 0}
+  .kp .kp-label{font-weight:700;color:var(--teal)}
+  .kp .kp-warn-label{font-weight:700;color:var(--amber)}
+
+  /* ---------- 题目 ---------- */
+  .q-toolbar{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:13px 16px;margin:16px 0;
+  }
+  .q-toolbar button{
+    font:inherit;font-size:14px;font-weight:600;cursor:pointer;
+    border:1.5px solid var(--teal);color:var(--teal);background:#fff;
+    border-radius:999px;padding:7px 16px;
+  }
+  .q-toolbar button:hover{background:var(--teal-soft)}
+  #progress-text{margin-left:auto;font-size:14px;color:var(--ink-soft);font-weight:600}
+
+  .diff-band{font-family:var(--serif);font-size:18px;margin:30px 0 4px;color:var(--teal);font-weight:700;letter-spacing:.08em}
+
+  article.question{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 20px 14px;margin:16px 0;
+  }
+  .q-head{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:10px}
+  .q-num{font-family:var(--serif);font-weight:700;font-size:17px;margin-right:4px}
+  .tag{font-size:12.5px;border-radius:999px;padding:3px 11px;font-weight:600;flex:none}
+  .tag-type{background:#EEF1F6;color:#3D5A80}
+  .tag-point{background:var(--teal-soft);color:var(--teal)}
+  .diff-1{background:var(--green-soft);color:var(--green)}
+  .diff-2{background:var(--amber-soft);color:var(--amber)}
+  .diff-3{background:var(--red-soft);color:var(--red)}
+  .q-body p{margin:8px 0}
+
+  .mcq-options{display:flex;flex-direction:column;gap:9px;margin:12px 0 6px}
+  button.mcq-option{
+    font:inherit;text-align:left;cursor:pointer;line-height:1.7;
+    display:flex;gap:10px;align-items:flex-start;
+    background:#FBFAF7;border:1.5px solid var(--line);border-radius:10px;
+    padding:10px 14px;color:var(--ink);width:100%;
+    transition:border-color .15s,background .15s;
+  }
+  button.mcq-option:hover{border-color:var(--teal)}
+  .opt-key{
+    flex:none;font-weight:700;color:var(--teal);
+    border:1.5px solid var(--teal);border-radius:50%;
+    width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;
+    font-size:13.5px;margin-top:2px;
+  }
+  .mcq-option.correct{background:var(--green-soft);border-color:var(--green)}
+  .mcq-option.correct .opt-key{background:var(--green);border-color:var(--green);color:#fff}
+  .mcq-option.wrong{background:var(--red-soft);border-color:var(--red)}
+  .mcq-option.wrong .opt-key{background:var(--red);border-color:var(--red);color:#fff}
+  .mcq-option.locked{cursor:default}
+  .mcq-option.locked:hover{border-color:var(--line)}
+  .mcq-option.locked.correct:hover{border-color:var(--green)}
+  .mcq-option.locked.wrong:hover{border-color:var(--red)}
+
+  details.answer-block{
+    margin-top:12px;border-top:1px dashed var(--line);padding-top:4px;
+  }
+  details.answer-block summary{
+    cursor:pointer;font-weight:700;color:var(--teal);font-size:15px;
+    padding:8px 4px;list-style-position:inside;user-select:none;
+  }
+  details.answer-block summary:hover{text-decoration:underline}
+  details.answer-block[open] summary{color:var(--ink-soft)}
+  .answer-content{
+    background:#FBFAF6;border:1px solid var(--line);border-radius:10px;
+    padding:13px 16px;margin:6px 0 8px;font-size:15.5px;
+  }
+  .answer-content .ans-line{font-weight:700;color:var(--green);margin-top:0}
+  .answer-content ol,.answer-content ul{padding-left:1.4em;margin:6px 0}
+
+  /* ---------- 其他 ---------- */
+  #mathjax-fallback{
+    display:block;background:var(--amber-soft);border:1px solid var(--amber);
+    color:#7C3E00;border-radius:10px;padding:10px 16px;margin:14px auto;
+    max-width:960px;font-size:14px;
+  }
+  #mathjax-fallback[hidden]{display:none}
+  #back-top{
+    position:fixed;right:18px;bottom:22px;z-index:60;
+    width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;
+    background:var(--teal);color:#fff;font-size:20px;font-weight:700;
+    box-shadow:0 4px 14px rgba(15,118,110,.35);
+    opacity:0;pointer-events:none;transition:opacity .25s;
+  }
+  #back-top.show{opacity:1;pointer-events:auto}
+  footer.page-foot{
+    border-top:1px solid var(--line);margin-top:60px;padding:18px;
+    text-align:center;color:var(--ink-soft);font-size:13.5px;
+  }
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  @media (max-width:640px){
+    body{font-size:15.5px}
+    .card,.kp,article.question{padding:15px 14px}
+    .pipe-node{min-width:96px;padding:10px 10px}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">Bayesian Statistics · Lecture 3</p>
+    <h1>贝叶斯定理的组成部分<br>先验分布 · 似然函数 · 最大似然估计</h1>
+    <p class="sub">基于 Dr. Nivedita Viswanathan 的 Lecture 3 课件与 Problem Sheet 整理:三步带你吃透本讲 —— ① 通俗讲解 ② 考点全梳理 ③ 配套复习题(含完整解析)。</p>
+    <p class="meta">材料来源:Lecture_3_-_Slides-1.pdf(40 页) + Lecture_3_-_Problem_Sheet.pdf(6 道大题)</p>
+  </div>
+</header>
+
+<nav class="toc" aria-label="页面目录">
+  <div class="toc-inner">
+    <a href="#part1"><span class="dot">壹</span>课程讲解</a>
+    <a href="#part2"><span class="dot">贰</span>考点梳理</a>
+    <a href="#part3"><span class="dot">叁</span>复习题目</a>
+    <span id="nav-progress">做题进度 0 / 5</span>
+  </div>
+</nav>
+
+<div id="mathjax-fallback" hidden>
+  ⚠ 数学公式渲染组件(MathJax)暂未加载成功,可能是当前网络不可用。页面文字内容不受影响;公式将以 LaTeX 源码形式显示(如 \( p(\theta\mid Y) \)),联网后刷新即可正常显示。
+</div>
+
+<main>
+
+<!-- ============================================================ -->
+<!-- 第一部分:课程内容讲解 -->
+<!-- ============================================================ -->
+<section class="block" id="part1">
+  <div class="section-head"><span class="no">PART 01</span><h2>课程内容讲解</h2></div>
+  <p class="section-intro">面向第一次接触的同学:先建立整体认知,再逐模块拆解,配类比和例子。</p>
+
+  <h3 class="topic">0. 整体知识脉络:这一讲在解决什么问题?</h3>
+  <div class="card">
+    <p>贝叶斯统计的核心问题是:<strong>有一个未知的总体参数 \( \theta \)(比如硬币正面朝上的概率),我们手里有一批数据 \( Y \),如何利用数据更新对 \( \theta \) 的认识?</strong></p>
+    <p>答案就是贝叶斯定理:</p>
+    <div class="box box-formula"><span class="box-label">核心公式(全讲的主线)</span>
+      \[ p(\theta\mid Y)=\frac{p(Y\mid\theta)\,p(\theta)}{p(Y)} \]
+    </div>
+    <p>本讲把这个公式"拆零件"逐一认识,讲解顺序环环相扣:</p>
+    <div class="pipeline" aria-label="贝叶斯更新流程图">
+      <div class="pipe-node pn-prior"><span class="pn-title">先验 \( p(\theta) \)</span><span class="pn-sub">看数据前的信念</span></div>
+      <span class="pipe-op">×</span>
+      <div class="pipe-node pn-like"><span class="pn-title">似然 \( p(Y\mid\theta) \)</span><span class="pn-sub">给定 θ 时数据的可能性</span></div>
+      <span class="pipe-op">∝</span>
+      <div class="pipe-node pn-post"><span class="pn-title">后验 \( p(\theta\mid Y) \)</span><span class="pn-sub">看完数据后更新的信念</span></div>
+      <span class="pipe-note">比例常数为 \( 1/p(Y) \),其中 \( p(Y) \) 是边际分布(归一化常数)</span>
+    </div>
+    <ol>
+      <li><strong>先解决"似然怎么算"的前置问题:</strong>数据 \( Y=\{Y_1,\dots,Y_n\} \) 是很多个随机变量,联合概率 \( p(Y_1,\dots,Y_n\mid\theta) \) 直接算很难 → 引入<strong>独立性 / 条件独立 / i.i.d.</strong>,让联合概率"拆成连乘"。</li>
+      <li><strong>再认识公式的各个零件:</strong>先验分布、似然函数、边际分布、后验分布各是什么、什么性质。</li>
+      <li><strong>最后用似然做第一件实事:</strong>找让数据"最可能出现"的参数值 —— <strong>最大似然估计(MLE)</strong>,并掌握对数似然这一计算技巧和常见分布的 MLE 速查表。</li>
+    </ol>
+    <div class="box box-analogy"><span class="box-label">一个贯穿全文的类比:破案</span>
+      先验 = 案发前对各嫌疑人的怀疑程度;似然 = "如果凶手是某人,现场会出现这些证据的可能性";后验 = 看完证据后更新的怀疑程度。MLE 则是只看证据、不带成见地问:"哪个嫌疑人最能解释这些证据?"
+    </div>
+  </div>
+
+  <h3 class="topic">1. 条件概率与独立性:为联合概率"拆乘法"做准备</h3>
+  <div class="card">
+    <h4>1.1 为什么需要独立性?</h4>
+    <p>课件用抛硬币引入:抛两次硬币,\( Y_1,Y_2\in\{H,T\} \),未知参数 \( \theta \) 是正面概率。我们想算 \( p(Y_1{=}H,\,Y_2{=}T\mid\theta) \) —— 这是一个<strong>联合概率</strong>。如果两次结果互相纠缠,就必须知道它们之间的复杂关系;但如果它们<strong>独立</strong>,联合概率就可以直接相乘,问题瞬间变简单。</p>
+
+    <h4>1.2 (边际)独立</h4>
+    <div class="box box-def"><span class="box-label">定义 · 边际独立 (Marginal Independence)</span>
+      事件 \( A \) 与 \( B \) 独立,若 \( P(A\mid B)=P(A) \),等价地 \( P(A\cap B)=P(A)\,P(B) \)。
+    </div>
+    <p>直觉:知道 \( B \) 发生了,对 \( A \) 发生的概率<strong>没有任何影响</strong>。</p>
+
+    <h4>1.3 条件独立</h4>
+    <div class="box box-def"><span class="box-label">定义 · 条件独立 (Conditional Independence)</span>
+      给定事件 \( C \),若 \( P(A\cap B\mid C)=P(A\mid C)\,P(B\mid C) \),则称 \( A \) 与 \( B \) 在给定 \( C \) 下条件独立。
+    </div>
+    <p>课件用乘法法则推出了一个等价刻画:由 \( P(A\cap B\mid C)=P(B\mid C)\,P(A\mid B\cap C) \),条件独立等价于</p>
+    <div class="box box-formula"><span class="box-label">等价形式</span>
+      \[ P(A\mid B\cap C)=P(A\mid C) \]
+      —— <strong>一旦已知 \( C \),再知道 \( B \) 不会带来关于 \( A \) 的额外信息。</strong>
+    </div>
+    <div class="box box-analogy"><span class="box-label">类比</span>
+      冰淇淋销量(A)和溺水人数(B)看起来相关,但一旦告诉你"今天气温"(C),知道冰淇淋卖了多少就不再提供关于溺水的任何新信息 —— A、B 在给定 C 下条件独立。在贝叶斯模型里,参数 \( \theta \) 就扮演 C 的角色:<strong>给定 \( \theta \),各次观测互不打听消息。</strong>
+    </div>
+    <div class="box box-warn"><span class="box-label">易错警示</span>
+      条件独立 ≠ 边际独立,两者<strong>互不蕴含</strong>!Problem Sheet 第 1(b) 题就是典型:事件 E、F 本身不独立,但在给定 D 后条件独立。另外<strong>"互斥"和"独立"是完全不同的概念</strong>:若 \( P(A)>0,P(B)>0 \) 且 A、B 互斥,则它们必然<strong>不</strong>独立(详见考点 1.3)。
+    </div>
+
+    <h4>1.4 回到抛硬币</h4>
+    <p>设 \( \theta=0.5 \)(公平硬币),则 \( p(\{Y_1{=}H\}\cap\{Y_2{=}T\}\mid\theta{=}0.5)=\tfrac14=\tfrac12\times\tfrac12 = p(Y_1{=}H\mid\theta)\,p(Y_2{=}T\mid\theta) \)。两次抛掷的结果在<strong>给定 \( \theta \)</strong> 下条件独立,联合概率拆成了乘积。</p>
+  </div>
+
+  <h3 class="topic">2. 独立同分布(i.i.d.)随机变量</h3>
+  <div class="card">
+    <p>把上面的想法推广到 \( n \) 个随机变量:</p>
+    <div class="box box-def"><span class="box-label">定义 · 给定 θ 的条件独立</span>
+      \( Y_1,\dots,Y_n \) 在给定 \( \theta \) 下条件独立,若
+      \[ P(\{Y_1{=}y_1\},\dots,\{Y_n{=}y_n\}\mid\theta)=\prod_{i=1}^{n}P(\{Y_i{=}y_i\}\mid\theta), \]
+      即 \( P(\{Y_i{=}y_i\}\mid\theta,\{Y_j{=}y_j\})=P(\{Y_i{=}y_i\}\mid\theta) \)。联合密度因而<strong>因式分解</strong>:\( P(y_1,\dots,y_n\mid\theta)=\prod_{i=1}^{n}P_{Y_i}(y_i\mid\theta) \)。
+    </div>
+    <div class="box box-def"><span class="box-label">定义 · i.i.d.(独立同分布)</span>
+      若 \( Y_1,\dots,Y_n \) 不仅(给定 θ)相互独立,而且服从<strong>同一个</strong>概率分布,则记
+      \[ Y_1,\dots,Y_n\mid\theta \;\sim\; \text{i.i.d. } p(y\mid\theta). \]
+    </div>
+    <div class="box box-analogy"><span class="box-label">类比</span>
+      同一台调好参数 θ 的机器(同分布),每次独立运转生产一件产品(独立)。"独立"管的是<strong>互不影响</strong>,"同分布"管的是<strong>出自同一个模子</strong> —— 两个条件缺一不可。
+    </div>
+    <h4>例:抛 3 次硬币的 Bernoulli 模型</h4>
+    <p>设 \( \theta=P(\text{正面}) \),每次抛掷 \( Y_i\sim\text{Bernoulli}(\theta) \)(同分布),且各次抛掷条件独立。于是</p>
+    \[ P(Y_1{=}H,Y_2{=}T,Y_3{=}H\mid\theta)=\theta(1-\theta)\theta=\theta^2(1-\theta), \]
+    <p>记作 \( Y_1,Y_2,Y_3\mid\theta\sim\text{i.i.d. Bernoulli}(\theta) \)。这一步"连乘"正是后面写出似然函数的根基。</p>
+  </div>
+
+  <h3 class="topic">3. 贝叶斯定理的四个零件</h3>
+  <div class="card">
+    <p>正式拆解主线公式 \( p(\theta\mid Y)=\dfrac{p(\theta)\,p(Y\mid\theta)}{p(Y)} \):</p>
+    <div class="table-wrap"><table class="nice">
+      <thead><tr><th>记号</th><th>名称</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>\( p(\theta) \)</td><td><strong>先验分布</strong> prior</td><td>看到数据<strong>之前</strong>对 θ 的信念</td></tr>
+        <tr><td>\( p(Y\mid\theta) \)</td><td><strong>似然</strong> likelihood</td><td>给定 θ 时观测到这批数据的概率</td></tr>
+        <tr><td>\( p(Y) \)</td><td><strong>边际分布</strong> marginal</td><td>归一化常数,使后验积分/求和为 1</td></tr>
+        <tr><td>\( p(\theta\mid Y) \)</td><td><strong>后验分布</strong> posterior</td><td>看到数据<strong>之后</strong>更新的信念</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box box-key"><span class="box-label">必背口诀</span>
+      \[ \text{后验}\;\propto\;\text{似然}\times\text{先验},\qquad \text{比例常数}=\frac{1}{p(Y)}. \]
+      注意:\( p(\theta) \) 与 \( p(Y) \) 的具体形式取决于 θ 和 Y 是离散还是连续(求和 vs 积分)。
+    </div>
+  </div>
+
+  <h3 class="topic">4. 先验分布:把"事前信念"写成概率分布</h3>
+  <div class="card">
+    <div class="box box-def"><span class="box-label">定义 · 先验分布</span>
+      θ 是未知总体参数(视为随机变量),取值于参数空间 \( \Theta \)。对每个 \( \theta\in\Theta \),\( p(\theta) \) 给出该取值的概率/密度。对未知参数的先验信念或知识,用先验分布来建模。它<strong>本身是一个概率分布</strong>。
+    </div>
+    <h4>例 1:离散先验(摸球问题,即 Problem Sheet 第 3 题)</h4>
+    <p>罐中 9 个球非红即绿,θ = 红球个数,完全未知 → \( \Theta=\{0,1,\dots,9\} \),10 种可能等可能:</p>
+    \[ p(\theta)=\frac{1}{10},\quad \theta=0,1,\dots,9. \]
+    <h4>例 2:连续先验(抛 1000 次硬币)</h4>
+    <p>θ = 正面概率。事前我们只知道"硬币可能公平(θ=0.5)、可能偏正面(如 θ=0.7)、可能偏反面(如 θ=0.4)……",即 [0,1] 上任何值都同样可能:</p>
+    \[ \theta\sim U[0,1],\qquad p(\theta)=\begin{cases}1, & 0\le\theta\le 1\\[2pt] 0, & \text{其他}\end{cases} \]
+    <div class="box box-warn"><span class="box-label">关键性质(课件原话:These are probability distributions!)</span>
+      先验必须归一化:θ 离散时 \( \sum_{\theta\in\Theta}p(\theta)=1 \);θ 连续时 \( \int_a^b p(\theta)\,d\theta=1 \)。做题时若自设先验,务必检查这一点。
+    </div>
+  </div>
+
+  <h3 class="topic">5. 似然函数:同一个式子的"另一种读法"</h3>
+  <div class="card">
+    <div class="box box-def"><span class="box-label">定义 · 似然函数</span>
+      \( p(Y\mid\theta\in\Theta) \) 衡量"若参数取值为 θ,看到这批数据有多大可能"。把它<strong>当作 θ 的函数</strong>来读,就得到似然函数:
+      \[ L(\theta\in\Theta\mid Y)=p(Y\mid\theta\in\Theta). \]
+      它告诉我们:<strong>哪个 θ 值会让我们更可能看到手头的数据。</strong>
+    </div>
+    <div class="box box-analogy"><span class="box-label">类比 · 一张表,两种读法</span>
+      \( p(Y\mid\theta) \) 像一张双向表:<strong>固定 θ、横着读 Y</strong>,它是数据的概率分布;<strong>固定数据 Y、竖着读 θ</strong>,它就是似然函数。式子没变,变的是"谁是自变量"。
+    </div>
+    <div class="box box-warn"><span class="box-label">课件标注 Important 的高频考点</span>
+      <strong>似然函数不是(θ 的)概率分布!</strong>即 \( \sum_{\theta\in\Theta}p(Y\mid\theta)\neq 1 \)(一般而言)。但 \( \dfrac{p(Y\mid\theta)}{p(Y)} \) 配合先验归一化后,得到的后验是概率分布。考试判断题最爱考这一条。
+    </div>
+    <h4>例 1:摸球的似然</h4>
+    <p>第一次摸出红球的概率为 \( p(Y{=}\text{红}\mid\theta)=\theta/9 \),于是似然函数 \( L(\theta\mid Y{=}\text{红})=\dfrac{\theta}{9},\ \theta\in\{0,1,\dots,9\} \)。θ 越大似然越大 —— 红球越多越容易摸到红球,符合直觉。</p>
+    <h4>例 2:抛 1000 次硬币(600 正 400 反)的似然</h4>
+    <p>令 \( Y_i=1 \) 表示第 i 次为正面,\( Y_i\mid\theta\sim\text{i.i.d. Ber}(\theta) \)。利用条件独立逐项连乘:</p>
+    \[ p(Y\mid\theta)=\prod_{i=1}^{1000}p(Y_i{=}y_i\mid\theta)=\prod_{i=1}^{1000}\theta^{y_i}(1-\theta)^{1-y_i},\qquad L(\theta\mid Y)=\prod_{i=1}^{1000}\theta^{y_i}(1-\theta)^{1-y_i},\ \ \Theta=[0,1]. \]
+    <p>因为 \( Y_i\sim\text{Ber}(\theta) \),似然函数自然是 Bernoulli 形式的。</p>
+  </div>
+
+  <h3 class="topic">6. 最大似然估计(MLE)与对数似然</h3>
+  <div class="card">
+    <div class="box box-def"><span class="box-label">定义 · MLE</span>
+      使"看到手头数据"最可能的参数取值:
+      \[ \hat\theta=\operatorname*{argmax}_{\theta\in\Theta}\,L(\theta\mid Y). \]
+    </div>
+    <div class="box box-analogy"><span class="box-label">类比</span>
+      把 θ 想成收音机旋钮,L(θ|Y) 是信号强度:MLE 就是把旋钮调到<strong>信号最强</strong>的位置 —— 让现有数据"听起来最顺理成章"的那个参数值。
+    </div>
+    <h4>例 1:摸球(离散参数直接比大小)</h4>
+    <p>\( \hat\theta=\operatorname*{argmax}_{\theta_0=0,\dots,9}\dfrac{\theta_0}{9}=9 \):当罐里全是红球时,"摸出红球"这件事最可能发生。</p>
+    <h4>例 2:抛硬币 — 对数似然技巧</h4>
+    <p>直接最大化 \( \prod_{i=1}^{1000}\theta^{y_i}(1-\theta)^{1-y_i} \) 很麻烦。由于<strong>对数是单调函数</strong>,最大化对数似然与最大化似然等价:</p>
+    <div class="box box-formula"><span class="box-label">对数似然</span>
+      \[ l(\theta\mid Y)=\log L(\theta\mid Y),\qquad \hat\theta=\operatorname*{argmax} L(\theta\mid Y)=\operatorname*{argmax}\, l(\theta\mid Y). \]
+      好处:连乘 → 连加,求导大大简化。
+    </div>
+    <p>对 600 正 400 反的数据:</p>
+    \[ l(\theta\mid Y)=\sum_{i=1}^{1000}\big(y_i\log\theta+(1-y_i)\log(1-\theta)\big)=600\log\theta+400\log(1-\theta). \]
+    <p>求导并令其为零:</p>
+    \[ l'(\theta\mid Y)=\frac{600}{\theta}-\frac{400}{1-\theta}=0 \;\Longrightarrow\; \theta=0.6. \]
+    <p>所以 \( \hat\theta=0.6=\dfrac{600}{1000}=\dfrac{\sum y_i}{n} \) —— <strong>MLE 恰是样本均值</strong>。含义:让"1000 次中出现 600 正 400 反"最可能发生的正面概率是 0.6。</p>
+    <h4>例 3:指数分布</h4>
+    <p>若 \( Y_i\sim\text{i.i.d. Exp}(\theta) \),则 \( p(Y\mid\theta)=\prod_{i=1}^{n}\theta e^{-\theta y_i}=\theta^n e^{-\theta\sum y_i} \)。最大化 \( l(\theta)=n\log\theta-\theta\sum_{i=1}^n y_i \),由 \( l'(\theta)=\dfrac{n}{\theta}-\sum y_i=0 \) 得</p>
+    \[ \hat\theta=\frac{n}{\sum_{i=1}^{n}y_i}=\frac{1}{\text{样本均值}}. \]
+    <h4>常见分布 MLE 速查表(课件第 40 页,必背)</h4>
+    <div class="table-wrap"><table class="nice">
+      <thead><tr><th>数据的分布</th><th>MLE</th></tr></thead>
+      <tbody>
+        <tr><td>\( Y_i\sim\text{i.i.d. Ber}(\theta) \)</td><td>\( \hat\theta=\dfrac{\sum y_i}{n} \)(样本均值)</td></tr>
+        <tr><td>\( Y_i\sim\text{i.i.d. Poisson}(\lambda) \)</td><td>\( \hat\lambda=\dfrac{\sum y_i}{n} \)(样本均值)</td></tr>
+        <tr><td>\( Y_i\sim\text{i.i.d. }N(\mu,\sigma^2) \)</td><td>\( \hat\mu=\dfrac{\sum y_i}{n} \)(样本均值)</td></tr>
+        <tr><td>\( Y_i\sim\text{i.i.d. Exp}(\lambda) \)</td><td>\( \hat\lambda=\dfrac{n}{\sum y_i} \)(样本均值的倒数)</td></tr>
+        <tr><td>\( Y_i\sim U[0,\theta] \)</td><td>\( \hat\theta=\max(y_i) \)</td></tr>
+        <tr><td>\( Y_i\sim U[a,b] \)(Problem Sheet 第 6 题)</td><td>\( \hat a=\min\{y_i\},\ \hat b=\max\{y_i\} \)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box box-warn"><span class="box-label">使用速查表的前提(Problem Sheet 第 5 题的陷阱)</span>
+      套公式前先检查<strong>数据与模型是否相容</strong>:例如 Poisson 只取非负整数,若数据里有负数或小数,似然恒为 0,"样本均值"这个公式根本不能用。
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 第二部分:考点梳理 -->
+<!-- ============================================================ -->
+<section class="block" id="part2">
+  <div class="section-head"><span class="no">PART 02</span><h2>考点梳理</h2></div>
+  <p class="section-intro">覆盖课件全部 40 页 + Problem Sheet 涉及的知识点。重要程度依据课件强调程度(加粗、标注 Important、配套习题数量)判断:<span class="stars imp-3">★★★ 高频</span> <span class="stars imp-2">★★ 中等</span> <span class="stars imp-1">★ 低频</span>;并区分 <span class="mode mode-mem">需记忆</span> 与 <span class="mode mode-und">需理解 / 计算</span>。</p>
+
+  <h3 class="topic">主题一 · 条件概率与独立性</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 1.1 (边际)独立的定义与判定</span><span class="stars imp-3">★★★</span><span class="mode mode-mem">需记忆</span><span class="mode mode-und">需计算</span></div>
+    <p><span class="kp-label">定义:</span>事件 A、B 独立 \( \iff P(A\mid B)=P(A) \iff P(A\cap B)=P(A)P(B) \)。</p>
+    <p><span class="kp-label">判定流程(计算题套路):</span>分别算出 \( P(A) \)、\( P(B) \)、\( P(A\cap B) \),验证乘积是否相等(Problem Sheet 1(a)、2(a))。</p>
+    <p><span class="kp-warn-label">易混淆:</span>"独立"是概率上的乘法关系,不是"没有共同结果";直觉判断常出错,必须列式验证。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 1.2 条件独立的定义与等价刻画</span><span class="stars imp-3">★★★</span><span class="mode mode-mem">需记忆</span><span class="mode mode-und">需理解</span></div>
+    <p><span class="kp-label">定义:</span>\( P(A\cap B\mid C)=P(A\mid C)\,P(B\mid C) \)。</p>
+    <p><span class="kp-label">等价形式(课件用乘法法则推导):</span>\( P(A\mid B\cap C)=P(A\mid C) \) —— 已知 C 后,B 不再提供关于 A 的额外信息。</p>
+    <p><span class="kp-label">推导要点:</span>\( P(A\cap B\mid C)=\dfrac{P(A\cap B\cap C)}{P(C)}=P(B\mid C)\,P(A\mid B\cap C) \)。</p>
+    <p><span class="kp-warn-label">易混淆/常见错误:</span>① 条件独立与边际独立<strong>互不蕴含</strong>(1(b):E、F 不独立,但给定 D 条件独立);② 写等价形式时漏掉"给定 C"。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 1.3 互斥 vs 独立</span><span class="stars imp-2">★★</span><span class="mode mode-und">需理解</span></div>
+    <p><span class="kp-label">结论:</span>若 \( P(A)>0,\ P(B)>0 \) 且 A、B 互斥(\( A\cap B=\varnothing \)),则 \( P(A\cap B)=0\neq P(A)P(B)>0 \),故<strong>必不独立</strong>。</p>
+    <p><span class="kp-warn-label">易混淆:</span>互斥是"不能同时发生"(集合关系),独立是"互不提供信息"(概率关系)。Problem Sheet 1(a)(ii) 中 A 与 C 互斥且不独立,正是这一考点。</p>
+  </div>
+
+  <h3 class="topic">主题二 · 独立同分布(i.i.d.)随机变量</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 2.1 给定 θ 的条件独立与联合密度因式分解</span><span class="stars imp-3">★★★</span><span class="mode mode-mem">需记忆</span><span class="mode mode-und">需计算</span></div>
+    <p><span class="kp-label">关键公式:</span>\( P(\{Y_1{=}y_1\},\dots,\{Y_n{=}y_n\}\mid\theta)=\prod_{i=1}^n P(\{Y_i{=}y_i\}\mid\theta) \),即 \( P(y_1,\dots,y_n\mid\theta)=\prod_i P_{Y_i}(y_i\mid\theta) \)。</p>
+    <p><span class="kp-label">作用:</span>这是写出似然函数的<strong>第一步</strong>,几乎所有似然计算题都从这一步开始(Problem Sheet 2(b) 即考查分段连乘)。</p>
+    <p><span class="kp-warn-label">常见错误:</span>不写"给定 θ"直接连乘;数据之间若无独立性假设,连乘不成立。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 2.2 i.i.d. 的定义与记号</span><span class="stars imp-3">★★★</span><span class="mode mode-mem">需记忆</span></div>
+    <p><span class="kp-label">定义:</span>独立 + 服从同一分布,记 \( Y_1,\dots,Y_n\mid\theta\sim\text{i.i.d. }p(y\mid\theta) \)。本讲学习目标第 1 条,概念题必考。</p>
+    <p><span class="kp-warn-label">易混淆:</span>"独立"与"同分布"是两个独立条件,缺一不可;独立不意味着同分布,同分布也不意味着独立。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 2.3 Bernoulli 模型(抛硬币)实例</span><span class="stars imp-2">★★</span><span class="mode mode-und">需计算</span></div>
+    <p><span class="kp-label">要点:</span>\( Y_i\mid\theta\sim\text{i.i.d. Ber}(\theta) \),单次概率 \( \theta^{y_i}(1-\theta)^{1-y_i} \);如 \( P(H,T,H\mid\theta)=\theta^2(1-\theta) \)。</p>
+    <p><span class="kp-warn-label">常见错误:</span>指数写反(把正面个数写到 \( 1-\theta \) 上);忘记 \( y_i\in\{0,1\} \) 的编码约定。</p>
+  </div>
+
+  <h3 class="topic">主题三 · 贝叶斯定理及其成分</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 3.1 贝叶斯定理与四个成分的识别</span><span class="stars imp-3">★★★</span><span class="mode mode-mem">需记忆</span></div>
+    <p><span class="kp-label">公式:</span>\( p(\theta\mid Y)=\dfrac{p(Y\mid\theta)\,p(\theta)}{p(Y)} \);先验 \( p(\theta) \)、似然 \( p(Y\mid\theta) \)、边际 \( p(Y) \)、后验 \( p(\theta\mid Y) \)。本讲学习目标第 2 条。</p>
+    <p><span class="kp-label">必背:</span>后验 ∝ 似然 × 先验,比例常数 \( 1/p(Y) \)。</p>
+    <p><span class="kp-warn-label">易混淆:</span>\( p(\theta\mid Y) \) 与 \( p(Y\mid\theta) \) 条件方向相反,别写反;\( p(Y) \) 不含 θ,只起归一化作用。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 3.2 先验分布:定义、离散/连续两类例子</span><span class="stars imp-2">★★</span><span class="mode mode-mem">需记忆</span><span class="mode mode-und">需理解</span></div>
+    <p><span class="kp-label">定义:</span>对未知参数 θ 的事前信念/知识建模成的概率分布。</p>
+    <p><span class="kp-label">两个标准例子:</span>① 离散:摸球 \( \Theta=\{0,\dots,9\} \),\( p(\theta)=1/10 \);② 连续:抛硬币 \( \theta\sim U[0,1] \),\( p(\theta)=1 \)(0≤θ≤1)。</p>
+    <p><span class="kp-warn-label">关键性质:</span>先验是概率分布 → 离散求和为 1,连续积分为 1。出题常让你检查/构造合法先验。</p>
+  </div>
+
+  <h3 class="topic">主题四 · 似然函数</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 4.1 似然函数的定义与"变量视角"</span><span class="stars imp-3">★★★</span><span class="mode mode-mem">需记忆</span><span class="mode mode-und">需理解</span></div>
+    <p><span class="kp-label">定义:</span>\( L(\theta\in\Theta\mid Y)=p(Y\mid\theta\in\Theta) \)。</p>
+    <p><span class="kp-label">视角区分(课件 Note):</span>\( p(Y\mid\theta) \) 是<strong>给定 θ 时关于 Y</strong> 的函数;\( L(\theta\mid Y) \) 是<strong>给定 Y 时关于 θ</strong> 的函数。</p>
+    <p><span class="kp-warn-label">常见错误:</span>把似然当成"θ 的概率",或在答题中混用两个记号的自变量。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 4.2 似然函数不是概率分布(课件标注 Important)</span><span class="stars imp-3">★★★</span><span class="mode mode-mem">需记忆</span></div>
+    <p><span class="kp-label">结论:</span>\( \sum_{\theta\in\Theta}p(Y\mid\theta)\neq 1 \)(一般),故 \( L(\theta\mid Y) \) 不是概率分布;但 \( \dfrac{p(Y\mid\theta)}{p(Y)} \) 参与归一化后,后验是概率分布。</p>
+    <p><span class="kp-warn-label">易混淆:</span>判断题高频陷阱 —— "似然在 Θ 上求和/积分为 1"是<strong>错误</strong>说法。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 4.3 两个标准似然:摸球 θ/9 与 Bernoulli 连乘</span><span class="stars imp-2">★★</span><span class="mode mode-und">需计算</span></div>
+    <p><span class="kp-label">摸球:</span>\( L(\theta\mid Y{=}\text{红})=\theta/9 \),\( \theta\in\{0,\dots,9\} \)。</p>
+    <p><span class="kp-label">抛硬币:</span>\( L(\theta\mid Y)=\prod_{i=1}^{n}\theta^{y_i}(1-\theta)^{1-y_i} \),\( \Theta=[0,1] \);600 正 400 反时即 \( \theta^{600}(1-\theta)^{400} \)。</p>
+    <p><span class="kp-warn-label">常见错误:</span>忘记交代参数空间 Θ;离散与连续场景混用。</p>
+  </div>
+
+  <h3 class="topic">主题五 · 最大似然估计(MLE)</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 5.1 MLE 的定义与含义</span><span class="stars imp-3">★★★</span><span class="mode mode-mem">需记忆</span><span class="mode mode-und">需理解</span></div>
+    <p><span class="kp-label">定义:</span>\( \hat\theta=\operatorname*{argmax}_{\theta\in\Theta}L(\theta\mid Y) \) —— 使观测到现有数据的可能性最大的参数值。本讲学习目标第 3 条。</p>
+    <p><span class="kp-warn-label">易混淆:</span>MLE 是<strong>参数取值</strong>(argmax),不是似然的最大值(max);两者答题时别写混。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 5.2 对数似然与单调性</span><span class="stars imp-3">★★★</span><span class="mode mode-mem">需记忆</span><span class="mode mode-und">需理解</span></div>
+    <p><span class="kp-label">定义与性质:</span>\( l(\theta\mid Y)=\log L(\theta\mid Y) \);对数单调 → \( \operatorname*{argmax}L=\operatorname*{argmax}l \)。</p>
+    <p><span class="kp-label">作用:</span>连乘变连加,便于求导。</p>
+    <p><span class="kp-warn-label">常见错误:</span>误以为取对数会改变最大值点;或对 \( \log(1-\theta) \) 求导漏掉负号(链式法则)。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 5.3 Bernoulli MLE 的完整推导(θ̂ = 样本均值)</span><span class="stars imp-3">★★★</span><span class="mode mode-und">需计算</span></div>
+    <p><span class="kp-label">推导链:</span>\( l(\theta)=\sum_i\big(y_i\log\theta+(1-y_i)\log(1-\theta)\big) \) → \( l'(\theta)=\dfrac{\sum y_i}{\theta}-\dfrac{n-\sum y_i}{1-\theta}=0 \) → \( \hat\theta=\dfrac{\sum y_i}{n} \)。课件实例:600/1000 = 0.6。</p>
+    <p><span class="kp-warn-label">常见错误:</span>求导后不令导数为 0 就下结论;解方程时通分出错。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 5.4 指数分布 MLE 推导(λ̂ = 1/样本均值)</span><span class="stars imp-2">★★</span><span class="mode mode-und">需计算</span></div>
+    <p><span class="kp-label">推导链:</span>\( p(Y\mid\theta)=\theta^n e^{-\theta\sum y_i} \) → \( l(\theta)=n\log\theta-\theta\sum y_i \) → \( l'(\theta)=\dfrac{n}{\theta}-\sum y_i=0 \) → \( \hat\theta=\dfrac{n}{\sum y_i} \)。</p>
+    <p><span class="kp-warn-label">易混淆:</span>与 Bernoulli/Poisson/Normal 的"样本均值"相反,指数分布是<strong>样本均值的倒数</strong>。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 5.5 常见分布 MLE 速查表</span><span class="stars imp-3">★★★</span><span class="mode mode-mem">需记忆</span></div>
+    <p><span class="kp-label">必背:</span>Ber(θ)、Poisson(λ)、N(μ,σ²) 的均值参数 → 样本均值;Exp(λ) → n/Σyᵢ;U[0,θ] → max(yᵢ);U[a,b] → â=min{yᵢ}, b̂=max{yᵢ}(Problem Sheet 第 6 题给出)。</p>
+    <p><span class="kp-warn-label">使用前提:</span>数据必须与模型支持集相容 —— Poisson 数据须为非负整数(Problem Sheet 第 5 题的陷阱);U[0,θ] 数据须非负。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 5.6 离散参数的 MLE:直接逐点比较</span><span class="stars imp-1">★</span><span class="mode mode-und">需理解</span></div>
+    <p><span class="kp-label">要点:</span>当 Θ 是有限集(如摸球 Θ={0,…,9}),不能求导,直接比较各 θ 的似然取最大:\( \hat\theta=\operatorname*{argmax}_{\theta_0}\theta_0/9=9 \)。</p>
+    <p><span class="kp-warn-label">常见错误:</span>对离散参数机械套用求导法。</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 第三部分:复习题目 -->
+<!-- ============================================================ -->
+<section class="block" id="part3">
+  <div class="section-head"><span class="no">PART 03</span><h2>复习题目</h2></div>
+  <p class="section-intro">共 16 题,按"基础 → 进阶 → 综合"三档编排,覆盖全部高频考点(含 Problem Sheet 全部 6 道题的完整解答)。选择/判断题点击选项即可作答并自动展开解析;其余题目建议先动笔再点开"显示答案与解析"。</p>
+
+  <div class="q-toolbar">
+    <button type="button" data-action="expand-all">展开全部答案</button>
+    <button type="button" data-action="collapse-all">收起全部答案</button>
+    <span id="progress-text">选择/判断题:已答 0 / 5 · 答对 0</span>
+  </div>
+
+  <p class="diff-band">— 基础题 —</p>
+
+  <article class="question" id="q1" data-answer="b">
+    <div class="q-head">
+      <span class="q-num">第 1 题</span>
+      <span class="tag tag-type">选择题</span>
+      <span class="tag diff-1">基础</span>
+      <span class="tag tag-point">考点 1.3 互斥 vs 独立</span>
+    </div>
+    <div class="q-body">
+      <p>设 \( P(A)>0,\ P(B)>0 \),且事件 A 与 B 互斥。则 A 与 B:</p>
+      <div class="mcq-options">
+        <button type="button" class="mcq-option" data-key="a"><span class="opt-key">A</span><span>一定相互独立</span></button>
+        <button type="button" class="mcq-option" data-key="b"><span class="opt-key">B</span><span>一定不相互独立</span></button>
+        <button type="button" class="mcq-option" data-key="c"><span class="opt-key">C</span><span>可能独立,也可能不独立</span></button>
+        <button type="button" class="mcq-option" data-key="d"><span class="opt-key">D</span><span>当且仅当 \( P(A)=P(B) \) 时独立</span></button>
+      </div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:B</p>
+        <p><strong>考查点:</strong>互斥与独立的本质区别。</p>
+        <p><strong>解析:</strong>互斥意味着 \( A\cap B=\varnothing \),故 \( P(A\cap B)=0 \);而独立要求 \( P(A\cap B)=P(A)P(B)>0 \)。\( 0\neq \) 正数,矛盾,所以只要两事件概率都为正且互斥,就必然不独立。</p>
+        <p><strong>易错提醒:</strong>很多同学凭直觉认为"互斥 = 没关系 = 独立",恰恰相反 —— 互斥是一种<strong>极强的相依</strong>:知道 A 发生,B 就绝不可能发生。Problem Sheet 1(a)(ii) 中"两次总和为 10"与"至少一次掷出 1"正是互斥且不独立的实例。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q2" data-answer="c">
+    <div class="q-head">
+      <span class="q-num">第 2 题</span>
+      <span class="tag tag-type">选择题</span>
+      <span class="tag diff-1">基础</span>
+      <span class="tag tag-point">考点 3.1 贝叶斯定理成分识别</span>
+    </div>
+    <div class="q-body">
+      <p>在贝叶斯定理 \( p(\theta\mid Y)=\dfrac{p(Y\mid\theta)\,p(\theta)}{p(Y)} \) 中,\( p(Y\mid\theta) \) 称为:</p>
+      <div class="mcq-options">
+        <button type="button" class="mcq-option" data-key="a"><span class="opt-key">A</span><span>先验分布(prior)</span></button>
+        <button type="button" class="mcq-option" data-key="b"><span class="opt-key">B</span><span>后验分布(posterior)</span></button>
+        <button type="button" class="mcq-option" data-key="c"><span class="opt-key">C</span><span>似然(likelihood)</span></button>
+        <button type="button" class="mcq-option" data-key="d"><span class="opt-key">D</span><span>边际分布(marginal)</span></button>
+      </div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:C</p>
+        <p><strong>考查点:</strong>四个成分的识别(本讲学习目标第 2 条)。</p>
+        <p><strong>解析:</strong>看条件方向即可:条件在 θ 上、问数据 Y 的是<strong>似然</strong> \( p(Y\mid\theta) \);条件在 Y 上、问参数 θ 的是<strong>后验</strong> \( p(\theta\mid Y) \);不带条件的 \( p(\theta) \) 是先验,\( p(Y) \) 是边际(归一化常数)。</p>
+        <p><strong>易错提醒:</strong>\( p(\theta\mid Y) \) 与 \( p(Y\mid\theta) \) 仅条件方向不同,考试最常用它们互换设干扰项,看清"竖线"两侧是谁。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q3" data-answer="b">
+    <div class="q-head">
+      <span class="q-num">第 3 题</span>
+      <span class="tag tag-type">判断题</span>
+      <span class="tag diff-1">基础</span>
+      <span class="tag tag-point">考点 4.2 似然不是概率分布</span>
+    </div>
+    <div class="q-body">
+      <p>判断:似然函数 \( L(\theta\mid Y) \) 是 θ 的概率分布,即 \( \sum_{\theta\in\Theta} L(\theta\mid Y)=1 \)。</p>
+      <div class="mcq-options">
+        <button type="button" class="mcq-option" data-key="a"><span class="opt-key">A</span><span>正确</span></button>
+        <button type="button" class="mcq-option" data-key="b"><span class="opt-key">B</span><span>错误</span></button>
+      </div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:B(错误)</p>
+        <p><strong>考查点:</strong>课件明确标注 <em>Important</em> 的结论:\( \sum_{\theta\in\Theta}p(Y\mid\theta)\neq 1 \)(一般而言),似然函数<strong>不是</strong>概率分布。</p>
+        <p><strong>解析:</strong>以摸球为例,\( L(\theta\mid Y{=}\text{红})=\theta/9 \),对 θ=0,…,9 求和得 \( \sum_{\theta=0}^{9}\theta/9=45/9=5\neq 1 \)。似然只是"逐个 θ 评估数据出现的可能性",没有归一化的义务;真正归一化后的对象是后验 —— \( p(Y\mid\theta)/p(Y) \) 配合先验才构成概率分布。</p>
+        <p><strong>易错提醒:</strong>"似然 = 概率"是本讲第一大概念陷阱;似然是 θ 的函数,概率分布的归一化约束对它不成立。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q4">
+    <div class="q-head">
+      <span class="q-num">第 4 题</span>
+      <span class="tag tag-type">填空题</span>
+      <span class="tag diff-1">基础</span>
+      <span class="tag tag-point">考点 3.1 后验∝似然×先验</span>
+    </div>
+    <div class="q-body">
+      <p>补全:后验 \( \propto \) ______ × ______,其比例常数为 ______;先验若为离散分布须满足 ______,若为连续分布须满足 ______。</p>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:似然 × 先验;比例常数 \( 1/p(Y) \);\( \sum_{\theta\in\Theta}p(\theta)=1 \);\( \int_a^b p(\theta)\,d\theta=1 \)。</p>
+        <p><strong>考查点:</strong>贝叶斯定理的比例形式 + 先验的归一化性质,均为课件原文强调内容。</p>
+        <p><strong>易错提醒:</strong>比例常数是 \( 1/p(Y) \) 而非 \( p(Y) \);归一化条件中离散用求和、连续用积分,不要混写。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q5" data-answer="c">
+    <div class="q-head">
+      <span class="q-num">第 5 题</span>
+      <span class="tag tag-type">选择题</span>
+      <span class="tag diff-1">基础</span>
+      <span class="tag tag-point">考点 2.2 i.i.d. 定义</span>
+    </div>
+    <div class="q-body">
+      <p>记号 \( Y_1,\dots,Y_n\mid\theta\sim\text{i.i.d. }p(y\mid\theta) \) 的完整含义是:</p>
+      <div class="mcq-options">
+        <button type="button" class="mcq-option" data-key="a"><span class="opt-key">A</span><span>各 \( Y_i \) 服从同一分布(仅此而已)</span></button>
+        <button type="button" class="mcq-option" data-key="b"><span class="opt-key">B</span><span>各 \( Y_i \) 给定 θ 相互独立(仅此而已)</span></button>
+        <button type="button" class="mcq-option" data-key="c"><span class="opt-key">C</span><span>给定 θ,各 \( Y_i \) 相互独立<strong>且</strong>服从同一分布,联合密度可写成 \( \prod_{i=1}^n p(y_i\mid\theta) \)</span></button>
+        <button type="button" class="mcq-option" data-key="d"><span class="opt-key">D</span><span>各 \( Y_i \) 两两互斥且等概率</span></button>
+      </div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:C</p>
+        <p><strong>考查点:</strong>i.i.d. 的两个缺一不可的条件(本讲学习目标第 1 条)。</p>
+        <p><strong>解析:</strong>i.i.d. = independent(给定 θ 条件独立)+ identically distributed(同分布)。独立性保证联合密度因式分解为连乘,同分布保证连乘中每一项是同一个密度 \( p(y\mid\theta) \)。A、B 各只占一半条件;D 把"互斥"混进来,完全不相关。</p>
+        <p><strong>易错提醒:</strong>独立不蕴含同分布(两枚不同偏度的硬币各抛一次:独立但不同分布);同分布也不蕴含独立。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q6" data-answer="b">
+    <div class="q-head">
+      <span class="q-num">第 6 题</span>
+      <span class="tag tag-type">判断题</span>
+      <span class="tag diff-1">基础</span>
+      <span class="tag tag-point">考点 1.2 条件独立 vs 边际独立</span>
+    </div>
+    <div class="q-body">
+      <p>判断:若事件 E 与 F 在给定 D 下条件独立,则 E 与 F 一定(边际)独立。</p>
+      <div class="mcq-options">
+        <button type="button" class="mcq-option" data-key="a"><span class="opt-key">A</span><span>正确</span></button>
+        <button type="button" class="mcq-option" data-key="b"><span class="opt-key">B</span><span>错误</span></button>
+      </div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:B(错误)</p>
+        <p><strong>考查点:</strong>条件独立与边际独立互不蕴含。</p>
+        <p><strong>解析:</strong>反例就在 Problem Sheet 1(b)(本页第 8 题给出完整计算):五面骰掷两次,E="两次点数之差恰为 1",F="第二次比第一次大"。可验证 \( P(E\cap F)\neq P(E)P(F) \)(不独立),但给定 D="两次总和为 7"后 \( P(E\cap F\mid D)=P(E\mid D)P(F\mid D) \)(条件独立)。反方向同样不成立。</p>
+        <p><strong>易错提醒:</strong>记住"互不蕴含"四个字 —— 给定条件可以"制造"独立,也可以"破坏"独立。</p>
+      </div>
+    </details>
+  </article>
+
+  <p class="diff-band">— 进阶题(含 Problem Sheet 全部题目)—</p>
+
+  <article class="question" id="q7">
+    <div class="q-head">
+      <span class="q-num">第 7 题</span>
+      <span class="tag tag-type">计算题</span>
+      <span class="tag diff-2">进阶</span>
+      <span class="tag tag-point">考点 1.1 / 1.3 独立性判定(Problem Sheet 1(a))</span>
+    </div>
+    <div class="q-body">
+      <p>公平五面骰(点数 1–5),掷两次,各次独立且各面等可能。设事件 A="两次总和为 10",B="至少一次掷出 5",C="至少一次掷出 1"。</p>
+      <p>(i) A 与 B 是否独立?是否互斥? (ii) A 与 C 是否独立?是否互斥?</p>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:(i) 不独立,不互斥;(ii) 不独立,互斥。</p>
+        <p><strong>解题思路:</strong>样本空间共 \( 5\times5=25 \) 个等可能结果,逐一算 \( P(A),P(B),P(C),P(A\cap B),P(A\cap C) \) 后用定义验证。</p>
+        <p><strong>完整步骤:</strong></p>
+        <ol>
+          <li>A 只含 (5,5):\( P(A)=\dfrac{1}{25} \)。</li>
+          <li>B 的补事件"两次都不是 5"有 \( 4\times4=16 \) 个结果,故 \( P(B)=1-\dfrac{16}{25}=\dfrac{9}{25} \);同理 \( P(C)=\dfrac{9}{25} \)。</li>
+          <li>(i) \( A\cap B=\{(5,5)\}=A \),故 \( P(A\cap B)=\dfrac{1}{25} \)。而 \( P(A)P(B)=\dfrac{1}{25}\cdot\dfrac{9}{25}=\dfrac{9}{625}\neq\dfrac{1}{25}=\dfrac{25}{625} \) → <strong>不独立</strong>;\( A\cap B\neq\varnothing \) → <strong>不互斥</strong>。</li>
+          <li>(ii) 总和为 10 必须两次都是 5,不可能出现 1,故 \( A\cap C=\varnothing \),\( P(A\cap C)=0 \)。而 \( P(A)P(C)=\dfrac{9}{625}>0 \) → <strong>不独立</strong>;交为空 → <strong>互斥</strong>。</li>
+        </ol>
+        <p><strong>易错提醒:</strong>(i) 中 B 已包含 A,"知道 B 发生"显著改变 A 的概率,直觉上也不独立;(ii) 正是"互斥 + 概率为正 ⇒ 必不独立"的实例(对应第 1 题结论)。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q8">
+    <div class="q-head">
+      <span class="q-num">第 8 题</span>
+      <span class="tag tag-type">计算题</span>
+      <span class="tag diff-2">进阶</span>
+      <span class="tag tag-point">考点 1.2 条件独立(Problem Sheet 1(b))</span>
+    </div>
+    <div class="q-body">
+      <p>同上掷两次五面骰。设 D="两次总和为 7",E="两次点数之差恰为 1",F="第二次点数比第一次大"。</p>
+      <p>(i) E 与 F 是否独立? (ii) 给定 D,E 与 F 是否条件独立?</p>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:(i) 不独立;(ii) 给定 D 条件独立。</p>
+        <p><strong>解题思路:</strong>(i) 用 \( P(E\cap F)\overset{?}{=}P(E)P(F) \);(ii) 把样本空间缩到 D 内,用 \( P(E\cap F\mid D)\overset{?}{=}P(E\mid D)P(F\mid D) \)。</p>
+        <p><strong>完整步骤:</strong></p>
+        <ol>
+          <li>E 包含 (1,2),(2,1),(2,3),(3,2),(3,4),(4,3),(4,5),(5,4) 共 8 个结果:\( P(E)=\dfrac{8}{25} \)。</li>
+          <li>F 即第二次大于第一次,共 \( \binom{5}{2}=10 \) 个结果:\( P(F)=\dfrac{10}{25} \)。</li>
+          <li>\( E\cap F \):差为 1 且第二次更大 → (1,2),(2,3),(3,4),(4,5) 共 4 个:\( P(E\cap F)=\dfrac{4}{25}=\dfrac{100}{625} \)。而 \( P(E)P(F)=\dfrac{8}{25}\cdot\dfrac{10}{25}=\dfrac{80}{625} \)。两者不等 → <strong>E、F 不独立</strong>。</li>
+          <li>D 含 (2,5),(3,4),(4,3),(5,2) 共 4 个结果。其中属于 E 的有 (3,4),(4,3):\( P(E\mid D)=\dfrac{2}{4}=\dfrac12 \);属于 F 的有 (2,5),(3,4):\( P(F\mid D)=\dfrac12 \);同时属于 E 和 F 的只有 (3,4):\( P(E\cap F\mid D)=\dfrac14 \)。</li>
+          <li>验证:\( P(E\mid D)P(F\mid D)=\dfrac12\cdot\dfrac12=\dfrac14=P(E\cap F\mid D) \) → <strong>给定 D 条件独立</strong>。</li>
+        </ol>
+        <p><strong>易错提醒:</strong>条件概率全部要在"缩小后的样本空间 D"里数,分母是 4 而不是 25;本题是"条件独立 ≠ 边际独立"的标准反例,务必会复现。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q9">
+    <div class="q-head">
+      <span class="q-num">第 9 题</span>
+      <span class="tag tag-type">计算题 + 简答</span>
+      <span class="tag diff-2">进阶</span>
+      <span class="tag tag-point">考点 2.1 独立试验与连乘(Problem Sheet 2)</span>
+    </div>
+    <div class="q-body">
+      <p>对一枚正面概率为 p 的偏币独立抛掷 10 次。</p>
+      <p>(a) 设 A="前 8 次中恰有 6 次正面",B="第 9 次为正面"。证明 A 与 B 独立。</p>
+      <p>(b) 求"前 4 次中恰有 3 次正面,且最后 3 次中恰有 2 次正面"的概率。</p>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:(a) 见证明;(b) \( 12\,p^{5}(1-p)^{2} \)。</p>
+        <p><strong>考查点:</strong>独立试验中,<strong>涉及不相交抛掷次序集合的事件相互独立</strong>,联合概率可拆成连乘 —— 这正是 i.i.d. 因式分解思想在事件层面的体现。</p>
+        <p><strong>(a) 证明:</strong>A 只由第 1–8 次抛掷决定,B 只由第 9 次决定,二者无公共抛掷。由各次抛掷独立:</p>
+        \[ P(A\cap B)=\underbrace{\binom{8}{6}p^{6}(1-p)^{2}}_{P(A)}\cdot\underbrace{p}_{P(B)}=P(A)\,P(B), \]
+        <p>满足独立的定义,证毕。</p>
+        <p><strong>(b) 完整步骤:</strong></p>
+        <ol>
+          <li>"前 4 次恰 3 正":\( P_1=\binom{4}{3}p^{3}(1-p)^{1}=4p^{3}(1-p) \)。</li>
+          <li>"最后 3 次(第 8–10 次)恰 2 正":\( P_2=\binom{3}{2}p^{2}(1-p)^{1}=3p^{2}(1-p) \)。</li>
+          <li>两事件涉及的抛掷次序集合 {1,2,3,4} 与 {8,9,10} 不相交,故独立,联合概率相乘:
+          \[ P=P_1\times P_2=4p^{3}(1-p)\times 3p^{2}(1-p)=12\,p^{5}(1-p)^{2}. \]</li>
+        </ol>
+        <p><strong>易错提醒:</strong>① 别忘了二项系数 \( \binom{4}{3} \)、\( \binom{3}{2} \)(正面位置可选);② "最后 3 次"是第 8–10 次,与前 4 次不重叠,这是能相乘的前提,答题要明确说明。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q10">
+    <div class="q-head">
+      <span class="q-num">第 10 题</span>
+      <span class="tag tag-type">计算题(填表)</span>
+      <span class="tag diff-2">进阶</span>
+      <span class="tag tag-point">考点 3.2 / 4.3 离散先验与联合分布(Problem Sheet 3)</span>
+    </div>
+    <div class="q-body">
+      <p>罐中 9 个球,非绿即红,红球数 θ 未知,θ=0,…,9 等可能。随机摸出一球,令 \( Y_1=1 \) 表示摸到红球,否则 \( Y_1=0 \)。</p>
+      <p>(a) 填写 θ 与 \( Y_1 \) 的联合概率表(先验、\( Y_1=1 \) 列、\( Y_1=0 \) 列)。 (b) 求 \( Y_1 \) 的边际分布。</p>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:联合概率 \( p(\theta,Y_1{=}1)=\dfrac{\theta}{90} \),\( p(\theta,Y_1{=}0)=\dfrac{9-\theta}{90} \);边际 \( P(Y_1{=}1)=P(Y_1{=}0)=\dfrac12 \)。</p>
+        <p><strong>解题思路:</strong>联合 = 先验 × 条件似然:\( p(\theta,Y_1)=p(\theta)\,p(Y_1\mid\theta) \);边际 = 对 θ 把联合概率求和(对应贝叶斯定理分母 \( p(Y) \) 的计算方式)。</p>
+        <p><strong>完整步骤:</strong></p>
+        <ol>
+          <li>先验:\( p(\theta)=\dfrac{1}{10} \)(10 个取值等可能)。</li>
+          <li>似然:\( P(Y_1{=}1\mid\theta)=\dfrac{\theta}{9} \),\( P(Y_1{=}0\mid\theta)=\dfrac{9-\theta}{9} \)。</li>
+          <li>联合:\( p(\theta,Y_1{=}1)=\dfrac{1}{10}\cdot\dfrac{\theta}{9}=\dfrac{\theta}{90} \);\( p(\theta,Y_1{=}0)=\dfrac{1}{10}\cdot\dfrac{9-\theta}{9}=\dfrac{9-\theta}{90} \)。</li>
+        </ol>
+        <div class="table-wrap"><table class="nice">
+          <thead><tr><th>θ</th><th>先验 p(θ)</th><th>\( p(\theta,Y_1{=}1) \)</th><th>\( p(\theta,Y_1{=}0) \)</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>1/10</td><td>0/90</td><td>9/90</td></tr>
+            <tr><td>1</td><td>1/10</td><td>1/90</td><td>8/90</td></tr>
+            <tr><td>2</td><td>1/10</td><td>2/90</td><td>7/90</td></tr>
+            <tr><td>3</td><td>1/10</td><td>3/90</td><td>6/90</td></tr>
+            <tr><td>4</td><td>1/10</td><td>4/90</td><td>5/90</td></tr>
+            <tr><td>5</td><td>1/10</td><td>5/90</td><td>4/90</td></tr>
+            <tr><td>6</td><td>1/10</td><td>6/90</td><td>3/90</td></tr>
+            <tr><td>7</td><td>1/10</td><td>7/90</td><td>2/90</td></tr>
+            <tr><td>8</td><td>1/10</td><td>8/90</td><td>1/90</td></tr>
+            <tr><td>9</td><td>1/10</td><td>9/90</td><td>0/90</td></tr>
+            <tr><th>边际</th><th>1</th><th>45/90 = 1/2</th><th>45/90 = 1/2</th></tr>
+          </tbody>
+        </table></div>
+        <p>(b) \( P(Y_1{=}1)=\sum_{\theta=0}^{9}\dfrac{\theta}{90}=\dfrac{0+1+\cdots+9}{90}=\dfrac{45}{90}=\dfrac12 \);同理 \( P(Y_1{=}0)=\dfrac12 \)。</p>
+        <p><strong>易错提醒:</strong>① 联合概率别忘乘先验 1/10(只写 θ/9 是似然,不是联合);② 检验:整张表所有格子之和应为 1;③ 边际为 1/2 很直观 —— 事前红绿完全对称。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q11">
+    <div class="q-head">
+      <span class="q-num">第 11 题</span>
+      <span class="tag tag-type">计算题</span>
+      <span class="tag diff-2">进阶</span>
+      <span class="tag tag-point">考点 5.5 正态分布 MLE(Problem Sheet 4)</span>
+    </div>
+    <div class="q-body">
+      <p>从均值 μ 未知的正态分布中观测到 7 个数据点:\( -4.5,\,-6.9,\,3.8,\,-5.6,\,-2.5,\,5.8,\,1.2 \)。求 μ 的最大似然估计。</p>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:\( \hat\mu=\dfrac{-8.7}{7}\approx -1.243 \)。</p>
+        <p><strong>考查点:</strong>速查表 —— \( Y_i\sim\text{i.i.d. }N(\mu,\sigma^2) \) 时 \( \hat\mu=\dfrac{\sum y_i}{n} \)(样本均值)。</p>
+        <p><strong>完整步骤:</strong></p>
+        <ol>
+          <li>求和:\( -4.5-6.9+3.8-5.6-2.5+5.8+1.2 \)。逐步累加:\( -4.5-6.9=-11.4 \);\( -11.4+3.8=-7.6 \);\( -7.6-5.6=-13.2 \);\( -13.2-2.5=-15.7 \);\( -15.7+5.8=-9.9 \);\( -9.9+1.2=-8.7 \)。</li>
+          <li>除以样本量:\( \hat\mu=\dfrac{-8.7}{7}\approx -1.2429\approx -1.243 \)。</li>
+        </ol>
+        <p><strong>易错提醒:</strong>正态数据允许取负,负的样本均值完全合法(对比下一题的 Poisson);n 是 7 不是 6,逐项累加时注意符号。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q12">
+    <div class="q-head">
+      <span class="q-num">第 12 题</span>
+      <span class="tag tag-type">简答(辨析)</span>
+      <span class="tag diff-2">进阶</span>
+      <span class="tag tag-point">考点 5.5 MLE 公式的适用前提(Problem Sheet 5)</span>
+    </div>
+    <div class="q-body">
+      <p>从均值 λ 未知的 Poisson 分布中"观测"到 4 个数据点:\( -4.5,\,-6.9,\,3.8,\,-5.6 \)。问 λ 的最大似然估计是什么?这道题想提醒你什么?</p>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:这组数据不可能来自 Poisson 分布,MLE 在此没有意义(机械套公式会得到 \( \hat\lambda=-13.2/4=-3.3 \),但这违反 \( \lambda>0 \),且对任意 λ 似然恒为 0)。</p>
+        <p><strong>考查点:</strong>速查表的<strong>适用前提</strong> —— 数据必须落在模型的支持集内。</p>
+        <p><strong>解析:</strong></p>
+        <ol>
+          <li>Poisson 随机变量只取<strong>非负整数</strong> 0,1,2,…;本组数据含负数和小数,任何一个点的概率 \( P(Y_i=y_i\mid\lambda) \) 都为 0。</li>
+          <li>于是似然 \( L(\lambda\mid Y)=\prod_i P(y_i\mid\lambda)=0 \) 对一切 λ 成立 —— 没有任何 λ 能"解释"这批数据,argmax 无意义。</li>
+          <li>若不加思考地套"\( \hat\lambda= \) 样本均值",得 \( (-4.5-6.9+3.8-5.6)/4=-13.2/4=-3.3 \),而 Poisson 参数必须为正,自相矛盾 —— 这正暴露了数据与模型不相容。</li>
+        </ol>
+        <p><strong>易错提醒:</strong>这是 Problem Sheet 故意设置的陷阱题:<strong>先检查模型-数据相容性,再套 MLE 公式</strong>。答题时要点出"支持集不符 → 似然恒为 0 → MLE 不存在/模型错误",仅写 −3.3 会被扣分。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q13">
+    <div class="q-head">
+      <span class="q-num">第 13 题</span>
+      <span class="tag tag-type">计算题</span>
+      <span class="tag diff-1">基础</span>
+      <span class="tag tag-point">考点 5.5 均匀分布 MLE(Problem Sheet 6)</span>
+    </div>
+    <div class="q-body">
+      <p>已知 \( \theta\sim U[a,b] \) 时 \( \hat a=\min\{y_i\} \)、\( \hat b=\max\{y_i\} \)。</p>
+      <p>(a) 数据 \( 1.2,\,2.1,\,1.3,\,10.5,\,5 \) 独立来自 \( U(a,b) \),求 a、b 的 MLE。</p>
+      <p>(b) \( X_1{=}5.5,\,X_2{=}8.3,\,X_3{=}9.8,\,X_4{=}7.6,\,X_5{=}3.2 \) i.i.d. 来自 \( U[0,\theta] \),求 θ 的 MLE。</p>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:(a) \( \hat a=1.2,\ \hat b=10.5 \);(b) \( \hat\theta=9.8 \)。</p>
+        <p><strong>考查点:</strong>均匀分布 MLE 的极值规则(速查表最后两行)。</p>
+        <p><strong>完整步骤:</strong>(a) 排序得最小值 1.2、最大值 10.5,故 \( \hat a=\min=1.2 \),\( \hat b=\max=10.5 \)。(b) \( U[0,\theta] \) 下界已固定为 0,只需估计上界:\( \hat\theta=\max\{5.5,8.3,9.8,7.6,3.2\}=9.8 \)。</p>
+        <p><strong>直觉:</strong>区间必须装下所有数据,而区间越短、密度 \( \tfrac{1}{b-a} \) 越大、似然越高 —— 所以最优区间是"恰好夹住数据"的 \([\min,\max]\)。</p>
+        <p><strong>易错提醒:</strong>① (b) 中不要再去取 min(下界已知为 0);② 别误用"样本均值"—— 均匀分布的 MLE 不是均值类公式,且其似然在端点处不可导,求导法在此失效,这正是它与前几个分布的本质区别。</p>
+      </div>
+    </details>
+  </article>
+
+  <p class="diff-band">— 综合题 —</p>
+
+  <article class="question" id="q14">
+    <div class="q-head">
+      <span class="q-num">第 14 题</span>
+      <span class="tag tag-type">计算题(推导)</span>
+      <span class="tag diff-3">综合</span>
+      <span class="tag tag-point">考点 5.2 / 5.3 对数似然 + Bernoulli MLE 完整推导</span>
+    </div>
+    <div class="q-body">
+      <p>设 \( Y_1,\dots,Y_n\mid\theta\sim\text{i.i.d. Ber}(\theta) \),观测数据中共有 \( k=\sum_{i=1}^n y_i \) 次成功。</p>
+      <p>(a) 写出似然函数与对数似然函数;(b) 推导 θ 的 MLE;(c) 代入课件实例 n=1000、k=600 验证。</p>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:\( \hat\theta=\dfrac{k}{n}=\dfrac{\sum y_i}{n} \)(样本均值);实例中 \( \hat\theta=0.6 \)。</p>
+        <p><strong>考查点:</strong>从 i.i.d. 因式分解到对数似然再到求导解方程的<strong>完整推导链</strong>,是本讲计算大题的核心套路。</p>
+        <p><strong>完整步骤:</strong></p>
+        <ol>
+          <li><strong>似然(由条件独立连乘):</strong>
+          \[ L(\theta\mid Y)=\prod_{i=1}^{n}\theta^{y_i}(1-\theta)^{1-y_i}=\theta^{k}(1-\theta)^{\,n-k}. \]</li>
+          <li><strong>对数似然(连乘→连加):</strong>
+          \[ l(\theta\mid Y)=\sum_{i=1}^n\big(y_i\log\theta+(1-y_i)\log(1-\theta)\big)=k\log\theta+(n-k)\log(1-\theta). \]</li>
+          <li><strong>求导并令为 0:</strong>
+          \[ l'(\theta)=\frac{k}{\theta}-\frac{n-k}{1-\theta}=0 \;\Longrightarrow\; k(1-\theta)=(n-k)\theta \;\Longrightarrow\; k=n\theta \;\Longrightarrow\; \hat\theta=\frac{k}{n}. \]
+          由于对数单调,\( \operatorname*{argmax}l=\operatorname*{argmax}L \),故这就是 MLE。</li>
+          <li><strong>实例验证:</strong>\( l(\theta)=600\log\theta+400\log(1-\theta) \),\( l'(\theta)=\dfrac{600}{\theta}-\dfrac{400}{1-\theta}=0\Rightarrow\hat\theta=\dfrac{600}{1000}=0.6 \),与课件一致。含义:使"1000 次抛掷出现 600 正 400 反"最可能发生的正面概率是 0.6。</li>
+        </ol>
+        <p><strong>易错提醒:</strong>① \( \log(1-\theta) \) 求导带负号:\( \dfrac{d}{d\theta}\log(1-\theta)=-\dfrac{1}{1-\theta} \);② 推导中要写明"对数单调,argmax 不变",这是给分点;③ 最终答案是 argmax(即 0.6),不是把 0.6 代回去的似然值。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q15">
+    <div class="q-head">
+      <span class="q-num">第 15 题</span>
+      <span class="tag tag-type">计算题(推导)</span>
+      <span class="tag diff-3">综合</span>
+      <span class="tag tag-point">考点 5.4 指数分布 MLE 推导</span>
+    </div>
+    <div class="q-body">
+      <p>设 \( Y_1,\dots,Y_n\mid\lambda\sim\text{i.i.d. Exp}(\lambda) \),即 \( p(Y\mid\lambda)=\prod_{i=1}^{n}\lambda e^{-\lambda y_i} \)。推导 λ 的 MLE,并说明它与样本均值的关系。</p>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">答案:\( \hat\lambda=\dfrac{n}{\sum_{i=1}^n y_i}=\dfrac{1}{\text{样本均值}} \)。</p>
+        <p><strong>完整步骤:</strong></p>
+        <ol>
+          <li><strong>化简似然:</strong>\( L(\lambda\mid Y)=\prod_{i=1}^n\lambda e^{-\lambda y_i}=\lambda^{n}e^{-\lambda\sum_i y_i} \)。</li>
+          <li><strong>对数似然:</strong>\( l(\lambda\mid Y)=n\log\lambda-\lambda\sum_{i=1}^n y_i \)。</li>
+          <li><strong>求导令零:</strong>\( l'(\lambda)=\dfrac{n}{\lambda}-\sum_{i=1}^n y_i=0\ \Longrightarrow\ \hat\lambda=\dfrac{n}{\sum_i y_i} \)。</li>
+          <li><strong>与样本均值的关系:</strong>\( \hat\lambda=1\big/\big(\tfrac{1}{n}\sum y_i\big) \),即样本均值的<strong>倒数</strong> —— 因为 Exp(λ) 的理论均值是 \( 1/\lambda \),数据平均等待时间越长,估计的速率 λ 越小,符合直觉。</li>
+        </ol>
+        <p><strong>易错提醒:</strong>与 Bernoulli / Poisson / Normal 三兄弟(MLE = 样本均值)相反,指数分布是<strong>倒数</strong>;速查表里这一行最容易记反,考前重点核对。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="question" id="q16">
+    <div class="q-head">
+      <span class="q-num">第 16 题</span>
+      <span class="tag tag-type">论述题</span>
+      <span class="tag diff-3">综合</span>
+      <span class="tag tag-point">考点 3.1 / 4.1 / 5.1 / 5.2 全讲框架贯通</span>
+    </div>
+    <div class="q-body">
+      <p>以"抛一枚可能有偏的硬币 1000 次,得到 600 正 400 反"为例,系统论述:(a) 先验、似然、后验各自的含义及三者关系;(b) 为什么求 MLE 时常改用对数似然,这样做为什么不改变答案。</p>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="ans-line">参考答案要点(论述题按要点给分):</p>
+        <p><strong>(a) 三个成分及其关系:</strong></p>
+        <ol>
+          <li><strong>先验 \( p(\theta) \):</strong>看数据前对正面概率 θ 的信念。事前只知道硬币可能公平也可能偏向任一侧,故取 \( \theta\sim U[0,1] \)、\( p(\theta)=1 \)(0≤θ≤1)—— 它是合法的概率分布(积分为 1)。</li>
+          <li><strong>似然 \( p(Y\mid\theta)=L(\theta\mid Y) \):</strong>给定 θ 时看到这批数据的可能性。由 \( Y_i\mid\theta\sim\text{i.i.d. Ber}(\theta) \) 连乘得 \( L(\theta\mid Y)=\prod_{i=1}^{1000}\theta^{y_i}(1-\theta)^{1-y_i}=\theta^{600}(1-\theta)^{400} \)。注意它是 θ 的函数但<strong>不是 θ 的概率分布</strong>(对 θ 积分不必为 1)。</li>
+          <li><strong>后验 \( p(\theta\mid Y) \):</strong>看完数据后更新的信念,由贝叶斯定理给出:\( p(\theta\mid Y)=\dfrac{p(Y\mid\theta)p(\theta)}{p(Y)} \),即 <strong>后验 ∝ 似然 × 先验</strong>,边际 \( p(Y) \) 仅作归一化常数,保证后验是概率分布。三者构成"信念 → 证据 → 更新后的信念"的更新闭环。</li>
+        </ol>
+        <p><strong>(b) 对数似然:</strong></p>
+        <ol>
+          <li><strong>动机:</strong>似然是 1000 项连乘,直接求导极繁琐;取对数后连乘变连加:\( l(\theta)=600\log\theta+400\log(1-\theta) \),求导只需处理两项。</li>
+          <li><strong>合法性:</strong>对数是严格单调递增函数,保序 —— L 在哪一点取最大,log L 就在同一点取最大,故 \( \operatorname*{argmax}L(\theta\mid Y)=\operatorname*{argmax}l(\theta\mid Y) \)。注意不变的是<strong>最大值点</strong>(argmax),最大值本身(max)会变,但 MLE 要的恰是前者。</li>
+          <li><strong>结果:</strong>\( l'(\theta)=\dfrac{600}{\theta}-\dfrac{400}{1-\theta}=0\Rightarrow\hat\theta=0.6 \),即样本均值 —— 让"600 正 400 反"最可能发生的正面概率。</li>
+        </ol>
+        <p><strong>易错提醒:</strong>论述时三个易丢分点:① 漏说"似然不是概率分布";② 漏说"对数单调 ⇒ argmax 不变"的理由;③ 把 \( p(Y) \) 说成与 θ 有关 —— 它对 θ 是常数,这正是能写成"∝"的原因。</p>
+      </div>
+    </details>
+  </article>
+
+</section>
+</main>
+
+<footer class="page-foot">
+  依据 Lecture 3(Components of Bayes Theorem)课件与 Problem Sheet 整理 · 仅供个人复习使用 · 建议先独立作答再查看解析
+</footer>
+
+<button type="button" id="back-top" data-action="back-top" aria-label="回到顶部" title="回到顶部">↑</button>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- MathJax:动态加载 + 失败降级提示 ---------- */
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(','\\)']],
+      displayMath: [['\\[','\\]']]
+    },
+    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] },
+    startup: { typeset: true }
+  };
+  function showMathFallback(){
+    var b = document.getElementById('mathjax-fallback');
+    if (b) b.hidden = false;
+  }
+  function loadMathJax(){
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js';
+    s.async = true;
+    s.onerror = showMathFallback;
+    document.head.appendChild(s);
+    /* 兜底:8 秒后仍未就绪则提示(不影响正文阅读) */
+    setTimeout(function(){
+      if (!(window.MathJax && window.MathJax.typesetPromise)) showMathFallback();
+    }, 8000);
+  }
+  loadMathJax();
+
+  /* ---------- 做题进度 ---------- */
+  var answeredCount = 0;
+  var correctCount = 0;
+  function totalInteractive(){
+    return document.querySelectorAll('article.question[data-answer]').length;
+  }
+  function updateProgress(){
+    var total = totalInteractive();
+    var t1 = document.getElementById('progress-text');
+    var t2 = document.getElementById('nav-progress');
+    if (t1) t1.textContent = '选择/判断题:已答 ' + answeredCount + ' / ' + total + ' · 答对 ' + correctCount;
+    if (t2) t2.textContent = '做题进度 ' + answeredCount + ' / ' + total;
+  }
+
+  /* ---------- 选择题作答(纯事件委托,无内联事件) ---------- */
+  function handleOption(opt){
+    var q = opt.closest('article.question');
+    if (!q || q.getAttribute('data-answered') === '1') return;  /* 已作答则锁定 */
+    q.setAttribute('data-answered', '1');
+
+    var correctKey = q.getAttribute('data-answer');
+    var chosenKey = opt.getAttribute('data-key');
+    var options = q.querySelectorAll('.mcq-option');
+    Array.prototype.forEach.call(options, function(o){
+      o.classList.add('locked');
+      if (o.getAttribute('data-key') === correctKey) o.classList.add('correct');
+    });
+    if (chosenKey !== correctKey) opt.classList.add('wrong');
+
+    /* 自动展开该题解析:直接操作原生 open 属性 */
+    var det = q.querySelector('details.answer-block');
+    if (det) det.open = true;
+
+    answeredCount += 1;
+    if (chosenKey === correctKey) correctCount += 1;
+    updateProgress();
+  }
+
+  /* ---------- 全局按钮动作 ---------- */
+  function setAllDetails(openState){
+    var all = document.querySelectorAll('details.answer-block');
+    Array.prototype.forEach.call(all, function(d){ d.open = openState; });
+  }
+  function handleAction(action){
+    if (action === 'expand-all') { setAllDetails(true); }
+    else if (action === 'collapse-all') { setAllDetails(false); }
+    else if (action === 'back-top') {
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      catch (e) { window.scrollTo(0, 0); }
+    }
+  }
+
+  /* ---------- 统一事件委托入口 ---------- */
+  document.addEventListener('click', function(event){
+    var opt = event.target.closest ? event.target.closest('.mcq-option') : null;
+    if (opt) { handleOption(opt); return; }
+    var actBtn = event.target.closest ? event.target.closest('[data-action]') : null;
+    if (actBtn) { handleAction(actBtn.getAttribute('data-action')); return; }
+  });
+
+  /* ---------- 回到顶部按钮显隐 ---------- */
+  var backTop = document.getElementById('back-top');
+  function onScroll(){
+    if (!backTop) return;
+    if (window.scrollY > 600) backTop.classList.add('show');
+    else backTop.classList.remove('show');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  updateProgress();
+})();
+</script>
+</body>
+</html>

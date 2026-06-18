@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 5 复习 · 离散数据的贝叶斯推断</title>
+<style>
+/* ===== Reset & Base ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:"Segoe UI","Helvetica Neue","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.75;color:#1e293b;background:#f8fafc;padding-bottom:80px}
+
+/* ===== Layout ===== */
+.container{max-width:900px;margin:0 auto;padding:0 20px}
+
+/* ===== Header ===== */
+.header{background:linear-gradient(135deg,#1e3a5f 0%,#2d5a8e 50%,#3b7dd8 100%);color:#fff;padding:40px 20px 30px;text-align:center;position:relative}
+.header h1{font-size:1.8rem;font-weight:700;margin-bottom:6px;letter-spacing:0.5px}
+.header .subtitle{font-size:1rem;opacity:0.85;font-weight:400}
+.header .tag{display:inline-block;background:rgba(255,255,255,0.18);border-radius:20px;padding:4px 16px;font-size:0.82rem;margin-top:12px}
+
+/* ===== Navigation ===== */
+.nav-bar{background:#fff;border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.nav-inner{max-width:900px;margin:0 auto;display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nav-inner a{flex:1;text-align:center;padding:14px 12px;font-size:0.88rem;font-weight:600;color:#475569;text-decoration:none;border-bottom:3px solid transparent;white-space:nowrap;transition:all 0.2s}
+.nav-inner a:hover,.nav-inner a:focus{color:#2d5a8e;background:#f1f5f9}
+.nav-inner a.active{color:#2d5a8e;border-bottom-color:#2d5a8e}
+
+/* ===== Progress Bar ===== */
+.progress-panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin:20px auto;max-width:900px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.progress-panel .stat{font-size:0.88rem;color:#475569}
+.progress-panel .stat b{color:#1e293b;font-size:1.05rem}
+.progress-bar-track{flex:1;min-width:120px;height:8px;background:#e2e8f0;border-radius:8px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#10b981);border-radius:8px;transition:width 0.4s ease}
+.progress-panel .btn-toggle{margin-left:auto;padding:8px 16px;font-size:0.82rem;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#475569;cursor:pointer;white-space:nowrap;transition:all 0.2s}
+.progress-panel .btn-toggle:hover{background:#f1f5f9;border-color:#94a3b8}
+
+/* ===== Section Titles ===== */
+.section-title{font-size:1.5rem;font-weight:700;color:#1e3a5f;margin:40px 0 20px;padding-bottom:10px;border-bottom:3px solid #3b82f6;display:flex;align-items:center;gap:10px}
+.section-title .icon{font-size:1.3rem}
+
+/* ===== Cards & Boxes ===== */
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.card h3{font-size:1.15rem;color:#1e3a5f;margin-bottom:12px;font-weight:600}
+.card h4{font-size:1rem;color:#334155;margin:16px 0 8px;font-weight:600}
+
+.highlight-box{border-left:4px solid #3b82f6;background:#eff6ff;padding:16px 20px;border-radius:0 8px 8px 0;margin:16px 0}
+.highlight-box.green{border-left-color:#10b981;background:#ecfdf5}
+.highlight-box.amber{border-left-color:#f59e0b;background:#fffbeb}
+.highlight-box.red{border-left-color:#ef4444;background:#fef2f2}
+.highlight-box.purple{border-left-color:#8b5cf6;background:#f5f3ff}
+
+.formula-box{background:#f0f4ff;border:1px solid #c7d7f5;border-radius:10px;padding:18px 22px;margin:14px 0;text-align:center;font-size:1.05rem}
+
+.analogy{background:#fefce8;border:1px solid #fde68a;border-radius:10px;padding:14px 18px;margin:12px 0;font-size:0.92rem}
+.analogy::before{content:"💡 ";font-size:1.1rem}
+
+/* ===== Exam Points ===== */
+.exam-point{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px 20px;margin-bottom:14px;position:relative}
+.exam-point .stars{position:absolute;top:16px;right:18px;font-size:0.95rem;color:#f59e0b}
+.exam-point .ep-title{font-weight:600;color:#1e3a5f;font-size:1rem;margin-bottom:8px;padding-right:80px}
+.exam-point .ep-type{display:inline-block;font-size:0.75rem;padding:2px 10px;border-radius:12px;margin-right:6px;font-weight:500}
+.ep-type.memory{background:#dbeafe;color:#1d4ed8}
+.ep-type.understand{background:#dcfce7;color:#15803d}
+.ep-type.calculate{background:#fef3c7;color:#b45309}
+
+.confuse-box{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;margin-top:10px;font-size:0.9rem}
+.confuse-box::before{content:"⚠️ 易混淆 · ";font-weight:600;color:#dc2626}
+
+/* ===== Questions ===== */
+.question-block{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:22px 24px;margin-bottom:18px;position:relative}
+.question-block .q-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.q-tag{display:inline-block;font-size:0.72rem;padding:3px 10px;border-radius:12px;font-weight:600}
+.q-tag.type{background:#e0e7ff;color:#4338ca}
+.q-tag.point{background:#fce7f3;color:#be185d}
+.q-tag.diff-basic{background:#dcfce7;color:#15803d}
+.q-tag.diff-mid{background:#fef3c7;color:#b45309}
+.q-tag.diff-hard{background:#fee2e2;color:#dc2626}
+
+.q-text{font-size:1rem;color:#1e293b;margin-bottom:14px;line-height:1.8}
+
+/* Multiple Choice */
+.mc-options{list-style:none;padding:0}
+.mc-options li{padding:12px 16px;margin:6px 0;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;transition:all 0.2s;font-size:0.95rem;user-select:none}
+.mc-options li:hover{border-color:#93c5fd;background:#f8faff}
+.mc-options li.correct{border-color:#10b981;background:#ecfdf5;color:#065f46}
+.mc-options li.wrong{border-color:#ef4444;background:#fef2f2;color:#991b1b}
+.mc-options li.locked{pointer-events:none;opacity:0.85}
+.mc-options li.show-correct{border-color:#10b981;background:#ecfdf5}
+
+/* Details / Summary (Answer blocks) */
+details.answer-block{margin-top:14px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}
+details.answer-block summary{padding:12px 16px;background:#f8fafc;cursor:pointer;font-weight:600;color:#475569;font-size:0.9rem;list-style:none;user-select:none;display:flex;align-items:center;gap:6px}
+details.answer-block summary::-webkit-details-marker{display:none}
+details.answer-block summary::before{content:"▶";font-size:0.7rem;transition:transform 0.2s;display:inline-block}
+details.answer-block[open] summary::before{transform:rotate(90deg)}
+details.answer-block .answer-content{padding:16px 20px;background:#fff;border-top:1px solid #e2e8f0;line-height:1.85;font-size:0.95rem}
+details.answer-block .answer-content .step{margin:10px 0;padding:10px 14px;background:#f0f9ff;border-radius:8px;border-left:3px solid #3b82f6}
+
+/* True/False */
+.tf-options{display:flex;gap:10px;margin:10px 0}
+.tf-options button{padding:10px 28px;border:2px solid #e2e8f0;border-radius:10px;background:#fff;font-size:0.95rem;font-weight:600;cursor:pointer;transition:all 0.2s}
+.tf-options button:hover{border-color:#93c5fd;background:#f8faff}
+.tf-options button.correct{border-color:#10b981;background:#ecfdf5;color:#065f46}
+.tf-options button.wrong{border-color:#ef4444;background:#fef2f2;color:#991b1b}
+.tf-options button.show-correct{border-color:#10b981;background:#ecfdf5}
+.tf-options button.locked{pointer-events:none;opacity:0.85}
+
+/* ===== Back to top ===== */
+.back-top{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:#2d5a8e;color:#fff;border:none;font-size:1.2rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2);display:none;align-items:center;justify-content:center;z-index:99;transition:opacity 0.3s}
+.back-top:hover{opacity:0.85}
+
+/* ===== Responsive ===== */
+@media(max-width:640px){
+  .header h1{font-size:1.4rem}
+  .section-title{font-size:1.25rem}
+  .card{padding:18px 16px}
+  .question-block{padding:16px 14px}
+  .nav-inner a{font-size:0.78rem;padding:12px 8px}
+  .progress-panel{flex-direction:column;align-items:stretch;gap:10px}
+  .progress-panel .btn-toggle{margin-left:0}
+}
+
+/* ===== MathJax fallback ===== */
+.mathjax-fail{display:none;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;margin:10px 20px;font-size:0.88rem;color:#92400e;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- MathJax Fallback Notice -->
+<div class="mathjax-fail" id="mjFail">⚠️ 数学公式渲染组件（MathJax）加载失败。公式以原始 LaTeX 格式显示，不影响内容阅读。</div>
+
+<!-- Header -->
+<div class="header">
+  <h1>Lecture 5 · 离散数据的贝叶斯推断</h1>
+  <div class="subtitle">Bayesian Inference on Discrete Data — Dr. Nivedita Viswanathan</div>
+  <div class="tag">📚 期末复习梳理</div>
+</div>
+
+<!-- Navigation -->
+<div class="nav-bar">
+  <div class="nav-inner">
+    <a href="#part1" class="active">📖 课程讲解</a>
+    <a href="#part2">🎯 考点梳理</a>
+    <a href="#part3">✏️ 复习题目</a>
+  </div>
+</div>
+
+<!-- Progress Panel -->
+<div class="container">
+<div class="progress-panel" id="progressPanel">
+  <div class="stat">已答 <b id="answered">0</b> / <b id="totalQ">0</b> 题</div>
+  <div class="stat">正确 <b id="correctCount" style="color:#10b981">0</b></div>
+  <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+  <button class="btn-toggle" id="btnExpandAll">展开全部答案</button>
+  <button class="btn-toggle" id="btnCollapseAll">收起全部答案</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART 1: 课程内容讲解 -->
+<!-- ============================================================ -->
+<div id="part1">
+<div class="section-title"><span class="icon">📖</span> 第一部分：课程内容讲解</div>
+
+<div class="card">
+  <h3>🗺️ 整体知识脉络</h3>
+  <p>本讲的核心问题是：<b>当我们观测到的数据是离散的（如"是/否"、"次数"）时，如何用贝叶斯方法来估计未知的总体参数？</b></p>
+  <p style="margin-top:10px">整体逻辑分为两条平行主线，结构完全对称：</p>
+  <div class="highlight-box">
+    <b>主线一：二项数据（Binomial Data）</b><br>
+    观测数据是"成功/失败"型 → 未知参数是"成功比例 \(\pi\)" → 选 Beta 先验 → 得到 Beta 后验
+  </div>
+  <div class="highlight-box green">
+    <b>主线二：泊松数据（Poisson Data）</b><br>
+    观测数据是"计数"型 → 未知参数是"平均发生率 \(\mu\)" → 选 Gamma 先验 → 得到 Gamma 后验
+  </div>
+  <div class="analogy">把贝叶斯推断想象成"更新信念"的过程：你有一个初始猜测（先验），看到新数据后（似然），你的猜测被更新（后验）。就像天气预报员根据卫星云图不断修正降雨概率一样。</div>
+</div>
+
+<div class="card">
+  <h3>🔑 贝叶斯推断的通用框架</h3>
+  <p>不论数据类型如何，贝叶斯推断都遵循相同的四步流程：</p>
+
+  <h4>第一步：确定未知参数（Parameter）</h4>
+  <p>我们想估计的总体特征。例如"人群中感到幸福的比例 \(\omega\)"或"平均索赔次数 \(\mu\)"。</p>
+
+  <h4>第二步：选择先验分布（Prior Distribution）</h4>
+  <p>在看到数据之前，我们对参数的初始信念。可以是无信息的（如均匀分布），也可以包含既有知识。</p>
+
+  <h4>第三步：构建似然函数（Likelihood Function）</h4>
+  <p>给定参数值，观测到当前数据的概率。它把数据和参数联系起来。</p>
+
+  <h4>第四步：计算后验分布（Posterior Distribution）</h4>
+  <p>通过贝叶斯公式，将先验与似然结合：</p>
+  <div class="formula-box">
+    \[ p(\theta \mid \text{data}) = \frac{p(\text{data} \mid \theta) \cdot p(\theta)}{p(\text{data})} \propto p(\text{data} \mid \theta) \cdot p(\theta) \]
+  </div>
+  <div class="analogy">后验 ∝ 似然 × 先验。"先验"是你进考场前的复习程度，"似然"是考题给的信息量，"后验"就是你答题时真正的把握度——两者缺一不可。</div>
+</div>
+
+<!-- 主线一：Binomial -->
+<div class="card">
+  <h3>📊 主线一：二项数据 + Beta 先验</h3>
+
+  <h4>1. 问题背景（Happiness 例子）</h4>
+  <p>调查 129 名 65 岁以上城市女性是否感到幸福。每个人的回答 \(Y_i \in \{0, 1\}\)，总共有 118 人回答"幸福"。我们想估计总体中幸福的比例 \(\omega\)。</p>
+
+  <h4>2. 数据分布</h4>
+  <p>每个人的回答独立且同分布：</p>
+  <div class="formula-box">\[ Y_1, Y_2, \ldots, Y_n \mid \omega \stackrel{i.i.d.}{\sim} \text{Bernoulli}(\omega) = \text{Binomial}(1, \omega) \]</div>
+
+  <h4>3. 先验分布</h4>
+  <p>如果我们对 \(\omega\) 没有任何先验知识，选择<b>均匀分布</b>：</p>
+  <div class="formula-box">\[ \omega \sim U(0,1) = \text{Beta}(1,1), \quad p(\omega) = 1 \text{ for } \omega \in [0,1] \]</div>
+  <p>更一般地，我们可以选择任意 Beta 先验：\(\omega \sim \text{Beta}(a, b)\)。</p>
+
+  <h4>4. 似然函数</h4>
+  <div class="formula-box">\[ p(y_1, \ldots, y_n \mid \omega) = \prod_{i=1}^{n} \omega^{y_i}(1-\omega)^{1-y_i} = \omega^{\sum y_i}(1-\omega)^{n - \sum y_i} \]</div>
+
+  <h4>5. 后验分布（核心结论）</h4>
+  <div class="highlight-box green">
+    <b>Beta-Binomial 共轭结果：</b><br>
+    若先验 \(\omega \sim \text{Beta}(a, b)\)，数据 \(Y_1, \ldots, Y_n \mid \omega \stackrel{i.i.d.}{\sim} \text{Bin}(1, \omega)\)，设 \(y = \sum_{i=1}^{n} y_i\)，则<br><br>
+    \[ \omega \mid Y_1, \ldots, Y_n \sim \text{Beta}(a + y, \; b + n - y) \]
+  </div>
+  <p style="margin-top:10px"><b>直观理解：</b>先验参数 \(a\) 加上"成功次数" \(y\)，\(b\) 加上"失败次数" \(n - y\)。数据就像投票一样，把证据叠加到你原来的信念上。</p>
+
+  <h4>6. 后验估计（以 Happiness 例子为例）</h4>
+  <p>数据：\(n = 129\), \(y = 118\)，先验 \(\text{Beta}(1,1)\)，后验 \(\text{Beta}(119, 12)\)。</p>
+  <div class="highlight-box">
+    <b>位置度量（均值）：</b><br>
+    先验均值 = \(\frac{1}{2} = 0.5\)，样本均值 = \(\frac{118}{129} = 0.915\)，后验均值 = \(\frac{119}{131} = 0.908\)<br><br>
+    <b>离散度量（方差）：</b><br>
+    先验方差 = \(0.083\)，后验方差 = \(0.0006\)（大幅缩小，说明数据提供了很多信息）
+  </div>
+</div>
+
+<!-- 主线二：Poisson -->
+<div class="card">
+  <h3>📈 主线二：泊松数据 + Gamma 先验</h3>
+
+  <h4>1. 问题背景（Birth Rates 例子）</h4>
+  <p>调查 155 名 40 岁以上女性的生育子女数。按是否有大学学位分组：无学位 \(n_1 = 111\) 人，有学位 \(n_2 = 44\) 人。我们想估计两组的平均生育数 \(\omega_1, \omega_2\)。</p>
+
+  <h4>2. 为什么不能用 Beta 先验？</h4>
+  <div class="highlight-box amber">
+    Beta 分布的取值范围是 \([0, 1]\)，而平均生育数 \(\omega \in [0, +\infty)\)，所以不能用 Beta 先验。需要一个支撑在 \([0, +\infty)\) 上的分布 → <b>Gamma 分布</b>。
+  </div>
+
+  <h4>3. 数据分布</h4>
+  <div class="formula-box">\[ X_1, \ldots, X_{n_1} \mid \omega_1 \stackrel{i.i.d.}{\sim} \text{Poisson}(\omega_1) \]</div>
+
+  <h4>4. 先验分布</h4>
+  <div class="formula-box">\[ \omega \sim \text{Gamma}(a, b), \quad p(\omega) = \frac{b^a}{\Gamma(a)} \omega^{a-1} e^{-b\omega}, \quad \omega \geq 0 \]</div>
+
+  <h4>5. 似然函数</h4>
+  <div class="formula-box">\[ p(x_1, \ldots, x_n \mid \omega) = \prod_{i=1}^{n} \frac{\omega^{x_i} e^{-\omega}}{x_i!} = c(x_1,\ldots,x_n) \cdot \omega^{\sum x_i} e^{-n\omega} \]</div>
+
+  <h4>6. 后验分布（核心结论）</h4>
+  <div class="highlight-box green">
+    <b>Gamma-Poisson 共轭结果：</b><br>
+    若先验 \(\omega \sim \text{Gamma}(a, b)\)，数据 \(X_1, \ldots, X_n \mid \omega \stackrel{i.i.d.}{\sim} \text{Poisson}(\omega)\)，则<br><br>
+    \[ \omega \mid X_1, \ldots, X_n \sim \text{Gamma}\!\left(a + \sum_{i=1}^{n} x_i, \; b + n\right) \]
+  </div>
+  <p style="margin-top:10px"><b>直观理解：</b>先验参数 \(a\) 加上"观测总数" \(\sum x_i\)，\(b\) 加上"样本量" \(n\)。</p>
+
+  <h4>7. 后验估计（以 Birth Rates 例子为例）</h4>
+  <p>先验：\(\omega_1, \omega_2 \sim \text{Gamma}(2, 1)\)。</p>
+  <p>数据：\(\sum x_i = 217, n_1 = 111\)；\(\sum y_i = 66, n_2 = 44\)。</p>
+  <div class="highlight-box">
+    <b>后验：</b> \(\omega_1 \mid X \sim \text{Gamma}(219, 112)\)，\(\omega_2 \mid Y \sim \text{Gamma}(68, 45)\)<br><br>
+    <b>位置度量：</b> 先验均值 = 2，后验均值：\(E[\omega_1|X] = 219/112 = 1.955\)，\(E[\omega_2|Y] = 68/45 = 1.51\)<br><br>
+    <b>离散度量：</b> 先验方差 = 2，后验方差：\(\text{Var}[\omega_1|X] = 219/112^2 = 0.017\)，\(\text{Var}[\omega_2|Y] = 68/45^2 = 0.033\)
+  </div>
+</div>
+
+<!-- 共轭先验 -->
+<div class="card">
+  <h3>🔗 共轭先验（Conjugate Prior）</h3>
+  <p>本讲的两个案例展示了一个重要模式——<b>共轭性</b>：</p>
+  <div class="highlight-box purple">
+    当先验分布和后验分布属于<b>同一分布族</b>时，该先验称为该似然的<b>共轭先验</b>。<br><br>
+    Beta 是 Binomial 的共轭先验 → 后验仍是 Beta<br>
+    Gamma 是 Poisson 的共轭先验 → 后验仍是 Gamma
+  </div>
+  <div class="analogy">共轭先验就像"兼容的积木"——先验和似然拼在一起，后验的形状和先验一样，只是参数更新了。这让计算变得非常方便。</div>
+</div>
+
+<!-- 关键分布速查 -->
+<div class="card">
+  <h3>📋 关键分布速查表</h3>
+  <div style="overflow-x:auto">
+  <table style="width:100%;border-collapse:collapse;font-size:0.9rem;margin-top:10px">
+    <tr style="background:#f1f5f9"><th style="padding:10px;border:1px solid #e2e8f0;text-align:left">分布</th><th style="padding:10px;border:1px solid #e2e8f0">PDF</th><th style="padding:10px;border:1px solid #e2e8f0">均值</th><th style="padding:10px;border:1px solid #e2e8f0">方差</th><th style="padding:10px;border:1px solid #e2e8f0">取值范围</th></tr>
+    <tr><td style="padding:10px;border:1px solid #e2e8f0;font-weight:600">Beta(\(a,b\))</td><td style="padding:10px;border:1px solid #e2e8f0">\(\frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}x^{a-1}(1-x)^{b-1}\)</td><td style="padding:10px;border:1px solid #e2e8f0">\(\frac{a}{a+b}\)</td><td style="padding:10px;border:1px solid #e2e8f0">\(\frac{ab}{(a+b)^2(a+b+1)}\)</td><td style="padding:10px;border:1px solid #e2e8f0">\([0,1]\)</td></tr>
+    <tr style="background:#fafafa"><td style="padding:10px;border:1px solid #e2e8f0;font-weight:600">Gamma(\(a,b\))</td><td style="padding:10px;border:1px solid #e2e8f0">\(\frac{b^a}{\Gamma(a)}x^{a-1}e^{-bx}\)</td><td style="padding:10px;border:1px solid #e2e8f0">\(\frac{a}{b}\)</td><td style="padding:10px;border:1px solid #e2e8f0">\(\frac{a}{b^2}\)</td><td style="padding:10px;border:1px solid #e2e8f0">\([0,+\infty)\)</td></tr>
+  </table>
+  </div>
+</div>
+</div><!-- end part1 -->
+
+
+<!-- ============================================================ -->
+<!-- PART 2: 考点梳理 -->
+<!-- ============================================================ -->
+<div id="part2">
+<div class="section-title"><span class="icon">🎯</span> 第二部分：考点梳理</div>
+
+<!-- 考点1 -->
+<div class="exam-point">
+  <div class="stars">★★★</div>
+  <div class="ep-title">考点 1：贝叶斯推断基本框架</div>
+  <span class="ep-type understand">需要理解</span>
+  <p><b>定义：</b>贝叶斯公式 \(p(\theta \mid \text{data}) \propto p(\text{data} \mid \theta) \cdot p(\theta)\)，即后验 ∝ 似然 × 先验。</p>
+  <p><b>关键公式：</b>\(p(\theta \mid y) = \frac{p(y \mid \theta) \, p(\theta)}{p(y)}\)，其中 \(p(y) = \int p(y|\theta)p(\theta)\,d\theta\) 是边际分布（归一化常数）。</p>
+  <div class="confuse-box">后验分布的"形状"由似然×先验决定，\(p(y)\) 只是一个与 \(\theta\) 无关的归一化常数。不需要计算 \(p(y)\) 也能识别后验分布的类型。</div>
+</div>
+
+<!-- 考点2 -->
+<div class="exam-point">
+  <div class="stars">★★★</div>
+  <div class="ep-title">考点 2：Beta-Binomial 共轭模型</div>
+  <span class="ep-type calculate">需要计算</span>
+  <span class="ep-type memory">需要记忆</span>
+  <p><b>设置：</b>数据 \(Y_1,\ldots,Y_n | \pi \stackrel{i.i.d.}{\sim} \text{Bin}(1,\pi)\)，先验 \(\pi \sim \text{Beta}(a,b)\)。</p>
+  <p><b>核心公式：</b></p>
+  <div class="formula-box">\[ \pi \mid Y_1,\ldots,Y_n \sim \text{Beta}(a + y, \; b + n - y), \quad y = \sum_{i=1}^{n} y_i \]</div>
+  <p><b>特殊情况：</b>均匀先验 \(U(0,1) = \text{Beta}(1,1)\)，后验为 \(\text{Beta}(1+y, 1+n-y)\)。</p>
+  <div class="confuse-box">注意 \(a\) 加的是成功次数 \(y\)，\(b\) 加的是失败次数 \(n-y\)，不要搞反！另外 \(U(0,1)\) 就是 \(\text{Beta}(1,1)\)，不是 \(\text{Beta}(0,0)\)。</div>
+</div>
+
+<!-- 考点3 -->
+<div class="exam-point">
+  <div class="stars">★★★</div>
+  <div class="ep-title">考点 3：Gamma-Poisson 共轭模型</div>
+  <span class="ep-type calculate">需要计算</span>
+  <span class="ep-type memory">需要记忆</span>
+  <p><b>设置：</b>数据 \(X_1,\ldots,X_n | \mu \stackrel{i.i.d.}{\sim} \text{Poisson}(\mu)\)，先验 \(\mu \sim \text{Gamma}(a,b)\)。</p>
+  <p><b>核心公式：</b></p>
+  <div class="formula-box">\[ \mu \mid X_1,\ldots,X_n \sim \text{Gamma}\!\left(a + \sum_{i=1}^{n} x_i, \; b + n\right) \]</div>
+  <div class="confuse-box">Gamma 的第一个参数加的是"观测总数" \(\sum x_i\)（不是样本量！），第二个参数加的才是样本量 \(n\)。这与 Beta 的更新逻辑不同。</div>
+</div>
+
+<!-- 考点4 -->
+<div class="exam-point">
+  <div class="stars">★★★</div>
+  <div class="ep-title">考点 4：Beta 分布的均值与方差</div>
+  <span class="ep-type memory">需要记忆</span>
+  <span class="ep-type calculate">需要计算</span>
+  <p><b>公式：</b>若 \(X \sim \text{Beta}(a,b)\)，则</p>
+  <div class="formula-box">\[ E[X] = \frac{a}{a+b}, \qquad \text{Var}[X] = \frac{ab}{(a+b)^2(a+b+1)} \]</div>
+  <div class="confuse-box">方差公式的分母有两个因子：\((a+b)^2\) 和 \((a+b+1)\)。不要遗漏 \((a+b+1)\)。</div>
+</div>
+
+<!-- 考点5 -->
+<div class="exam-point">
+  <div class="stars">★★★</div>
+  <div class="ep-title">考点 5：Gamma 分布的均值与方差</div>
+  <span class="ep-type memory">需要记忆</span>
+  <span class="ep-type calculate">需要计算</span>
+  <p><b>公式：</b>若 \(X \sim \text{Gamma}(a,b)\)（rate parameterization），则</p>
+  <div class="formula-box">\[ E[X] = \frac{a}{b}, \qquad \text{Var}[X] = \frac{a}{b^2} \]</div>
+  <div class="confuse-box">Gamma 分布有两种参数化方式（rate vs. scale）。本课使用 rate 参数化：\(\text{Gamma}(a, b)\) 中 \(b\) 是 rate。均值 = shape/rate，方差 = shape/rate²。</div>
+</div>
+
+<!-- 考点6 -->
+<div class="exam-point">
+  <div class="stars">★★</div>
+  <div class="ep-title">考点 6：先验、样本均值与后验均值的比较</div>
+  <span class="ep-type understand">需要理解</span>
+  <span class="ep-type calculate">需要计算</span>
+  <p><b>核心理解：</b>后验均值通常介于先验均值和样本均值之间——是两者的"加权折中"。数据量越大，后验越靠近样本均值；数据量越小，先验影响越大。</p>
+  <p><b>后验方差始终小于先验方差</b>——数据总是减少不确定性。</p>
+</div>
+
+<!-- 考点7 -->
+<div class="exam-point">
+  <div class="stars">★★</div>
+  <div class="ep-title">考点 7：共轭先验的概念</div>
+  <span class="ep-type understand">需要理解</span>
+  <span class="ep-type memory">需要记忆</span>
+  <p><b>定义：</b>若先验分布和后验分布属于同一分布族，则该先验称为该似然的共轭先验。</p>
+  <p><b>本讲的两对共轭：</b>Beta ↔ Binomial，Gamma ↔ Poisson。</p>
+</div>
+
+<!-- 考点8 -->
+<div class="exam-point">
+  <div class="stars">★★</div>
+  <div class="ep-title">考点 8：Gamma 先验的参数匹配（矩匹配法）</div>
+  <span class="ep-type calculate">需要计算</span>
+  <p><b>方法：</b>已知先验均值 \(m\) 和标准差 \(s\)，求 \(\text{Gamma}(r, w)\) 的参数：</p>
+  <div class="formula-box">\[ \frac{r}{w} = m, \quad \frac{r}{w^2} = s^2 \implies w = \frac{m}{s^2}, \quad r = \frac{m^2}{s^2} \]</div>
+  <div class="confuse-box">注意用的是方差 \(s^2\)，不是标准差 \(s\)。题目往往给标准差，需要先平方。</div>
+</div>
+
+<!-- 考点9 -->
+<div class="exam-point">
+  <div class="stars">★★</div>
+  <div class="ep-title">考点 9：似然函数的推导</div>
+  <span class="ep-type understand">需要理解</span>
+  <span class="ep-type calculate">需要计算</span>
+  <p><b>要点：</b>独立同分布数据的似然 = 各单个观测概率之积。对于 Binomial 和 Poisson 似然，要能从头推导出来。</p>
+  <p><b>关键技巧：</b>似然作为参数的函数，可以忽略与参数无关的常数因子（如 \(\binom{n}{y}\) 或 \(x_i!\)），只保留与 \(\theta\) 有关的部分。</p>
+</div>
+
+<!-- 考点10 -->
+<div class="exam-point">
+  <div class="stars">★</div>
+  <div class="ep-title">考点 10：边际分布 \(p(y)\) 的计算</div>
+  <span class="ep-type understand">需要理解</span>
+  <span class="ep-type calculate">需要计算</span>
+  <p><b>公式：</b>\(p(y) = \int p(y|\theta)p(\theta)\,d\theta\)，利用已知分布的归一化常数来计算。</p>
+  <p><b>技巧：</b>通过识别积分核（kernel）与 Beta/Gamma 函数的关系：\(\int_0^1 x^{a-1}(1-x)^{b-1}dx = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}\)。</p>
+</div>
+
+<!-- 考点11 -->
+<div class="exam-point">
+  <div class="stars">★</div>
+  <div class="ep-title">考点 11：非共轭先验的后验推导</div>
+  <span class="ep-type calculate">需要计算</span>
+  <span class="ep-type understand">需要理解</span>
+  <p><b>要点：</b>当先验不是共轭先验时，后验不一定属于已知分布族。需要手动推导后验密度，可能需要数值积分来归一化。</p>
+  <p><b>方法：</b>后验 \(\propto\) 似然 × 先验。展开、化简，看是否能识别为已知分布的核。</p>
+  <p><b>对应题目：</b>Problem Sheet 第 5 题。</p>
+</div>
+</div><!-- end part2 -->
+
+
+<!-- ============================================================ -->
+<!-- PART 3: 复习题目 -->
+<!-- ============================================================ -->
+<div id="part3">
+<div class="section-title"><span class="icon">✏️</span> 第三部分：复习题目</div>
+
+<!-- ===== Q1 选择题 ===== -->
+<div class="question-block" data-qid="q1">
+  <div class="q-meta">
+    <span class="q-tag type">选择题</span>
+    <span class="q-tag point">考点 7：共轭先验</span>
+    <span class="q-tag diff-basic">基础</span>
+  </div>
+  <div class="q-text">以下哪对是共轭先验-似然配对？</div>
+  <ul class="mc-options" data-correct="B">
+    <li data-val="A">A. Gamma 先验 + Binomial 似然</li>
+    <li data-val="B">B. Beta 先验 + Binomial 似然</li>
+    <li data-val="C">C. Beta 先验 + Poisson 似然</li>
+    <li data-val="D">D. Normal 先验 + Binomial 似然</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <b>答案：B</b><br><br>
+      <b>解析：</b>Beta 是 Binomial 的共轭先验（后验仍为 Beta）。Gamma 是 Poisson 的共轭先验。A、C、D 都不构成共轭对。<br><br>
+      <b>考查点：</b>记住两对共轭关系：Beta↔Binomial，Gamma↔Poisson。
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q2 选择题 ===== -->
+<div class="question-block" data-qid="q2">
+  <div class="q-meta">
+    <span class="q-tag type">选择题</span>
+    <span class="q-tag point">考点 2：Beta-Binomial</span>
+    <span class="q-tag diff-basic">基础</span>
+  </div>
+  <div class="q-text">均匀先验 \(U(0,1)\) 等价于哪个 Beta 分布？</div>
+  <ul class="mc-options" data-correct="C">
+    <li data-val="A">A. Beta(0, 0)</li>
+    <li data-val="B">B. Beta(0.5, 0.5)</li>
+    <li data-val="C">C. Beta(1, 1)</li>
+    <li data-val="D">D. Beta(2, 2)</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <b>答案：C</b><br><br>
+      <b>解析：</b>将 \(a=1, b=1\) 代入 Beta PDF：\(p(\theta) = \frac{\Gamma(2)}{\Gamma(1)\Gamma(1)} \theta^{0}(1-\theta)^{0} = 1\)，恰好是 \([0,1]\) 上的均匀分布。<br><br>
+      <b>易错提醒：</b>Beta(0,0) 不是合法的分布参数（\(a, b > 0\)）。Beta(0.5, 0.5) 是 Jeffreys 先验，不是均匀先验。
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q3 判断题 ===== -->
+<div class="question-block" data-qid="q3">
+  <div class="q-meta">
+    <span class="q-tag type">判断题</span>
+    <span class="q-tag point">考点 6：先验与后验比较</span>
+    <span class="q-tag diff-basic">基础</span>
+  </div>
+  <div class="q-text">判断：后验方差总是小于先验方差。</div>
+  <div class="tf-options" data-correct="true">
+    <button data-val="true">✓ 正确</button>
+    <button data-val="false">✗ 错误</button>
+  </div>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <b>答案：正确</b><br><br>
+      <b>解析：</b>在共轭模型中，数据总是增加后验分布的参数总和（\(a+b\) 或 \(a+b\) 都增大），从而减小方差。直观理解：看到更多数据后，我们对参数的不确定性降低了。<br><br>
+      <b>考查点：</b>理解数据如何"收紧"后验分布。
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q4 选择题 ===== -->
+<div class="question-block" data-qid="q4">
+  <div class="q-meta">
+    <span class="q-tag type">选择题</span>
+    <span class="q-tag point">考点 3：Gamma-Poisson</span>
+    <span class="q-tag diff-mid">进阶</span>
+  </div>
+  <div class="q-text">若先验 \(\mu \sim \text{Gamma}(3, 1)\)，观测到 \(n=5\) 个独立 Poisson 数据的总和为 \(\sum x_i = 20\)，后验分布是？</div>
+  <ul class="mc-options" data-correct="D">
+    <li data-val="A">A. Gamma(20, 5)</li>
+    <li data-val="B">B. Gamma(23, 5)</li>
+    <li data-val="C">C. Gamma(20, 6)</li>
+    <li data-val="D">D. Gamma(23, 6)</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <b>答案：D</b><br><br>
+      <div class="step"><b>解题步骤：</b><br>
+      后验 = \(\text{Gamma}(a + \sum x_i, \; b + n)\)<br>
+      = \(\text{Gamma}(3 + 20, \; 1 + 5)\)<br>
+      = \(\text{Gamma}(23, 6)\)</div>
+      <b>易错提醒：</b>第一个参数加的是观测总数 \(\sum x_i = 20\)，不是样本量。第二个参数加的是样本量 \(n = 5\)。
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q5 计算题：Problem Sheet Q1 ===== -->
+<div class="question-block" data-qid="q5">
+  <div class="q-meta">
+    <span class="q-tag type">计算题</span>
+    <span class="q-tag point">考点 2：Beta-Binomial</span>
+    <span class="q-tag diff-basic">基础</span>
+  </div>
+  <div class="q-text">
+    <b>（Problem Sheet Q1）</b>为了确定一本杂志在目标受众中的覆盖效果，一家市场调研公司从目标受众中随机抽取了 150 人进行访谈，其中 29 人看过了最新一期。<br>
+    (a) 写出 \(Y\)（看过最新一期的人数）的分布。<br>
+    (b) 使用 \(\pi\) 的均匀先验，求 \(\pi\) 的后验分布。<br>
+    (c) 比较先验均值和方差与后验均值和方差。
+  </div>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <div class="step"><b>(a) 数据分布：</b><br>
+      每个人独立地以概率 \(\pi\) 看过杂志，\(n=150\) 人中有 \(Y\) 人看过。<br>
+      \[ Y \mid \pi \sim \text{Binomial}(150, \pi) \]</div>
+
+      <div class="step"><b>(b) 后验分布：</b><br>
+      先验：\(\pi \sim U(0,1) = \text{Beta}(1, 1)\)<br>
+      数据：\(y = 29, \; n = 150\)<br>
+      由 Beta-Binomial 共轭：<br>
+      \[ \pi \mid Y \sim \text{Beta}(1 + 29, \; 1 + 150 - 29) = \text{Beta}(30, 122) \]</div>
+
+      <div class="step"><b>(c) 先验 vs 后验的均值和方差：</b><br><br>
+      <b>先验 \(\text{Beta}(1,1)\)：</b><br>
+      均值 = \(\frac{1}{1+1} = 0.5\)<br>
+      方差 = \(\frac{1 \times 1}{(1+1)^2(1+1+1)} = \frac{1}{12} \approx 0.0833\)<br><br>
+      <b>后验 \(\text{Beta}(30, 122)\)：</b><br>
+      均值 = \(\frac{30}{30+122} = \frac{30}{152} \approx 0.1974\)<br>
+      方差 = \(\frac{30 \times 122}{(152)^2 \times 153} = \frac{3660}{3,535,296} \approx 0.001035\)<br><br>
+      <b>结论：</b>后验均值（0.197）远离先验均值（0.5），靠近样本均值（29/150 ≈ 0.193）。后验方差（0.001）远小于先验方差（0.083），说明数据大大减少了不确定性。</div>
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q6 计算题：Problem Sheet Q2 ===== -->
+<div class="question-block" data-qid="q6">
+  <div class="q-meta">
+    <span class="q-tag type">计算题</span>
+    <span class="q-tag point">考点 2：Beta-Binomial</span>
+    <span class="q-tag diff-basic">基础</span>
+  </div>
+  <div class="q-text">
+    <b>（Problem Sheet Q2）</b>一座城市考虑建造一座新博物馆。当地报纸对 120 名居民进行了民调，其中 74 人支持建馆。<br>
+    (a) 写出 \(Y\) 的分布。<br>
+    (b) 使用均匀先验，求 \(\pi\) 的后验分布。<br>
+    (c) 比较先验和后验的均值与方差。
+  </div>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <div class="step"><b>(a) 数据分布：</b><br>
+      \[ Y \mid \pi \sim \text{Binomial}(120, \pi) \]</div>
+
+      <div class="step"><b>(b) 后验分布：</b><br>
+      先验：\(\pi \sim \text{Beta}(1, 1)\)，数据：\(y = 74, \; n = 120\)<br>
+      \[ \pi \mid Y \sim \text{Beta}(1 + 74, \; 1 + 120 - 74) = \text{Beta}(75, 47) \]</div>
+
+      <div class="step"><b>(c) 先验 vs 后验比较：</b><br><br>
+      <b>先验 Beta(1,1)：</b> 均值 = 0.5，方差 = 1/12 ≈ 0.0833<br><br>
+      <b>后验 Beta(75, 47)：</b><br>
+      均值 = \(\frac{75}{75+47} = \frac{75}{122} \approx 0.6148\)<br>
+      方差 = \(\frac{75 \times 47}{(122)^2 \times 123} = \frac{3525}{1,830,852} \approx 0.001925\)<br><br>
+      样本均值 = 74/120 ≈ 0.617。后验均值 0.615 非常接近样本均值，后验方差大幅缩小。</div>
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q7 计算题：Problem Sheet Q3 ===== -->
+<div class="question-block" data-qid="q7">
+  <div class="q-meta">
+    <span class="q-tag type">计算题</span>
+    <span class="q-tag point">考点 3：Gamma-Poisson</span>
+    <span class="q-tag diff-mid">进阶</span>
+  </div>
+  <div class="q-text">
+    <b>（Problem Sheet Q3）</b>保险公司每周收到的索赔数服从 \(\text{Poisson}(\mu)\)。十周内观测到的索赔数为：5, 8, 4, 6, 11, 6, 6, 5, 6, 4。先验为 \(\mu \sim \text{Gamma}(1, 2)\)。<br>
+    (a) 求 \(\mu\) 的后验分布。<br>
+    (b) 求后验均值和方差。
+  </div>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <div class="step"><b>(a) 后验分布：</b><br>
+      先验：\(\mu \sim \text{Gamma}(1, 2)\)，即 \(a = 1, b = 2\)<br>
+      样本量：\(n = 10\)<br>
+      观测总数：\(\sum x_i = 5+8+4+6+11+6+6+5+6+4 = 61\)<br><br>
+      由 Gamma-Poisson 共轭：<br>
+      \[ \mu \mid X \sim \text{Gamma}(1 + 61, \; 2 + 10) = \text{Gamma}(62, 12) \]</div>
+
+      <div class="step"><b>(b) 后验均值和方差：</b><br>
+      后验均值 = \(\frac{a'}{b'} = \frac{62}{12} \approx 5.167\)<br><br>
+      后验方差 = \(\frac{a'}{b'^2} = \frac{62}{144} \approx 0.431\)<br><br>
+      <b>对比：</b>先验均值 = 1/2 = 0.5，先验方差 = 1/4 = 0.25。样本均值 = 61/10 = 6.1。后验均值 5.167 在先验均值（0.5）和样本均值（6.1）之间，但由于数据量大，更接近样本均值。</div>
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q8 计算题：Problem Sheet Q4 ===== -->
+<div class="question-block" data-qid="q8">
+  <div class="q-meta">
+    <span class="q-tag type">计算题</span>
+    <span class="q-tag point">考点 8：矩匹配 + 考点 3</span>
+    <span class="q-tag diff-mid">进阶</span>
+  </div>
+  <div class="q-text">
+    <b>（Problem Sheet Q4）</b>织布机每 10 米布的缺陷数服从 \(\text{Poisson}(\lambda)\)。你检查了 100 米布，发现 71 个缺陷。<br>
+    (a) 你的先验信念是 \(\lambda\) 的均值为 6，标准差为 2。求匹配的 \(\text{Gamma}(r, w)\) 先验参数。<br>
+    (b) 求观测到 71 个缺陷后 \(\lambda\) 的后验分布。
+  </div>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <div class="step"><b>(a) 矩匹配求先验参数：</b><br>
+      已知 \(E[\lambda] = r/w = 6\)，\(\text{SD}[\lambda] = 2 \Rightarrow \text{Var}[\lambda] = r/w^2 = 4\)<br><br>
+      由 \(\frac{r/w}{r/w^2} = \frac{6}{4}\) 得 \(w = \frac{6}{4} = 1.5\)<br><br>
+      代入 \(r/w = 6\) 得 \(r = 6 \times 1.5 = 9\)<br><br>
+      <b>先验：\(\lambda \sim \text{Gamma}(9, 1.5)\)</b></div>
+
+      <div class="step"><b>(b) 后验分布：</b><br>
+      100 米布 = 10 个"每 10 米"单元，所以 \(n = 10\)<br>
+      观测总数：\(\sum x_i = 71\)<br><br>
+      \[ \lambda \mid X \sim \text{Gamma}(9 + 71, \; 1.5 + 10) = \text{Gamma}(80, 11.5) \]<br>
+      后验均值 = \(80/11.5 \approx 6.957\)，后验方差 = \(80/11.5^2 \approx 0.605\)</div>
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q9 计算题：Problem Sheet Q5 ===== -->
+<div class="question-block" data-qid="q9">
+  <div class="q-meta">
+    <span class="q-tag type">计算题</span>
+    <span class="q-tag point">考点 11：非共轭先验</span>
+    <span class="q-tag diff-hard">综合</span>
+  </div>
+  <div class="q-text">
+    <b>（Problem Sheet Q5）</b>我们对 \(\text{Binomial}(n, \theta)\) 分布的参数 \(\theta\) 感兴趣。\(\theta\) 的先验密度为：
+    \[ f(\theta) = k_0 \left[\theta^2(1-\theta) + \theta(1-\theta)^2\right], \quad 0 < \theta < 1 \]
+    这不是共轭先验。<br><br>
+    (a)(i) 求 \(k_0\) 的值。<br>
+    (a)(ii) 求 \(\theta\) 的先验均值。<br>
+    (a)(iii) 求 \(\theta\) 的先验标准差。<br>
+    (b)(i) 写出似然函数。<br>
+    (b)(ii) 求 \(\theta\) 的后验密度。<br>
+    (b)(iii) 求 \(\theta\) 的后验均值。
+  </div>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <div class="step"><b>(a)(i) 求 \(k_0\)：</b><br>
+      先化简先验核：<br>
+      \(\theta^2(1-\theta) + \theta(1-\theta)^2\)<br>
+      \(= \theta^2 - \theta^3 + \theta(1 - 2\theta + \theta^2)\)<br>
+      \(= \theta^2 - \theta^3 + \theta - 2\theta^2 + \theta^3\)<br>
+      \(= \theta - \theta^2\)<br>
+      \(= \theta(1-\theta)\)<br><br>
+      因此 \(f(\theta) = k_0 \cdot \theta(1-\theta)\)。归一化：<br>
+      \(\int_0^1 k_0 \theta(1-\theta)\,d\theta = k_0 \left[\frac{\theta^2}{2} - \frac{\theta^3}{3}\right]_0^1 = k_0 \cdot \frac{1}{6} = 1\)<br><br>
+      \[\boxed{k_0 = 6}\]</div>
+
+      <div class="step"><b>(a)(ii) 先验均值：</b><br>
+      \(E[\theta] = \int_0^1 \theta \cdot 6\theta(1-\theta)\,d\theta = 6\int_0^1 (\theta^2 - \theta^3)\,d\theta\)<br>
+      \(= 6\left[\frac{1}{3} - \frac{1}{4}\right] = 6 \times \frac{1}{12}\)<br><br>
+      \[\boxed{E[\theta] = \frac{1}{2}}\]</div>
+
+      <div class="step"><b>(a)(iii) 先验标准差：</b><br>
+      \(E[\theta^2] = \int_0^1 \theta^2 \cdot 6\theta(1-\theta)\,d\theta = 6\int_0^1 (\theta^3 - \theta^4)\,d\theta = 6\left[\frac{1}{4} - \frac{1}{5}\right] = 6 \times \frac{1}{20} = \frac{3}{10}\)<br><br>
+      \(\text{Var}[\theta] = \frac{3}{10} - \left(\frac{1}{2}\right)^2 = \frac{3}{10} - \frac{1}{4} = \frac{12 - 10}{40} = \frac{1}{20}\)<br><br>
+      \[\boxed{\text{SD}[\theta] = \sqrt{\frac{1}{20}} = \frac{1}{2\sqrt{5}} \approx 0.2236}\]</div>
+
+      <div class="step"><b>(b)(i) 似然函数：</b><br>
+      观测到 \(X = x\)，其中 \(X \sim \text{Binomial}(n, \theta)\)：<br>
+      \[L(\theta \mid x) = \binom{n}{x} \theta^x (1-\theta)^{n-x} \propto \theta^x(1-\theta)^{n-x}\]</div>
+
+      <div class="step"><b>(b)(ii) 后验密度：</b><br>
+      \(f(\theta \mid x) \propto L(\theta \mid x) \cdot f(\theta)\)<br>
+      \(= \theta^x(1-\theta)^{n-x} \cdot 6\theta(1-\theta)\)<br>
+      \(= 6\,\theta^{x+1}(1-\theta)^{n-x+1}\)<br><br>
+      这是 \(\text{Beta}(x+2, \; n-x+2)\) 分布的核！归一化后：<br>
+      \[\boxed{f(\theta \mid x) = \frac{\Gamma(n+4)}{\Gamma(x+2)\,\Gamma(n-x+2)} \theta^{x+1}(1-\theta)^{n-x+1}}\]
+      即 \(\theta \mid X = x \sim \text{Beta}(x+2, \; n-x+2)\)。</div>
+
+      <div class="step"><b>(b)(iii) 后验均值：</b><br>
+      由 Beta 分布均值公式：<br>
+      \[\boxed{E[\theta \mid x] = \frac{x+2}{n+4}}\]<br>
+      <b>有趣的发现：</b>虽然先验不是标准 Beta 分布，但化简后 \(f(\theta) \propto \theta(1-\theta)\)，其实等价于 \(\text{Beta}(2,2)\)。所以后验仍然是 Beta 分布！</div>
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q10 判断题 ===== -->
+<div class="question-block" data-qid="q10">
+  <div class="q-meta">
+    <span class="q-tag type">判断题</span>
+    <span class="q-tag point">考点 3：Gamma-Poisson</span>
+    <span class="q-tag diff-basic">基础</span>
+  </div>
+  <div class="q-text">判断：在 Gamma-Poisson 模型中，后验的第一个参数加上的是样本量 \(n\)。</div>
+  <div class="tf-options" data-correct="false">
+    <button data-val="true">✓ 正确</button>
+    <button data-val="false">✗ 错误</button>
+  </div>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <b>答案：错误</b><br><br>
+      <b>解析：</b>在 \(\text{Gamma}(a + \sum x_i, b + n)\) 中，第一个参数加的是<b>观测总数 \(\sum x_i\)</b>，第二个参数才加样本量 \(n\)。这是非常容易搞混的考点！
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q11 选择题 ===== -->
+<div class="question-block" data-qid="q11">
+  <div class="q-meta">
+    <span class="q-tag type">选择题</span>
+    <span class="q-tag point">考点 5：Gamma 均值方差</span>
+    <span class="q-tag diff-mid">进阶</span>
+  </div>
+  <div class="q-text">若 \(\mu \sim \text{Gamma}(80, 10)\)，则 \(\mu\) 的均值和方差分别是？</div>
+  <ul class="mc-options" data-correct="B">
+    <li data-val="A">A. 均值 = 800，方差 = 8000</li>
+    <li data-val="B">B. 均值 = 8，方差 = 0.8</li>
+    <li data-val="C">C. 均值 = 8，方差 = 80</li>
+    <li data-val="D">D. 均值 = 0.125，方差 = 0.0125</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <b>答案：B</b><br><br>
+      <b>解析：</b>Gamma(\(a, b\)) 的均值 = \(a/b = 80/10 = 8\)，方差 = \(a/b^2 = 80/100 = 0.8\)。<br><br>
+      <b>易错提醒：</b>A 选项是把均值算成了 \(a \times b\)（错误）。D 选项可能是用了 scale 参数化（\(b\) 当作 scale 而非 rate）。本课使用 rate 参数化。
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q12 计算题 ===== -->
+<div class="question-block" data-qid="q12">
+  <div class="q-meta">
+    <span class="q-tag type">计算题</span>
+    <span class="q-tag point">考点 8：矩匹配</span>
+    <span class="q-tag diff-mid">进阶</span>
+  </div>
+  <div class="q-text">你认为某地区每天交通事故数 \(\lambda\) 的均值为 4，标准差为 1。求匹配此信念的 \(\text{Gamma}(r, w)\) 先验参数。</div>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <div class="step"><b>矩匹配：</b><br>
+      均值：\(r/w = 4\)<br>
+      方差：\(r/w^2 = 1^2 = 1\)（注意用方差，不是标准差！）<br><br>
+      由 \(\frac{r/w}{r/w^2} = \frac{4}{1}\) 得 \(w = 4\)<br>
+      代入得 \(r = 4 \times 4 = 16\)<br><br>
+      \[\boxed{\lambda \sim \text{Gamma}(16, 4)}\]<br>
+      验证：均值 = 16/4 = 4 ✓，方差 = 16/16 = 1 ✓，标准差 = 1 ✓</div>
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q13 综合计算题 ===== -->
+<div class="question-block" data-qid="q13">
+  <div class="q-meta">
+    <span class="q-tag type">计算题</span>
+    <span class="q-tag point">考点 2 + 4 + 6 综合</span>
+    <span class="q-tag diff-hard">综合</span>
+  </div>
+  <div class="q-text">
+    某医院想估计一种新疫苗的有效率 \(\pi\)。根据前期试验，医生认为 \(\pi\) 服从 \(\text{Beta}(3, 1)\) 先验。随后对 200 名受试者进行试验，其中 170 人产生了有效免疫反应。<br>
+    (a) 求 \(\pi\) 的后验分布。<br>
+    (b) 求先验和后验的均值、方差。<br>
+    (c) 与样本比例相比，后验均值偏向哪一侧？解释原因。
+  </div>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <div class="step"><b>(a) 后验分布：</b><br>
+      先验：\(\pi \sim \text{Beta}(3, 1)\)，\(y = 170, n = 200\)<br>
+      \[\pi \mid Y \sim \text{Beta}(3 + 170, \; 1 + 200 - 170) = \text{Beta}(173, 31)\]</div>
+
+      <div class="step"><b>(b) 均值和方差：</b><br>
+      <b>先验 Beta(3,1)：</b><br>
+      均值 = \(3/4 = 0.75\)<br>
+      方差 = \(\frac{3 \times 1}{16 \times 5} = \frac{3}{80} = 0.0375\)<br><br>
+      <b>后验 Beta(173, 31)：</b><br>
+      均值 = \(\frac{173}{204} \approx 0.848\)<br>
+      方差 = \(\frac{173 \times 31}{(204)^2 \times 205} = \frac{5363}{8,528,880} \approx 0.000629\)</div>
+
+      <div class="step"><b>(c) 分析：</b><br>
+      样本比例 = \(170/200 = 0.85\)。后验均值 0.848 非常接近样本比例 0.85，略偏向先验均值 0.75 的方向。<br><br>
+      <b>原因：</b>数据量很大（\(n=200\)），先验的"权重"相对较小（先验可以理解为"虚拟的 \(a+b-2 = 2\) 个观测"），所以后验几乎完全由数据主导。先验的拉力效应非常微弱。</div>
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q14 简答题 ===== -->
+<div class="question-block" data-qid="q14">
+  <div class="q-meta">
+    <span class="q-tag type">简答题</span>
+    <span class="q-tag point">考点 1 + 7：贝叶斯框架 + 共轭</span>
+    <span class="q-tag diff-mid">进阶</span>
+  </div>
+  <div class="q-text">
+    (a) 解释为什么在贝叶斯推断中，我们说"后验正比于似然乘以先验"，而不需要直接计算 \(p(\text{data})\)。<br>
+    (b) 什么是共轭先验？使用共轭先验有什么优势？
+  </div>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <div class="step"><b>(a)</b><br>
+      贝叶斯公式为 \(p(\theta|y) = \frac{p(y|\theta)p(\theta)}{p(y)}\)。分母 \(p(y) = \int p(y|\theta)p(\theta)\,d\theta\) 是一个积分常数，不依赖于参数 \(\theta\)。因此在确定后验分布的"形状"时，我们只需关注分子 \(p(y|\theta) \cdot p(\theta)\)，即后验 \(\propto\) 似然 × 先验。<br><br>
+      一旦识别出后验核（kernel）属于哪个已知分布族，就可以直接写出归一化常数，无需手动计算 \(p(y)\)。</div>
+
+      <div class="step"><b>(b)</b><br>
+      共轭先验是指：如果选择某一先验分布族后，得到的后验分布仍然属于同一个分布族，则该先验称为该似然的共轭先验。<br><br>
+      <b>优势：</b>使用共轭先验使得后验分布有封闭形式（closed-form），可以直接写出后验的参数，无需数值积分或模拟方法，计算简便高效。</div>
+    </div>
+  </details>
+</div>
+
+<!-- ===== Q15 选择题 ===== -->
+<div class="question-block" data-qid="q15">
+  <div class="q-meta">
+    <span class="q-tag type">选择题</span>
+    <span class="q-tag point">考点 4：Beta 均值方差</span>
+    <span class="q-tag diff-basic">基础</span>
+  </div>
+  <div class="q-text">若 \(\pi \sim \text{Beta}(30, 70)\)，\(\pi\) 的均值是？</div>
+  <ul class="mc-options" data-correct="A">
+    <li data-val="A">A. 0.3</li>
+    <li data-val="B">B. 0.7</li>
+    <li data-val="C">C. 2100</li>
+    <li data-val="D">D. 30</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析</summary>
+    <div class="answer-content">
+      <b>答案：A</b><br><br>
+      <b>解析：</b>\(E[\pi] = \frac{a}{a+b} = \frac{30}{30+70} = \frac{30}{100} = 0.3\)。<br>
+      C 选项是 \(a \times b\)（错误），D 选项只取了 \(a\)。
+    </div>
+  </details>
+</div>
+
+</div><!-- end part3 -->
+
+</div><!-- end container -->
+
+<!-- Back to Top -->
+<button class="back-top" id="backTop" aria-label="回到顶部">↑</button>
+
+<!-- ===== MathJax ===== -->
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)'],['$','$']], displayMath: [['\\[','\\]'],['$$','$$']] },
+    startup: {
+      ready: function(){ MathJax.startup.defaultReady(); },
+      failed: function(){ document.getElementById('mjFail').style.display = 'block'; }
+    }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
+  onerror="document.getElementById('mjFail').style.display='block'"></script>
+
+<!-- ===== Main Script (Event Delegation) ===== -->
+<script>
+(function(){
+  'use strict';
+
+  // === Stats ===
+  var totalQ = 0;
+  var answeredSet = new Set();
+  var correctCount = 0;
+
+  function countQuestions(){
+    totalQ = document.querySelectorAll('.question-block').length;
+    var el = document.getElementById('totalQ');
+    if(el) el.textContent = totalQ;
+  }
+
+  function updateProgress(){
+    var aEl = document.getElementById('answered');
+    var cEl = document.getElementById('correctCount');
+    var fEl = document.getElementById('progressFill');
+    if(aEl) aEl.textContent = answeredSet.size;
+    if(cEl) cEl.textContent = correctCount;
+    if(fEl) fEl.style.width = (totalQ > 0 ? (answeredSet.size / totalQ * 100) : 0) + '%';
+  }
+
+  // === Event Delegation ===
+  document.addEventListener('click', function(e){
+    // --- MC option ---
+    var li = e.target.closest('.mc-options li');
+    if(li){
+      var ul = li.closest('.mc-options');
+      if(!ul) return;
+      // Check if already answered
+      if(ul.classList.contains('answered')) return;
+      ul.classList.add('answered');
+
+      var correctVal = ul.getAttribute('data-correct');
+      var chosen = li.getAttribute('data-val');
+      var qBlock = ul.closest('.question-block');
+      var qid = qBlock ? qBlock.getAttribute('data-qid') : null;
+
+      // Mark all options
+      var items = ul.querySelectorAll('li');
+      for(var i = 0; i < items.length; i++){
+        items[i].classList.add('locked');
+        if(items[i].getAttribute('data-val') === correctVal){
+          items[i].classList.add(chosen === correctVal ? 'correct' : 'show-correct');
+        }
+      }
+      if(chosen !== correctVal) li.classList.add('wrong');
+
+      // Open details
+      var det = qBlock ? qBlock.querySelector('details.answer-block') : null;
+      if(det) det.open = true;
+
+      // Update stats
+      if(qid && !answeredSet.has(qid)){
+        answeredSet.add(qid);
+        if(chosen === correctVal) correctCount++;
+        updateProgress();
+      }
+      return;
+    }
+
+    // --- TF button ---
+    var tfBtn = e.target.closest('.tf-options button');
+    if(tfBtn){
+      var tfGroup = tfBtn.closest('.tf-options');
+      if(!tfGroup || tfGroup.classList.contains('answered')) return;
+      tfGroup.classList.add('answered');
+
+      var correctTF = tfGroup.getAttribute('data-correct');
+      var chosenTF = tfBtn.getAttribute('data-val');
+      var qBlockTF = tfGroup.closest('.question-block');
+      var qidTF = qBlockTF ? qBlockTF.getAttribute('data-qid') : null;
+
+      var btns = tfGroup.querySelectorAll('button');
+      for(var j = 0; j < btns.length; j++){
+        btns[j].classList.add('locked');
+        if(btns[j].getAttribute('data-val') === correctTF){
+          btns[j].classList.add(chosenTF === correctTF ? 'correct' : 'show-correct');
+        }
+      }
+      if(chosenTF !== correctTF) tfBtn.classList.add('wrong');
+
+      var detTF = qBlockTF ? qBlockTF.querySelector('details.answer-block') : null;
+      if(detTF) detTF.open = true;
+
+      if(qidTF && !answeredSet.has(qidTF)){
+        answeredSet.add(qidTF);
+        if(chosenTF === correctTF) correctCount++;
+        updateProgress();
+      }
+      return;
+    }
+
+    // --- Expand all ---
+    if(e.target.closest('#btnExpandAll')){
+      var allD = document.querySelectorAll('details.answer-block');
+      for(var k = 0; k < allD.length; k++) allD[k].open = true;
+      return;
+    }
+
+    // --- Collapse all ---
+    if(e.target.closest('#btnCollapseAll')){
+      var allD2 = document.querySelectorAll('details.answer-block');
+      for(var m = 0; m < allD2.length; m++) allD2[m].open = false;
+      return;
+    }
+
+    // --- Back to top ---
+    if(e.target.closest('#backTop')){
+      window.scrollTo({top:0, behavior:'smooth'});
+      return;
+    }
+  });
+
+  // === Nav highlight ===
+  var navLinks = document.querySelectorAll('.nav-inner a');
+  document.addEventListener('click', function(e2){
+    var navA = e2.target.closest('.nav-inner a');
+    if(navA){
+      for(var n = 0; n < navLinks.length; n++) navLinks[n].classList.remove('active');
+      navA.classList.add('active');
+    }
+  });
+
+  // === Back-to-top visibility ===
+  var backTopBtn = document.getElementById('backTop');
+  window.addEventListener('scroll', function(){
+    if(backTopBtn){
+      backTopBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+    }
+  });
+
+  // === Init ===
+  countQuestions();
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>

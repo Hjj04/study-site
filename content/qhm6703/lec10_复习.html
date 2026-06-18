@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>贝叶斯均值之差 · Lecture 10 期末复习</title>
+
+<!-- MathJax 配置（必须在加载脚本之前），失败时由底部脚本给出友好提示 -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']]
+  },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script id="mathjax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+:root{
+  --bg:#F5F4EF; --surface:#FFFFFF; --surface-2:#FBFAF6;
+  --ink:#1C2433; --muted:#5A6577; --faint:#8A94A3;
+  --accent:#3E3A8C; --accent-2:#5852C4; --accent-soft:#ECEBF8;
+  --teal:#0F766E; --teal-soft:#E1F1EF;
+  --amber:#9A5B0B; --amber-soft:#FBEFD6;
+  --green:#15803D; --green-soft:#E5F4EA; --green-line:#9FD3B0;
+  --red:#B91C1C; --red-soft:#FBEAEA; --red-line:#E6A8A8;
+  --line:#E5E2D8; --line-soft:#EFEDE5;
+  --shadow:0 1px 2px rgba(28,36,51,.04), 0 8px 24px rgba(28,36,51,.05);
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  --font-serif:Georgia,"Times New Roman","Songti SC","Noto Serif CJK SC",serif;
+  --maxw:880px;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;scroll-padding-top:74px;}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--font-sans);font-size:17px;line-height:1.78;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;} *{transition:none!important;animation:none!important;}}
+
+/* ---------- Masthead ---------- */
+.masthead{background:linear-gradient(180deg,#F1EFE7 0%, var(--bg) 100%);border-bottom:1px solid var(--line);}
+.masthead-inner{max-width:var(--maxw);margin:0 auto;padding:38px 24px 30px;display:flex;gap:26px;align-items:center;flex-wrap:wrap;}
+.mast-text{flex:1 1 340px;min-width:0;}
+.eyebrow{font-family:var(--font-serif);font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+.masthead h1{font-family:var(--font-serif);font-weight:700;font-size:2.05rem;line-height:1.18;margin:0 0 6px;color:#1A2030;}
+.masthead .sub-en{color:var(--muted);font-size:1.02rem;font-style:italic;margin:0 0 12px;}
+.mast-meta{font-size:.86rem;color:var(--faint);margin:0;}
+.mast-svg{flex:0 0 auto;}
+.mast-svg svg{display:block;}
+
+/* ---------- Sticky nav ---------- */
+.nav{position:sticky;top:0;z-index:50;background:rgba(251,250,246,.92);backdrop-filter:saturate(140%) blur(8px);border-bottom:1px solid var(--line);}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:0 16px;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.nav a{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;padding:13px 14px;text-decoration:none;color:var(--muted);font-size:.94rem;font-weight:600;border-bottom:2.5px solid transparent;white-space:nowrap;}
+.nav a:hover{color:var(--accent);} 
+.nav a .nidx{font-family:var(--font-serif);font-size:.8rem;color:var(--accent);border:1px solid var(--accent-soft);background:var(--accent-soft);border-radius:5px;padding:1px 6px;}
+
+/* ---------- Layout ---------- */
+main{max-width:var(--maxw);margin:0 auto;padding:8px 24px 90px;}
+.section{padding:42px 0 6px;border-top:1px dashed var(--line);}
+.section:first-of-type{border-top:none;}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin:0 0 6px;}
+.sec-num{font-family:var(--font-serif);font-size:1.5rem;color:var(--accent);font-weight:700;}
+.section h2{font-size:1.5rem;margin:0;letter-spacing:-.01em;}
+.sec-tag{font-size:.84rem;color:var(--faint);margin:2px 0 22px;}
+
+h3{font-size:1.16rem;margin:30px 0 8px;padding-left:12px;border-left:4px solid var(--accent);line-height:1.4;}
+h4{font-size:1.02rem;margin:20px 0 6px;color:#2A3340;}
+p{margin:10px 0;}
+ul,ol{margin:10px 0;padding-left:1.4em;}
+li{margin:5px 0;}
+strong{color:#141B27;font-weight:700;}
+a.inl{color:var(--accent);}
+code.k{font-family:var(--font-mono,monospace);background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:.5px 5px;font-size:.92em;}
+
+/* ---------- Callout boxes ---------- */
+.box{border-radius:10px;padding:14px 18px;margin:16px 0;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);}
+.box .box-t{font-weight:700;font-size:.92rem;letter-spacing:.02em;margin:0 0 6px;display:flex;align-items:center;gap:8px;}
+.box p:last-child{margin-bottom:0;}
+.box.formula{background:var(--accent-soft);border-color:#D8D6F2;}
+.box.formula .box-t{color:var(--accent);}
+.box.def{background:var(--teal-soft);border-color:#BFE0DB;}
+.box.def .box-t{color:var(--teal);}
+.box.warn{background:var(--amber-soft);border-color:#EBD3A0;}
+.box.warn .box-t{color:var(--amber);}
+.box.key{background:#FFFDF7;border:1px solid var(--line);border-left:5px solid var(--teal);}
+.box.key .box-t{color:var(--teal);}
+.box.analogy{background:var(--surface-2);border-left:5px solid var(--accent-2);}
+.box.analogy .box-t{color:var(--accent-2);}
+
+.pill{display:inline-block;font-size:.72rem;font-weight:700;padding:1px 8px;border-radius:999px;vertical-align:middle;}
+.pill.mem{background:#EDEAFB;color:#4B3FB0;}
+.pill.calc{background:#E1F1EF;color:#0C6B63;}
+
+/* ---------- Tables ---------- */
+.tbl-wrap{overflow-x:auto;margin:16px 0;border:1px solid var(--line);border-radius:10px;}
+table{border-collapse:collapse;width:100%;font-size:.95rem;min-width:520px;}
+th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+thead th{background:var(--surface-2);color:#33404F;font-size:.86rem;letter-spacing:.02em;border-bottom:2px solid var(--line);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:nth-child(even){background:#FCFBF8;}
+
+/* ---------- Importance stars ---------- */
+.imp{font-size:.9em;letter-spacing:1px;white-space:nowrap;}
+.imp.hi{color:#C0392B;}
+.imp.mid{color:#B8860B;}
+.imp.lo{color:var(--faint);}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin:6px 0 0;}
+.legend span b{font-weight:700;}
+
+/* ---------- Exam-point cards ---------- */
+.kp{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:16px 18px;margin:14px 0;box-shadow:var(--shadow);}
+.kp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:0 0 4px;flex-wrap:wrap;}
+.kp-head .kp-title{font-weight:700;font-size:1.04rem;color:#1A2331;}
+.kp .meta-row{margin:8px 0 0;font-size:.9rem;}
+
+/* ---------- Questions ---------- */
+.qbar{position:sticky;top:50px;z-index:40;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:12px 16px;margin:6px 0 22px;display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:space-between;}
+.qbar .controls{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{font-family:inherit;font-size:.86rem;font-weight:600;cursor:pointer;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);padding:7px 13px;border-radius:8px;}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px;}
+.progress{font-size:.9rem;color:var(--muted);}
+.progress b{color:var(--accent);font-variant-numeric:tabular-nums;}
+.progress .sep{color:var(--faint);margin:0 8px;}
+
+.qgroup-title{font-size:1.05rem;color:var(--accent);font-weight:700;margin:30px 0 4px;display:flex;align-items:center;gap:10px;}
+.qgroup-title::before{content:"";flex:0 0 22px;height:2px;background:var(--accent);}
+
+.question{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0;box-shadow:var(--shadow);}
+.q-meta{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px;}
+.tag{font-size:.72rem;font-weight:700;letter-spacing:.03em;padding:2px 9px;border-radius:999px;}
+.tag.type{background:var(--accent-soft);color:var(--accent);}
+.tag.kp{background:#F0EEE6;color:#5A6577;}
+.tag.diff-1{background:var(--green-soft);color:var(--green);}
+.tag.diff-2{background:var(--amber-soft);color:var(--amber);}
+.tag.diff-3{background:var(--red-soft);color:var(--red);}
+.q-text{font-weight:600;margin:4px 0 12px;}
+.q-text .qn{color:var(--accent);font-family:var(--font-serif);margin-right:6px;}
+
+.options{list-style:none;margin:6px 0 4px;padding:0;}
+.option{border:1.5px solid var(--line);border-radius:9px;padding:10px 14px;margin:8px 0;cursor:pointer;display:flex;gap:10px;align-items:flex-start;transition:border-color .15s, background .15s;}
+.option:hover{border-color:var(--accent-2);background:var(--surface-2);}
+.option .opt-key{font-weight:700;color:var(--accent);flex:0 0 auto;}
+.question.locked .option{cursor:default;}
+.question.locked .option:hover{background:transparent;border-color:var(--line);}
+.option.correct{background:var(--green-soft);border-color:var(--green-line);}
+.option.correct .opt-key{color:var(--green);}
+.option.wrong{background:var(--red-soft);border-color:var(--red-line);}
+.option.wrong .opt-key{color:var(--red);}
+.option .mark{margin-left:auto;font-weight:700;}
+.option.correct .mark::after{content:"✓";color:var(--green);}
+.option.wrong .mark::after{content:"✗";color:var(--red);}
+
+/* ---------- Answer details ---------- */
+details.answer-block{margin:12px 0 2px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);overflow:hidden;}
+details.answer-block>summary{cursor:pointer;padding:10px 15px;font-weight:600;font-size:.92rem;color:var(--accent);list-style:none;user-select:none;display:flex;align-items:center;gap:8px;}
+details.answer-block>summary::-webkit-details-marker{display:none;}
+details.answer-block>summary::before{content:"▶";font-size:.7rem;transition:transform .15s;color:var(--accent-2);}
+details.answer-block[open]>summary::before{transform:rotate(90deg);}
+details.answer-block>summary:hover{background:#F2F0FA;}
+.answer-content{padding:4px 17px 16px;border-top:1px solid var(--line);font-size:.97rem;}
+.answer-content .lead{font-weight:700;color:var(--green);margin:10px 0 4px;}
+.answer-content .step{margin:8px 0;}
+.answer-content .why{background:#FFFDF7;border-left:3px solid var(--amber);padding:8px 12px;margin:10px 0;border-radius:0 8px 8px 0;font-size:.93rem;}
+.answer-content .why b{color:var(--amber);}
+
+/* ---------- Back to top ---------- */
+.to-top{position:fixed;right:18px;bottom:18px;z-index:60;width:46px;height:46px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 6px 18px rgba(62,58,140,.35);opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;font-size:1.1rem;}
+.to-top.show{opacity:1;pointer-events:auto;}
+.to-top:hover{transform:translateY(-2px);}
+
+/* ---------- MathJax fallback ---------- */
+#mjx-warning{display:none;max-width:var(--maxw);margin:12px auto 0;padding:10px 16px;background:var(--amber-soft);border:1px solid #EBD3A0;border-radius:9px;color:var(--amber);font-size:.9rem;}
+#mjx-warning.show{display:block;}
+
+footer{max-width:var(--maxw);margin:0 auto;padding:30px 24px 60px;color:var(--faint);font-size:.84rem;border-top:1px dashed var(--line);}
+
+@media (max-width:640px){
+  body{font-size:16px;}
+  .masthead h1{font-size:1.7rem;}
+  main{padding:8px 16px 80px;}
+  .qbar{top:48px;}
+  .mast-svg{order:-1;}
+}
+</style>
+</head>
+<body>
+<a id="top"></a>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="mast-text">
+      <p class="eyebrow">Bayesian Statistics · Lecture 10 · 期末复习</p>
+      <h1>比较两组的贝叶斯推断：均值之差</h1>
+      <p class="sub-en">Bayesian Inference on the Difference in Means</p>
+      <p class="mast-meta">讲义来源：Dr. Nivedita Viswanathan，Queen Mary University of London · 配套习题：Problem Sheet 10（Bolstad &amp; Curran, 3rd ed., Ch. 13）</p>
+    </div>
+    <div class="mast-svg" aria-hidden="true">
+      <svg width="232" height="104" viewBox="0 0 232 104" xmlns="http://www.w3.org/2000/svg">
+        <line x1="14" y1="80" x2="222" y2="80" stroke="#C9C6BC" stroke-width="1.5"/>
+        <!-- Control curve (teal) -->
+        <path d="M30,80 C58,80 58,30 92,30 C126,30 126,80 154,80 Z" fill="#0F766E" fill-opacity="0.10" stroke="#0F766E" stroke-width="2"/>
+        <!-- Treatment curve (indigo) -->
+        <path d="M78,80 C106,80 106,22 140,22 C174,22 174,80 202,80 Z" fill="#3E3A8C" fill-opacity="0.12" stroke="#3E3A8C" stroke-width="2"/>
+        <line x1="92" y1="80" x2="92" y2="30" stroke="#0F766E" stroke-width="1.2" stroke-dasharray="3 3"/>
+        <line x1="140" y1="80" x2="140" y2="22" stroke="#3E3A8C" stroke-width="1.2" stroke-dasharray="3 3"/>
+        <!-- gap bracket -->
+        <path d="M92,14 L92,9 L140,9 L140,14" fill="none" stroke="#5A6577" stroke-width="1.2"/>
+        <text x="116" y="6" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="#5A6577" font-style="italic">&#956;&#7488;&#8722;&#956;&#7580;</text>
+        <text x="92" y="96" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="#0F766E">&#956;&#7580;</text>
+        <text x="140" y="96" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="#3E3A8C">&#956;&#7488;</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#part1"><span class="nidx">01</span>课程讲解</a>
+    <a href="#part2"><span class="nidx">02</span>考点梳理</a>
+    <a href="#part3"><span class="nidx">03</span>复习题目</a>
+  </div>
+</nav>
+
+<div id="mjx-warning">⚠️ 数学公式排版组件（MathJax）未能从网络加载，部分带分式/上下标的公式可能显示为源码（如 <code class="k">\frac{a}{b}</code>）。这不影响其余内容阅读；联网后刷新即可正常显示。</div>
+
+<main>
+
+<!-- ============================ PART 1 ============================ -->
+<section class="section" id="part1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>课程讲解</h2></div>
+  <p class="sec-tag">面向第一次接触者：先建立整体认知，再逐模块拆解。</p>
+
+  <h3>这节课到底在解决什么问题？</h3>
+  <p>一句话概括：<strong>我们有两组数据，想判断它们的平均水平是不是真的有差别，还是只是随机波动造成的假象。</strong>比如「用了新药的人」和「用了旧药的人」，新药真的把不良反应率降下来了吗？还是这次试验恰好运气好？</p>
+  <p>这节课的任务，就是用<strong>贝叶斯方法</strong>给出一个有原则、可量化的回答。整条推理链是这样的：</p>
+  <ol>
+    <li>现实里我们常要评估某种<strong>干预（intervention）</strong>是否有效——新药、新培训法、新工艺。</li>
+    <li>把对象随机分成两组：<strong>实验组（Treatment, T）</strong>接受干预，<strong>对照组（Control, C）</strong>不接受。</li>
+    <li>我们真正关心的量是两组均值之差 \(\mu_T-\mu_C\)。</li>
+    <li>对每组的均值设一个<strong>先验</strong>，用各自的数据更新出<strong>后验</strong>，再算出「差」的后验分布。</li>
+    <li>有了「差」的后验分布，就能算<strong>可信区间</strong>、做<strong>假设检验</strong>，从而下结论。</li>
+  </ol>
+
+  <div class="box key">
+    <p class="box-t">🔑 全课最关键的一句话</p>
+    <p>因为两组样本<strong>独立</strong>、先验也<strong>独立</strong>选取，所以两个后验<strong>相互独立</strong>；而<strong>两个独立正态分布之差仍是正态分布</strong>。这一步把「比较两组」的难题，化简成了我们上节课已经会处理的「单个正态分布」问题。整节课的所有套路都从这句话长出来。</p>
+  </div>
+
+  <p>课程按数据类型分成三种情形，难度递进：</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>情形</th><th>数据类型</th><th>核心工具</th><th>课上例子</th></tr></thead>
+    <tbody>
+      <tr><td><b>① 正态 + 等方差</b><br>（加性模型）</td><td>连续测量值</td><td>正态–正态共轭</td><td>两种培训方法的完成时间</td></tr>
+      <tr><td><b>② 正态 + 不等方差</b><br>（非加性模型）</td><td>连续测量值</td><td>每组各用自己的方差做共轭</td><td>两种元件的故障间隔时间</td></tr>
+      <tr><td><b>③ 二项</b><br>（计数）</td><td>事件次数</td><td>Beta–二项共轭 + 正态近似</td><td>新旧药的不良反应数</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>模块一：为什么一定要有对照组？</h3>
+  <p>核心思想：<strong>没有对照组，就无法把「干预本身的效果」和「其他干扰因素」分开</strong>。对照组提供一条基准线（baseline），让你知道「什么都不做会是什么样」。</p>
+  <p><strong>完全随机化设计（completely randomised design）</strong>：把个体<strong>随机、独立</strong>地分到两组。随机分配的好处是让两组之间原本存在的个体差异「靠运气」均匀分散到两组，从而<strong>消除选择偏倚（selection bias）</strong>——我们不能挑挑拣拣谁进实验组。</p>
+  <div class="box analogy">
+    <p class="box-t">🌱 类比</p>
+    <p>想知道一种新肥料是否让庄稼长得更高，你得把地随机分成两块，一块施新肥（实验组），一块照旧（对照组）。如果你专挑阳光最好的地去施新肥，那「长得高」到底是肥料的功劳还是阳光的功劳，就永远说不清了。随机化就是为了堵住这种解释漏洞。</p>
+  </div>
+  <p><strong>目标</strong>：分析 \(\mu_T-\mu_C\)。若它明显大于 0，干预有正效应；若接近 0，干预可能无效。</p>
+
+  <h3>模块二：先看数据「长什么样」</h3>
+  <p>数据的类型决定我们用哪套共轭工具：</p>
+  <ul>
+    <li><strong>正态（连续）数据</strong>：测量值，如完成时间、血压、溶氧量、乳脂含量。模型 \(Y_T\sim N(\mu_T,\sigma_T^2)\)，用<strong>正态–正态共轭</strong>。</li>
+    <li><strong>二项（计数）数据</strong>：事件次数，如不良反应数、次品数、康复人数。模型 \(Y_T\sim \text{Bin}(n_T,\theta_T)\)，用<strong>Beta–二项共轭</strong>。</li>
+  </ul>
+
+  <h3>模块三：正态数据，等方差（加性模型）</h3>
+  <p><strong>「加性模型」是什么意思？</strong>如果两种方法的差别是一个对每个人都<strong>相同的恒定平移</strong>（constant shift），那么给均值加一个常数并不会改变方差，于是两组方差相等 \(\sigma_A^2=\sigma_B^2=\sigma^2\)。这就叫加性模型（additive model）。</p>
+
+  <div class="box formula">
+    <p class="box-t">📐 正态–正态共轭：单组后验更新公式</p>
+    <p>先验 \(\mu\sim N(m,s^2)\)，数据有 \(n\) 个观测、样本均值 \(\bar y\)、已知方差 \(\sigma^2\)，则后验 \(\mu\mid Y\sim N(m',\,s'^2)\)，其中</p>
+    \[ s'^2=\frac{1}{\dfrac{n}{\sigma^2}+\dfrac{1}{s^2}},\qquad m'=s'^2\left(\frac{n\bar y}{\sigma^2}+\frac{m}{s^2}\right). \]
+  </div>
+
+  <div class="box analogy">
+    <p class="box-t">⚖️ 怎么理解这个公式：精度加权平均</p>
+    <p>后验均值其实是「先验均值 \(m\)」和「样本均值 \(\bar y\)」的<strong>加权平均</strong>，权重是各自的<strong>精度</strong>（precision = 1/方差）。数据越多（\(n\) 大）或测量越准（\(\sigma^2\) 小），数据的话语权越大，后验越靠近 \(\bar y\)；先验越笃定（\(s^2\) 小），先验话语权越大。<br>就像你对某人身高先有个猜测，再量了几次：量得多又准，你更信测量值；只瞥了一眼，你更信原来的猜测。后验就是按「可信度」加权的折中。</p>
+  </div>
+
+  <div class="box formula">
+    <p class="box-t">📐 「差」的后验：方差相加</p>
+    <p>令 \(\mu_{\text{diff}}=\mu_A-\mu_B\)，由两后验独立可得</p>
+    \[ \mu_{\text{diff}}\mid Y_A,Y_B\sim N\!\big(m'_A-m'_B,\; s_A'^2+s_B'^2\big). \]
+  </div>
+  <div class="box warn">
+    <p class="box-t">⚠️ 最常见的错误</p>
+    <p>求「差」的离散程度时，是把<strong>方差相加</strong>，<strong>不是</strong>把标准差相加！因为当 \(X,Y\) 独立时 \(\operatorname{Var}(X-Y)=\operatorname{Var}(X)+\operatorname{Var}(Y)\)。算完方差后再开根号得到 \(s_{\text{diff}}\)。注意符号：是减号 \(X-Y\)，但方差仍然<strong>相加</strong>。</p>
+  </div>
+
+  <h3>模块四：可信区间与假设检验</h3>
+  <p><strong>95% 贝叶斯可信区间</strong>：\(m_{\text{diff}}\pm z\cdot s_{\text{diff}}\)。其中 95% 对应 \(z=1.96\)，90% 对应 \(z=1.645\)。</p>
+  <p><strong>假设检验有两种姿势：</strong></p>
+  <ul>
+    <li><strong>双侧</strong> \(H_0:\mu_{\text{diff}}=0\) vs \(H_1:\mu_{\text{diff}}\neq 0\)：直接看 \(0\) 是否落在可信区间内。在区间内 → <strong>不能拒绝</strong> \(H_0\)；在区间外 → <strong>拒绝</strong> \(H_0\)。</li>
+    <li><strong>单侧</strong>（如 \(H_0:\mu_{\text{diff}}\le 0\) vs \(H_1:\mu_{\text{diff}}>0\)）：计算后验概率 \(P(\mu_{\text{diff}}\le 0\mid \text{data})=P\!\big(Z\le \tfrac{0-m_{\text{diff}}}{s_{\text{diff}}}\big)\)。若这个概率很小（小于显著性水平）→ <strong>拒绝</strong> \(H_0\)。</li>
+  </ul>
+
+  <h3>模块五：可信区间 vs 置信区间（高频概念题）</h3>
+  <p>这是贝叶斯与频率派的根本分歧：</p>
+  <ul>
+    <li><strong>贝叶斯可信区间（credible interval）</strong>：直接是关于<strong>参数</strong>的概率陈述——「参数有 95% 的概率落在这个区间里」。它建立在后验分布之上，参数被看作随机变量。</li>
+    <li><strong>频率派置信区间（confidence interval）</strong>：是关于<strong>方法</strong>的陈述——「如果重复实验很多次，约 95% 的这种区间会盖住真值」。参数被看作固定但未知。</li>
+  </ul>
+  <div class="box key">
+    <p class="box-t">🔑 一个有趣的事实</p>
+    <p>当先验很<strong>弥散 / 无信息（diffuse）</strong>时，两种区间在<strong>数值上几乎一模一样</strong>（讲义培训例子中：贝叶斯 \((-8.53,1.93)\) vs 频率派 \((-8.57,1.97)\)）。但它们的<strong>哲学解释完全不同</strong>。考试常借这一点考概念。</p>
+  </div>
+
+  <h3>模块六：正态数据，不等方差（非加性模型）</h3>
+  <p>如果干预效果<strong>因人而异</strong>（不是恒定平移），那实验组的变异性会和对照组不同：\(\sigma_T^2\neq\sigma_C^2\)。这叫<strong>非加性模型（nonadditive model）</strong>。</p>
+  <p>例子：新药对某些病人效果强、对某些几乎没用 → 实验组内部差异更大；又如一个工厂工艺控制严（方差小）、另一个松（方差大）。</p>
+  <p>做法和等方差几乎一样，<strong>唯一区别是每组用自己的方差</strong>做共轭更新：</p>
+  <div class="box formula">
+    <p class="box-t">📐 非加性模型的「差」</p>
+    \[ \mu_{\text{diff}}=\mu_T-\mu_C\mid Y_T,Y_C\sim N\!\big(m'_T-m'_C,\; s_T'^2+s_C'^2\big),\quad\text{其中 } s_T'^2\neq s_C'^2. \]
+  </div>
+
+  <h3>模块七：二项数据（Beta–二项共轭 + 正态近似）</h3>
+  <p>当结果是「计数」时（多少人有不良反应、多少件次品），用<strong>二项似然 + Beta 先验</strong>，比较两个比例 \(\theta_T,\theta_C\)。</p>
+  <div class="box formula">
+    <p class="box-t">📐 Beta–二项共轭</p>
+    <p>若先验 \(\theta\sim\text{Beta}(a,b)\)，似然 \(Y\sim\text{Bin}(n,\theta)\)，则后验</p>
+    \[ \theta\mid Y\sim\text{Beta}(a+y,\; b+n-y). \]
+    <p style="margin-top:6px;">直观记法：\(a\) 加上「成功数 \(y\)」，\(b\) 加上「失败数 \(n-y\)」。</p>
+  </div>
+  <p><strong>难点</strong>：两个 Beta 之差<strong>没有简单的封闭形式</strong>。解决办法是<strong>正态近似</strong>——把每个 Beta 后验近似成正态：</p>
+  <div class="box formula">
+    <p class="box-t">📐 Beta(a′, b′) 的正态近似</p>
+    \[ \theta\approx N\!\left(\mu=\frac{a'}{a'+b'},\ \ \sigma^2=\frac{a'b'}{(a'+b')^2\,(a'+b'+1)}\right), \]
+    <p style="margin-top:6px;">然后 \(\theta_{\text{diff}}=\theta_T-\theta_C\approx N\!\big(m_T-m_C,\ s_T^2+s_C^2\big)\)。</p>
+  </div>
+  <div class="box warn">
+    <p class="box-t">⚠️ 适用条件</p>
+    <p>当后验 Beta 的两个参数都<strong>比较大（如都 &gt; 10）</strong>时，正态近似才靠谱。参数很小（事件极少）时近似会失真。</p>
+  </div>
+
+  <h3>模块八：通用配方（The General Recipe）</h3>
+  <p>无论哪种情形，比较两组的步骤都一样：</p>
+  <ol>
+    <li><strong>判断数据类型</strong>：正态还是二项。</li>
+    <li>给每组选<strong>似然 + 共轭先验</strong>。</li>
+    <li><strong>分别</strong>算每组的后验。</li>
+    <li>求「差」的后验：\(\mu_{\text{diff}}\sim N(m_T-m_C,\ s_T^2+s_C^2)\)。</li>
+    <li>算<strong>可信区间</strong>、做<strong>假设检验</strong>。</li>
+  </ol>
+  <div class="box key">
+    <p class="box-t">🔑 核心洞察（再强调一次）</p>
+    <p>样本独立 + 先验独立 → 后验独立 → <strong>两个独立正态之差还是正态</strong>。这就是为什么三种情形最后都归到同一个形式 \(N(m_T-m_C,\ s_T^2+s_C^2)\)。三者的差别只在于「每组的后验方差怎么算」。</p>
+  </div>
+</section>
+
+<!-- ============================ PART 2 ============================ -->
+<section class="section" id="part2">
+  <div class="sec-head"><span class="sec-num">02</span><h2>考点梳理</h2></div>
+  <p class="sec-tag">系统覆盖讲义全部知识点。重要程度依讲义强调与例题占比判断。</p>
+
+  <div class="box" style="background:var(--surface-2);">
+    <p class="box-t">图例</p>
+    <div class="legend">
+      <span><b class="imp hi">★★★</b> 高频核心</span>
+      <span><b class="imp mid">★★</b> 中等</span>
+      <span><b class="imp lo">★</b> 低频/了解</span>
+      <span><span class="pill mem">记忆</span> 需背</span>
+      <span><span class="pill calc">理解/计算</span> 重在会算会推</span>
+    </div>
+  </div>
+
+  <h3>主题 A · 实验设计与基本框架</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">A1 · 实验组 / 对照组与随机化设计</span><span class="imp mid">★★</span></div>
+    <p><span class="pill mem">记忆</span> <strong>实验组（T）</strong>接受干预，<strong>对照组（C）</strong>不接受（安慰剂 / 旧方法 / 旧元件）。<strong>完全随机化设计</strong>把个体随机且独立地分到两组。</p>
+    <p class="meta-row"><strong>作用</strong>：对照组提供基准线，分离干预效果与混杂因素；随机化<strong>消除选择偏倚</strong>，使个体差异靠运气均匀分散。</p>
+    <p class="meta-row"><strong>易混</strong>：随机化消除的是「选择偏倚」，不是「所有随机波动」；样本量小时两组仍可能偶然不平衡。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">A2 · 目标量 μ_T − μ_C 的含义</span><span class="imp mid">★★</span></div>
+    <p><span class="pill mem">记忆</span> 分析 \(\mu_T-\mu_C\)：明显偏离 0 ⇒ 干预有效应；接近 0 ⇒ 可能无效。符号方向要结合题意（如「完成时间更短」「故障间隔更长」代表更好）。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">A3 · 两种数据类型的判别</span><span class="imp hi">★★★</span></div>
+    <p><span class="pill mem">记忆</span> <strong>正态（连续测量）</strong> → 正态–正态共轭；<strong>二项（事件计数）</strong> → Beta–二项共轭。做题<strong>第一步永远是判断数据类型</strong>，决定整条路线。</p>
+  </div>
+
+  <h3>主题 B · 正态数据，等方差（加性模型）</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">B1 · 加性模型的假设</span><span class="imp hi">★★★</span></div>
+    <p><span class="pill mem">记忆</span> 干预效果是<strong>对每个人相同的恒定平移</strong> ⇒ 加常数不改变方差 ⇒ \(\sigma_A^2=\sigma_B^2=\sigma^2\)（等方差）。这是用「等方差」做题的<strong>合理性来源</strong>。</p>
+    <p class="meta-row"><strong>易混</strong>：等方差是「加性」带来的<em>结果</em>，不是凭空假设；与之相对的是非加性（效果因人而异）。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">B2 · 单组后验更新公式（最常用计算）</span><span class="imp hi">★★★</span></div>
+    <p><span class="pill calc">理解/计算</span> 先验 \(\mu\sim N(m,s^2)\)，数据 \((n,\bar y)\)，已知 \(\sigma^2\)：</p>
+    <div class="box formula" style="margin:8px 0;">
+      \[ s'^2=\frac{1}{\dfrac{n}{\sigma^2}+\dfrac{1}{s^2}},\qquad m'=s'^2\left(\frac{n\bar y}{\sigma^2}+\frac{m}{s^2}\right). \]
+    </div>
+    <p class="meta-row"><strong>本质</strong>：后验均值是先验均值与样本均值按<strong>精度（1/方差）</strong>加权的平均。</p>
+    <p class="meta-row"><strong>易错</strong>：① 先算 \(s'^2\) 再代入 \(m'\)；② 分子里是 \(n\bar y/\sigma^2\)（带 \(n\)），不是 \(\bar y/\sigma^2\)；③ 等方差且 \(n_A=n_B\) 时两组后验方差相同，可只算一次。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">B3 · 「差」的后验（统一形式）</span><span class="imp hi">★★★</span></div>
+    <p><span class="pill calc">理解/计算</span> \(\mu_{\text{diff}}=\mu_A-\mu_B\sim N\!\big(m'_A-m'_B,\ s_A'^2+s_B'^2\big)\)。</p>
+    <p class="meta-row"><strong>易错（必记）</strong>：均值相减，但<strong>方差相加</strong>（独立性 ⇒ \(\operatorname{Var}(X-Y)=\operatorname{Var}X+\operatorname{Var}Y\)）；先加方差，<strong>最后才开根号</strong>得 \(s_{\text{diff}}\)。不要直接把两个标准差相加。</p>
+  </div>
+
+  <h3>主题 C · 区间估计与假设检验</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">C1 · 贝叶斯可信区间</span><span class="imp hi">★★★</span></div>
+    <p><span class="pill calc">理解/计算</span> 公式 \(m_{\text{diff}}\pm z_{(1-\alpha)/2}\cdot s_{\text{diff}}\)。<span class="pill mem">记忆</span> 常用临界值：<strong>95% → 1.96，90% → 1.645，99% → 2.576</strong>。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">C2 · 双侧贝叶斯检验</span><span class="imp hi">★★★</span></div>
+    <p><span class="pill calc">理解/计算</span> \(H_0:\mu_{\text{diff}}=0\)。判据：<strong>看 0 是否在可信区间内</strong>。在内 → 不能拒绝 \(H_0\)；在外 → 拒绝。</p>
+    <p class="meta-row"><strong>结论措辞</strong>：「不能拒绝」≠「证明无差异」，只是证据不足；可补一句后验均值方向上的提示（如「A 似乎略快，但不确定性太大」）。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">C3 · 单侧贝叶斯检验</span><span class="imp hi">★★★</span></div>
+    <p><span class="pill calc">理解/计算</span> 形如 \(H_0:\mu_{\text{diff}}\le 0\) vs \(H_1:\mu_{\text{diff}}>0\)。算后验概率 \(P(\mu_{\text{diff}}\le 0\mid\text{data})=P\!\big(Z\le\frac{0-m_{\text{diff}}}{s_{\text{diff}}}\big)\)；概率很小 → 拒绝 \(H_0\)。</p>
+    <p class="meta-row"><strong>易错</strong>：标准化时分母是 \(s_{\text{diff}}\)（标准差）不是方差；不等号方向要对准 \(H_0\) 的区域。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">C4 · 可信区间 vs 置信区间（概念）</span><span class="imp mid">★★</span></div>
+    <p><span class="pill mem">记忆</span> 可信区间是对<strong>参数</strong>的概率陈述（参数随机）；置信区间是对<strong>方法长期覆盖率</strong>的陈述（参数固定）。弥散先验下两者<strong>数值接近但解释不同</strong>。</p>
+    <p class="meta-row">频率派对照公式（培训例）：\((\bar y_A-\bar y_B)\pm z\,\sigma\sqrt{\tfrac{1}{n_A}+\tfrac{1}{n_B}}\)。</p>
+  </div>
+
+  <h3>主题 D · 正态数据，不等方差（非加性模型）</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">D1 · 非加性模型的判别与处理</span><span class="imp mid">★★</span></div>
+    <p><span class="pill calc">理解/计算</span> 效果因人而异 ⇒ \(\sigma_T^2\neq\sigma_C^2\)。处理：<strong>每组用各自方差</strong>做共轭更新，其余完全相同：\(\mu_{\text{diff}}\sim N(m'_T-m'_C,\ s_T'^2+s_C'^2)\)。</p>
+    <p class="meta-row"><strong>与等方差唯一的区别</strong>：两组后验方差 \(s_T'^2\neq s_C'^2\)，不能共用一次计算。</p>
+  </div>
+
+  <h3>主题 E · 二项数据（Beta–二项）</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">E1 · Beta–二项共轭更新</span><span class="imp hi">★★★</span></div>
+    <p><span class="pill mem">记忆</span> \(\theta\sim\text{Beta}(a,b)\)，\(Y\sim\text{Bin}(n,\theta)\) ⇒ \(\theta\mid Y\sim\text{Beta}(a+y,\ b+n-y)\)。「成功加到 a，失败 \(n-y\) 加到 b」。</p>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">E2 · Beta 的正态近似</span><span class="imp hi">★★★</span></div>
+    <p><span class="pill calc">理解/计算</span></p>
+    <div class="box formula" style="margin:8px 0;">
+      \[ \text{Beta}(a',b')\approx N\!\left(\frac{a'}{a'+b'},\ \frac{a'b'}{(a'+b')^2(a'+b'+1)}\right). \]
+    </div>
+    <p class="meta-row"><strong>为何要近似</strong>：两个 Beta 之差无封闭形式，近似成正态后才能用 \(N(m_T-m_C,\ s_T^2+s_C^2)\) 这套统一框架。<strong>适用</strong>：\(a',b'\) 都较大（&gt;10）。</p>
+    <p class="meta-row"><strong>易错</strong>：方差公式分母是 \((a'+b')^2(a'+b'+1)\)，别漏掉 \((a'+b'+1)\) 这一项。</p>
+  </div>
+
+  <h3>主题 F · 通用配方与三模型对照</h3>
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">F1 · 通用配方 + 三模型差异</span><span class="imp hi">★★★</span></div>
+    <p><span class="pill mem">记忆</span> 五步：判数据类型 → 选共轭先验 → 分别求后验 → 求差的后验 \(N(m_T-m_C,\ s_T^2+s_C^2)\) → 区间 + 检验。</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>模型</th><th>后验方差怎么算</th><th>关键特征</th><th>典型例</th></tr></thead>
+      <tbody>
+        <tr><td>正态 · 等方差</td><td>两组共用一个 \(\sigma^2\)</td><td>\(s_T'^2=s_C'^2\)</td><td>培训方法</td></tr>
+        <tr><td>正态 · 不等方差</td><td>各组用自己的 \(\sigma_T^2,\sigma_C^2\)</td><td>\(s_T'^2\neq s_C'^2\)</td><td>元件可靠性</td></tr>
+        <tr><td>二项</td><td>Beta 更新后正态近似取方差</td><td>需 \(a',b'&gt;10\)</td><td>不良反应</td></tr>
+      </tbody>
+    </table></div>
+    <p class="meta-row"><strong>记忆锚点</strong>：三者最终都是 \(N(m_T-m_C,\ s_T^2+s_C^2)\)，只有「每组方差从哪来」不同。</p>
+  </div>
+</section>
+
+<!-- ============================ PART 3 ============================ -->
+<section class="section" id="part3">
+  <div class="sec-head"><span class="sec-num">03</span><h2>复习题目</h2></div>
+  <p class="sec-tag">难度递进：基础 → 进阶 → 综合。选择/判断题点击选项即时判分；计算题点开看完整步骤。</p>
+
+  <div class="qbar">
+    <div class="progress">已作答 <b id="answered">0</b> / <b id="total">0</b> 题<span class="sep">·</span>正确 <b id="correct">0</b> 题<span class="sep">·</span>正确率 <b id="rate">—</b></div>
+    <div class="controls">
+      <button class="btn" id="expand-all" type="button">展开全部答案</button>
+      <button class="btn" id="collapse-all" type="button">收起全部答案</button>
+    </div>
+  </div>
+
+  <!-- ===== 基础题 ===== -->
+  <div class="qgroup-title">基础题 · 概念辨析</div>
+
+  <div class="question" data-answer="C">
+    <div class="q-meta"><span class="tag type">选择</span><span class="tag kp">考点 A3</span><span class="tag diff-1">基础</span></div>
+    <p class="q-text"><span class="qn">B1.</span> 某质量工程师记录两条生产线<strong>每天的次品「件数」</strong>，想比较两条线的不良率是否不同。应当采用下列哪套贝叶斯工具？</p>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="opt-key">A</span><span>正态–正态共轭，并假设等方差</span><span class="mark"></span></li>
+      <li class="option" data-opt="B"><span class="opt-key">B</span><span>正态–正态共轭，但用不等方差</span><span class="mark"></span></li>
+      <li class="option" data-opt="C"><span class="opt-key">C</span><span>Beta–二项共轭，再做正态近似</span><span class="mark"></span></li>
+      <li class="option" data-opt="D"><span class="opt-key">D</span><span>无法用贝叶斯方法处理</span><span class="mark"></span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="lead">正确答案：C</p>
+        <p>「次品件数」是<strong>事件计数</strong>，属于<strong>二项数据</strong>，建模为 \(Y\sim\text{Bin}(n,\theta)\)，用 Beta 作共轭先验。两个 Beta 之差无封闭形式，故后续用正态近似。</p>
+        <div class="why"><b>考查点：</b>做题第一步——判断数据类型。看到「次数 / 比例 / 有没有发生」就走二项路线；看到「时间 / 浓度 / 含量」等连续测量才走正态路线。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question" data-answer="A">
+    <div class="q-meta"><span class="tag type">判断</span><span class="tag kp">考点 B3·F1</span><span class="tag diff-1">基础</span></div>
+    <p class="q-text"><span class="qn">B2.</span> 命题：当两组样本独立、先验也独立选取时，两个均值后验之差仍然服从正态分布。</p>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="opt-key">A</span><span>正确</span><span class="mark"></span></li>
+      <li class="option" data-opt="B"><span class="opt-key">B</span><span>错误</span><span class="mark"></span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="lead">正确答案：A（正确）</p>
+        <p>这是整节课的核心洞察：样本独立 + 先验独立 ⇒ 两个后验独立；而<strong>两个独立正态随机变量之差仍是正态</strong>，\(N(m_A-m_B,\ s_A'^2+s_B'^2)\)。正因如此，比较两组的问题才能归约成单个正态分布来处理。</p>
+        <div class="why"><b>考查点：</b>独立性 → 后验独立 → 正态之差仍正态，这条逻辑链请背熟。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question" data-answer="B">
+    <div class="q-meta"><span class="tag type">选择</span><span class="tag kp">考点 B1</span><span class="tag diff-1">基础</span></div>
+    <p class="q-text"><span class="qn">B3.</span> 「加性模型（additive model）」之所以可以假设两组方差相等 \(\sigma_A^2=\sigma_B^2\)，最根本的理由是：</p>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="opt-key">A</span><span>两组样本量相同，所以方差必然相同</span><span class="mark"></span></li>
+      <li class="option" data-opt="B"><span class="opt-key">B</span><span>干预效果是对每个个体相同的恒定平移，加常数不改变方差</span><span class="mark"></span></li>
+      <li class="option" data-opt="C"><span class="opt-key">C</span><span>正态分布的方差总是已知且恒定</span><span class="mark"></span></li>
+      <li class="option" data-opt="D"><span class="opt-key">D</span><span>贝叶斯方法要求所有先验方差相等</span><span class="mark"></span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="lead">正确答案：B</p>
+        <p>加性模型设想：处理效应只是把每个观测整体「平移」一个相同的常数。给随机变量加常数会改变均值、但<strong>不改变方差</strong>，因此 \(\sigma_A^2=\sigma_B^2=\sigma^2\)。</p>
+        <p>A 错：样本量相同与总体方差是否相等无关。C、D 是无关的臆造说法。</p>
+        <div class="why"><b>易错：</b>「等方差」是加性假设的<em>结果</em>，不是孤立的技术规定；与之相对的非加性模型对应效果因人而异、两组方差不同。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question" data-answer="B">
+    <div class="q-meta"><span class="tag type">判断</span><span class="tag kp">考点 B3</span><span class="tag diff-1">基础</span></div>
+    <p class="q-text"><span class="qn">B4.</span> 命题：求 \(\mu_A-\mu_B\) 后验分布的标准差时，把两组后验的标准差直接相加即可，即 \(s_{\text{diff}}=s'_A+s'_B\)。</p>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="opt-key">A</span><span>正确</span><span class="mark"></span></li>
+      <li class="option" data-opt="B"><span class="opt-key">B</span><span>错误</span><span class="mark"></span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="lead">正确答案：B（错误）</p>
+        <p>独立时是<strong>方差相加</strong>：\(s_{\text{diff}}^2=s_A'^2+s_B'^2\)，再开根号才得 \(s_{\text{diff}}=\sqrt{s_A'^2+s_B'^2}\)。一般 \(\sqrt{a+b}\neq\sqrt a+\sqrt b\)，所以直接加标准差是错的。</p>
+        <div class="why"><b>这是本章最高频的失分点。</b>记住口诀：均值相减、方差相加、最后开根。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question" data-answer="A">
+    <div class="q-meta"><span class="tag type">选择</span><span class="tag kp">考点 E1</span><span class="tag diff-1">基础</span></div>
+    <p class="q-text"><span class="qn">B5.</span> 先验 \(\theta\sim\text{Beta}(2,2)\)，观测到 \(n=80\) 次试验中有 \(y=55\) 次成功。后验分布是：</p>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="opt-key">A</span><span>\(\text{Beta}(57,\,27)\)</span><span class="mark"></span></li>
+      <li class="option" data-opt="B"><span class="opt-key">B</span><span>\(\text{Beta}(55,\,25)\)</span><span class="mark"></span></li>
+      <li class="option" data-opt="C"><span class="opt-key">C</span><span>\(\text{Beta}(57,\,82)\)</span><span class="mark"></span></li>
+      <li class="option" data-opt="D"><span class="opt-key">D</span><span>\(\text{Beta}(2,\,82)\)</span><span class="mark"></span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="lead">正确答案：A</p>
+        <p>共轭更新 \(\text{Beta}(a+y,\ b+n-y)\)：\(a+y=2+55=57\)，\(b+n-y=2+(80-55)=2+25=27\)。故后验 \(\text{Beta}(57,27)\)。</p>
+        <div class="why"><b>易错：</b>第二个参数加的是<strong>失败数 \(n-y=25\)</strong>，不是 \(n=80\)。选 C 就是错把 \(n\) 加进去了。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-meta"><span class="tag type">填空</span><span class="tag kp">考点 C1·E2</span><span class="tag diff-1">基础</span></div>
+    <p class="q-text"><span class="qn">B6.</span> 填空：① 95% 可信区间用的临界值 \(z\) = ＿＿＿，90% 用 ＿＿＿，99% 用 ＿＿＿。② Beta\((a',b')\) 正态近似的均值 = ＿＿＿，方差 = ＿＿＿。</p>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="step">① \(z\) 值：<strong>95% → 1.96</strong>，<strong>90% → 1.645</strong>，<strong>99% → 2.576</strong>。</p>
+        <p class="step">② 均值 \(=\dfrac{a'}{a'+b'}\)，方差 \(=\dfrac{a'b'}{(a'+b')^2(a'+b'+1)}\)。</p>
+        <div class="why"><b>易错：</b>方差分母别漏 \((a'+b'+1)\)；90% 对应 1.645（不是 1.96），考二项题时常一起出现。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ===== 进阶题 ===== -->
+  <div class="qgroup-title">进阶题 · 单项计算</div>
+
+  <div class="question" data-answer="C">
+    <div class="q-meta"><span class="tag type">选择</span><span class="tag kp">考点 E2</span><span class="tag diff-2">进阶</span></div>
+    <p class="q-text"><span class="qn">I1.</span> 后验 \(\theta\sim\text{Beta}(19,183)\)。用正态近似，其方差最接近：</p>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="opt-key">A</span><span>\(0.094\)</span><span class="mark"></span></li>
+      <li class="option" data-opt="B"><span class="opt-key">B</span><span>\(0.00207\)</span><span class="mark"></span></li>
+      <li class="option" data-opt="C"><span class="opt-key">C</span><span>\(0.000421\)</span><span class="mark"></span></li>
+      <li class="option" data-opt="D"><span class="opt-key">D</span><span>\(0.0205\)</span><span class="mark"></span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="lead">正确答案：C</p>
+        <p class="step">\(a'+b'=19+183=202\)。方差 \(=\dfrac{a'b'}{(a'+b')^2(a'+b'+1)}=\dfrac{19\times183}{202^2\times203}=\dfrac{3477}{8\,283\,212}\approx 0.000421\)。</p>
+        <div class="why"><b>陷阱：</b>选 A 是「均值」\(19/202\approx0.094\)，不是方差；选 B 漏掉了分母里的 \((a'+b'+1)=203\)；选 D 是标准差量级附近的干扰项。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question" data-answer="B">
+    <div class="q-meta"><span class="tag type">选择</span><span class="tag kp">考点 C2</span><span class="tag diff-2">进阶</span></div>
+    <p class="q-text"><span class="qn">I2.</span> 双侧检验 \(H_0:\mu_{\text{diff}}=0\) 下，算得 95% 可信区间为 \((-8.53,\,1.93)\)。结论应是：</p>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="opt-key">A</span><span>拒绝 \(H_0\)，两组有显著差异</span><span class="mark"></span></li>
+      <li class="option" data-opt="B"><span class="opt-key">B</span><span>不能拒绝 \(H_0\)，证据不足以判定两组不同</span><span class="mark"></span></li>
+      <li class="option" data-opt="C"><span class="opt-key">C</span><span>接受 \(H_0\)，已证明两组完全相同</span><span class="mark"></span></li>
+      <li class="option" data-opt="D"><span class="opt-key">D</span><span>区间含 0，说明计算出错</span><span class="mark"></span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="lead">正确答案：B</p>
+        <p>双侧判据：看 0 是否落在区间内。这里 \(0\in(-8.53,1.93)\)，故<strong>不能拒绝</strong> \(H_0\)。</p>
+        <div class="why"><b>措辞要准：</b>「不能拒绝」≠「证明 \(H_0\) 为真」（排除 C）。只是当前证据不足。可补一句：后验均值在 0 一侧给出方向性提示，但不确定性太大无法定论。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-meta"><span class="tag type">计算</span><span class="tag kp">考点 B2</span><span class="tag diff-2">进阶</span></div>
+    <p class="q-text"><span class="qn">I3.</span> 单组后验。已知 \(n=10,\ \bar y=119.6,\ \sigma^2=36\)，先验 \(\mu\sim N(100,400)\)。求后验 \(\mu\mid Y\)。</p>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="step"><strong>第 1 步 · 后验方差</strong>：\(s'^2=\dfrac{1}{n/\sigma^2+1/s^2}=\dfrac{1}{10/36+1/400}=\dfrac{1}{0.2778+0.0025}=\dfrac{1}{0.2803}\approx 3.568\)。</p>
+        <p class="step"><strong>第 2 步 · 后验均值</strong>：\(m'=s'^2\big(\tfrac{n\bar y}{\sigma^2}+\tfrac{m}{s^2}\big)=3.568\times\big(\tfrac{10\times119.6}{36}+\tfrac{100}{400}\big)=3.568\times(33.22+0.25)=3.568\times33.47\approx 119.4\)。</p>
+        <p class="lead">后验：\(\mu\mid Y\sim N(119.4,\ 3.568)\)。</p>
+        <div class="why"><b>检查直觉：</b>先验很弥散（\(s^2=400\) 远大于数据精度），所以后验均值几乎等于样本均值 \(\bar y=119.6\)，仅被先验 100 轻微往下拉到 119.4，合理。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-meta"><span class="tag type">计算</span><span class="tag kp">考点 B1·B2·B3·C1·C2</span><span class="tag diff-2">进阶</span></div>
+    <p class="q-text"><span class="qn">I4.</span> <strong>（习题 Q1 · 乳脂含量）</strong> 两家乳品厂各取 \(n=10\) 样本，样本均值 \(\bar y_1=14.97,\ \bar y_2=15.56\)，已知 \(\sigma^2=1.2^2=1.44\)。独立先验 \(\mu_i\sim N(15,\,4^2)\)。求 (a) 两组后验；(b) \(\mu_1-\mu_2\) 的后验；(c) 95% 可信区间；(d) 在 5% 水平双侧检验 \(H_0:\mu_1-\mu_2=0\)。</p>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="step"><strong>(a) 两组后验</strong>（\(n,\sigma^2,\) 先验都相同 ⇒ 后验方差相同）：<br>
+        \(s'^2=\dfrac{1}{10/1.44+1/16}=\dfrac{1}{6.944+0.0625}=\dfrac{1}{7.007}\approx 0.1427\)。<br>
+        \(m'_1=0.1427\times\big(\tfrac{10\times14.97}{1.44}+\tfrac{15}{16}\big)=0.1427\times(103.96+0.9375)\approx 14.97\)。<br>
+        \(m'_2=0.1427\times(108.06+0.9375)\approx 15.56\)。<br>
+        于是 \(\mu_1\mid Y\sim N(14.97,\,0.1427)\)，\(\mu_2\mid Y\sim N(15.56,\,0.1427)\)。</p>
+        <p class="step"><strong>(b) 差的后验</strong>：\(m_{\text{diff}}=14.97-15.56=-0.59\)（精确 \(-0.585\)）；\(s_{\text{diff}}^2=0.1427+0.1427=0.2854\)，\(s_{\text{diff}}=\sqrt{0.2854}\approx 0.534\)。<br>
+        \(\mu_1-\mu_2\sim N(-0.585,\ 0.2854)\)。</p>
+        <p class="step"><strong>(c) 95% 可信区间</strong>：\(-0.585\pm1.96\times0.534=-0.585\pm1.047=(-1.63,\ 0.46)\)。</p>
+        <p class="step"><strong>(d) 检验</strong>：\(0\in(-1.63,\ 0.46)\) ⇒ <strong>不能拒绝</strong> \(H_0\)。在 5% 水平下，没有充分证据表明两厂乳脂含量不同。</p>
+        <div class="why"><b>易错：</b>两组只需算一次 \(s'^2\)；(b) 中方差相加而非标准差相加；(d) 结论是「证据不足」，不要写成「两厂相同」。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-meta"><span class="tag type">计算</span><span class="tag kp">考点 E1·E2·C1</span><span class="tag diff-2">进阶</span></div>
+    <p class="q-text"><span class="qn">I5.</span> <strong>（习题 Q3 · 及格率）</strong> 方法 X：\(80\) 人中 \(55\) 人通过；方法 Y：\(70\) 人中 \(40\) 人通过。独立先验 \(\text{Beta}(2,2)\)。求 (a) 两组后验；(b) \(\theta_{\text{diff}}=\theta_X-\theta_Y\) 的正态近似后验；(c) 95% 可信区间；(d) 5% 水平下是否有证据表明 X 的通过率更高？</p>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="step"><strong>(a) 后验</strong>：\(\theta_X\sim\text{Beta}(2+55,\,2+25)=\text{Beta}(57,27)\)；\(\theta_Y\sim\text{Beta}(2+40,\,2+30)=\text{Beta}(42,32)\)。</p>
+        <p class="step"><strong>(b) 正态近似</strong>：<br>
+        X：\(a'+b'=84\)，\(m_X=\tfrac{57}{84}=0.679\)，\(s_X^2=\tfrac{57\times27}{84^2\times85}\approx 0.002566\)。<br>
+        Y：\(a'+b'=74\)，\(m_Y=\tfrac{42}{74}=0.568\)，\(s_Y^2=\tfrac{42\times32}{74^2\times75}\approx 0.003272\)。<br>
+        差：\(m_{\text{diff}}=0.679-0.568=0.111\)，\(s_{\text{diff}}^2=0.002566+0.003272=0.005838\)，\(s_{\text{diff}}\approx 0.0764\)。<br>
+        \(\theta_{\text{diff}}\approx N(0.111,\ 0.005838)\)。</p>
+        <p class="step"><strong>(c) 95% 可信区间</strong>：\(0.111\pm1.96\times0.0764=0.111\pm0.150=(-0.039,\ 0.261)\)。</p>
+        <p class="step"><strong>(d) 结论</strong>：双侧看，\(0\in(-0.039,0.261)\) ⇒ 在 5% 水平<strong>不能</strong>断定 X 通过率更高。若按单侧算 \(P(\theta_{\text{diff}}\le 0)=P(Z\le\tfrac{0-0.111}{0.0764})=P(Z\le-1.45)\approx 0.073>0.05\)，同样不显著。<br>（后验上 X 更优的概率约 \(92.7\%\)，倾向明显但未达 5% 显著门槛。）</p>
+        <div class="why"><b>考查点：</b>两个 Beta 参数都 &gt; 10，正态近似适用；注意区分双侧（看区间含 0）与单侧（算后验概率）两种问法的回答方式。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ===== 综合题 ===== -->
+  <div class="qgroup-title">综合题 · 完整流程与论述</div>
+
+  <div class="question" data-answer="B">
+    <div class="q-meta"><span class="tag type">判断/选择</span><span class="tag kp">考点 F1·F2</span><span class="tag diff-3">综合</span></div>
+    <p class="q-text"><span class="qn">C1.</span> 关于 <strong>95% 可信区间（credible interval）</strong>与 <strong>95% 置信区间（confidence interval）</strong>的区别，下列说法<strong>正确</strong>的是？</p>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="opt-key">A</span><span>两者含义完全相同，只是叫法不同，可以互换使用</span><span class="mark"></span></li>
+      <li class="option" data-opt="B"><span class="opt-key">B</span><span>可信区间可直接说「参数落在该区间内的后验概率为 95%」；置信区间的 95% 指的是「该构造方法在大量重复抽样下约有 95% 的区间会覆盖真值」</span><span class="mark"></span></li>
+      <li class="option" data-opt="C"><span class="opt-key">C</span><span>置信区间属于贝叶斯方法，可信区间属于频率派方法</span><span class="mark"></span></li>
+      <li class="option" data-opt="D"><span class="opt-key">D</span><span>可信区间一定比对应的置信区间更宽</span><span class="mark"></span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：B。</strong></p>
+        <p class="step">可信区间是对未知参数的<strong>直接概率陈述</strong>：在给定数据后，参数 \(\mu_{\text{diff}}\) 以 95% 的后验概率落在区间内——因为贝叶斯把参数看作随机变量。置信区间的 95% 是<strong>构造方法的长期覆盖频率</strong>：参数是固定常数，随机的是区间本身；「95%」描述的是「反复抽样、反复构造」时区间盖住真值的比例，而非对某一条具体区间下概率判断。</p>
+        <p class="step">A 错：两者解释逻辑根本不同。C 错：说反了，置信区间是频率派、可信区间是贝叶斯。D 错：在弥散先验下两者常常很接近（讲义训练方法例中可信区间 \((-8.53,1.93)\) 与置信区间 \((-8.57,1.97)\) 几乎一致），并无「必然更宽」之说。</p>
+        <div class="why"><b>易错：</b>很多同学把可信区间也错误地解释成「方法有 95% 概率盖住真值」——那是置信区间的语言。可信区间才允许「这条区间有 95% 概率包含参数」这种直观说法。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-meta"><span class="tag type">计算</span><span class="tag kp">考点 D1·D2·C1</span><span class="tag diff-3">综合</span></div>
+    <p class="q-text"><span class="qn">C2.</span> <strong>（习题 Q2 · 反应时间，不等方差 + 单侧检验）</strong> 两实验条件的反应时间（毫秒）变异不同：实验组 \(n_T=12,\ \bar y_T=310,\ \sigma_T^2=400\)；对照组 \(n_C=16,\ \bar y_C=340,\ \sigma_C^2=900\)。独立先验 \(\mu_T,\mu_C\sim N(320,1600)\)。求 (a) 两组后验；(b) \(\mu_{\text{diff}}=\mu_T-\mu_C\) 的后验；(c) 95% 可信区间；(d) 在 5% 水平检验 \(H_0:\mu_{\text{diff}}\ge 0\) vs \(H_1:\mu_{\text{diff}}<0\)，是否有证据表明条件 T 缩短了反应时间？</p>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="step"><strong>(a) 两组后验（各用自己的方差）。</strong><br>
+        实验组：\(s_T'^2=\dfrac{1}{12/400+1/1600}=\dfrac{1}{0.03+0.000625}=\dfrac{1}{0.030625}\approx 32.65\)；<br>
+        \(m_T'=32.65\times\big(\tfrac{12\times310}{400}+\tfrac{320}{1600}\big)=32.65\times(9.3+0.2)=32.65\times9.5\approx 310.2\)。<br>
+        对照组：\(s_C'^2=\dfrac{1}{16/900+1/1600}=\dfrac{1}{0.017778+0.000625}=\dfrac{1}{0.018403}\approx 54.34\)；<br>
+        \(m_C'=54.34\times\big(\tfrac{16\times340}{900}+\tfrac{320}{1600}\big)=54.34\times(6.044+0.2)=54.34\times6.244\approx 339.3\)。<br>
+        于是 \(\mu_T\mid Y_T\sim N(310.2,\,32.65)\)，\(\mu_C\mid Y_C\sim N(339.3,\,54.34)\)。</p>
+        <p class="step"><strong>(b) 差的后验</strong>：\(m_{\text{diff}}=310.2-339.3=-29.12\)；方差<strong>相加</strong> \(s_{\text{diff}}^2=32.65+54.34=86.99\)，\(s_{\text{diff}}=\sqrt{86.99}\approx 9.33\)。<br>
+        \(\mu_{\text{diff}}\sim N(-29.12,\ 86.99)\)。</p>
+        <p class="step"><strong>(c) 95% 可信区间</strong>：\(-29.12\pm1.96\times9.33=-29.12\pm18.28=(-47.40,\ -10.84)\)。</p>
+        <p class="step"><strong>(d) 单侧检验</strong>：\(P(\mu_{\text{diff}}\ge 0\mid \text{data})=P\!\Big(Z\ge\dfrac{0-(-29.12)}{9.33}\Big)=P(Z\ge 3.12)\approx 0.0009<0.05\)。<br>
+        ⇒ <strong>拒绝</strong> \(H_0\)。有强证据表明条件 T 显著缩短了反应时间（区间整体落在 0 左侧，也印证了这一点）。</p>
+        <div class="why"><b>考查点：</b>不等方差时两组后验方差<strong>分别</strong>计算，不能共用；单侧检验是算「不利方向」的后验概率 \(P(\mu_{\text{diff}}\ge 0)\) 再与 \(\alpha\) 比，而非看区间是否含 0。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-meta"><span class="tag type">计算</span><span class="tag kp">考点 E1·E2·C1</span><span class="tag diff-3">综合</span></div>
+    <p class="q-text"><span class="qn">C3.</span> <strong>（习题 Q4 · 回收率，二项数据 + 90% 区间）</strong> A 城 300 人中 120 人定期回收；B 城 250 人中 90 人定期回收。独立先验 \(\text{Beta}(1,1)\)。求 (a) 两组后验；(b) \(\theta_{\text{diff}}=\theta_A-\theta_B\) 的正态近似后验；(c) 90% 可信区间；(d) 在 10% 水平下两城回收率是否有显著差异？</p>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="step"><strong>(a) 后验</strong>：\(\theta_A\sim\text{Beta}(1+120,\,1+180)=\text{Beta}(121,181)\)；\(\theta_B\sim\text{Beta}(1+90,\,1+160)=\text{Beta}(91,161)\)。</p>
+        <p class="step"><strong>(b) 正态近似</strong>（参数均远大于 10，近似可靠）：<br>
+        A：\(a'+b'=302\)，\(m_A=\tfrac{121}{302}\approx 0.4007\)，\(s_A^2=\tfrac{121\times181}{302^2\times303}\approx 0.0007925\)。<br>
+        B：\(a'+b'=252\)，\(m_B=\tfrac{91}{252}\approx 0.3611\)，\(s_B^2=\tfrac{91\times161}{252^2\times253}\approx 0.0009119\)。<br>
+        差：\(m_{\text{diff}}=0.4007-0.3611=0.0396\)，\(s_{\text{diff}}^2=0.0007925+0.0009119=0.0017044\)，\(s_{\text{diff}}\approx 0.0413\)。<br>
+        \(\theta_{\text{diff}}\approx N(0.0396,\ 0.0017044)\)。</p>
+        <p class="step"><strong>(c) 90% 可信区间</strong>（\(z=1.645\)）：\(0.0396\pm1.645\times0.0413=0.0396\pm0.0679=(-0.028,\ 0.108)\)。</p>
+        <p class="step"><strong>(d) 双侧检验</strong>：\(0\in(-0.028,\ 0.108)\) ⇒ 在 10% 水平<strong>不能拒绝</strong> \(H_0:\theta_{\text{diff}}=0\)。两城回收率没有显著差异。</p>
+        <div class="why"><b>易错：</b>90% 区间用 \(z=1.645\) 而非 1.96；Beta 后验参数是 \(a+y\) 与 \(b+n-y\)，别把失败数也加成成功数；结论是「证据不足」，不是「两城回收率相等」。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-meta"><span class="tag type">论述</span><span class="tag kp">考点 F1·F2</span><span class="tag diff-3">综合</span></div>
+    <p class="q-text"><span class="qn">C4.</span> 试比较<strong>贝叶斯可信区间</strong>与<strong>频率派置信区间</strong>：两者在含义、对参数的看法、以及实际数值上有何异同？为什么在弥散先验下两者往往非常接近？</p>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="step"><strong>含义不同。</strong> 可信区间是<strong>对参数的直接概率陈述</strong>：给定数据后，\(P(\mu_{\text{diff}}\in[\,L,U\,]\mid \text{data})=0.95\)。置信区间描述的是<strong>构造方法的长期表现</strong>：参数是固定常数，反复抽样反复造区间，约 95% 的区间会盖住真值；对某一条具体区间不能说「它有 95% 概率含真值」。</p>
+        <p class="step"><strong>对参数的看法不同。</strong> 贝叶斯把未知参数当作<strong>随机变量</strong>，有后验分布，因此可以谈「参数的概率」；频率派把参数当作<strong>未知固定常数</strong>，随机的是数据与区间，所以概率只能落在「方法」上。</p>
+        <p class="step"><strong>数值常常很接近。</strong> 讲义训练方法例：可信区间 \((-8.53,\,1.93)\)，置信区间 \((-8.57,\,1.97)\)，几乎重合。原因是当先验<strong>弥散（方差很大、信息很弱）</strong>时，先验对后验几乎不施加影响，后验主要由似然（数据）决定，于是后验均值≈样本均值、后验标准差≈样本标准误，贝叶斯区间的中心与宽度都退化到与频率派区间相同的量级。</p>
+        <p class="step"><strong>解读价值。</strong> 即便数值接近，二者回答的是不同问题：可信区间回答「在已观测到的这批数据下，参数最可能在哪」；置信区间回答「我这套程序可靠不可靠」。贝叶斯的陈述更贴合人们想问的直觉，但代价是必须指定先验。</p>
+        <div class="why"><b>采分点：</b>①概率陈述对象（参数 vs 方法）；②参数观（随机变量 vs 固定常数）；③弥散先验下后验被似然主导，故两者数值趋同；④能举讲义数值佐证。</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-meta"><span class="tag type">简答</span><span class="tag kp">考点 A2·A4</span><span class="tag diff-3">综合</span></div>
+    <p class="q-text"><span class="qn">C5.</span> 在两组比较的实验中，为什么需要设置<strong>对照组（control group）</strong>？又为什么要采用<strong>完全随机化分配</strong>？若缺少这两者，会带来什么问题？</p>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p class="step"><strong>为什么要对照组。</strong> 对照组提供一个<strong>基线</strong>。若只看实验组前后的变化，无法把「干预带来的效应」与「时间、环境、个体自然波动等混杂因素」区分开来。有了不接受干预的对照组，两组之差才能把这些共同的背景因素抵消，剩下的差异才可归因于干预本身——这正对应分析 \(\mu_T-\mu_C\) 的意义：差为正说明干预有正向效应，差接近 0 说明干预可能无效。</p>
+        <p class="step"><strong>为什么要随机化。</strong> 随机且独立地把个体分到实验组或对照组，能让个体间<strong>原有差异</strong>（年龄、体质、习惯等）「靠运气而非靠挑选」大致均匀地分布到两组，从而消除<strong>选择偏倚（selection bias）</strong>——研究者无法挑谁进哪组。这使两组在干预之外的方面可比，差异的因果解释才站得住。</p>
+        <p class="step"><strong>缺失的后果。</strong> 没有对照组：干预效应与混杂因素纠缠，无法判断观测到的变化是不是干预造成的。没有随机化：分组可能系统性偏向某一类个体，两组从一开始就不可比，所谓「差异」可能纯粹来自分组方式而非干预，结论不可信。</p>
+        <div class="why"><b>采分点：</b>对照=基线、隔离混杂；随机化=均衡原有差异、消除选择偏倚；并能说出缺失各自导致的「无法归因 / 不可比」后果。</div>
+      </div>
+    </details>
+  </div>
+
+</section>
+
+</main>
+
+<a href="#top" class="to-top" aria-label="回到顶部" title="回到顶部">↑</a>
+
+<footer>
+  <p>本复习页基于课程讲义《Bayesian Inference on Difference in Means》(Lecture 10, Dr. Nivedita Viswanathan, QMUL) 与 Problem Sheet 10 (Bolstad &amp; Curran, 3rd ed., Ch. 13) 整理。计算结果均按标准正态–正态 / Beta–二项共轭公式独立复核；讲义个别 OCR 笔误（如后验方差中间步骤数字）已按正确公式订正并在第一部分标注。</p>
+  <p>交互说明：答案折叠使用浏览器原生 <code class="k">&lt;details&gt;</code>，即便禁用 JavaScript 仍可点击展开；选择/判断题点击选项即时判分并锁定。祝考试顺利。</p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- 做题进度 ---------- */
+  var quiz = document.querySelectorAll('.question[data-answer]');
+  var elTotal    = document.getElementById('total');
+  var elAnswered = document.getElementById('answered');
+  var elCorrect  = document.getElementById('correct');
+  var elRate     = document.getElementById('rate');
+  var answered = 0, correct = 0;
+
+  if (elTotal) elTotal.textContent = quiz.length;
+
+  function refresh() {
+    if (elAnswered) elAnswered.textContent = answered;
+    if (elCorrect)  elCorrect.textContent  = correct;
+    if (elRate)     elRate.textContent = answered ? Math.round(correct / answered * 100) + '%' : '—';
+  }
+  refresh();
+
+  /* ---------- 单一事件委托：选项判分 + 展开/收起全部 ---------- */
+  document.addEventListener('click', function (e) {
+    /* (1) 展开 / 收起全部答案 */
+    var btn = e.target.closest('#expand-all, #collapse-all');
+    if (btn) {
+      var openAll = (btn.id === 'expand-all');
+      var all = document.querySelectorAll('details');
+      for (var i = 0; i < all.length; i++) { all[i].open = openAll; }
+      return;
+    }
+
+    /* (2) 选择 / 判断题选项 */
+    var opt = e.target.closest('.option');
+    if (!opt) return;
+
+    var q = opt.closest('.question[data-answer]');
+    if (!q || q.classList.contains('locked')) return;   /* 已作答则锁定，忽略后续点击 */
+
+    var answer = q.getAttribute('data-answer');
+    var chosen = opt.getAttribute('data-opt');
+
+    /* 正确项标绿；若选错，所选项标红 */
+    var opts = q.querySelectorAll('.option');
+    for (var j = 0; j < opts.length; j++) {
+      var key = opts[j].getAttribute('data-opt');
+      if (key === answer) opts[j].classList.add('correct');
+      else if (opts[j] === opt) opts[j].classList.add('wrong');
+    }
+
+    q.classList.add('locked');
+
+    /* 自动展开该题解析 */
+    var det = q.querySelector('details.answer-block');
+    if (det) det.open = true;
+
+    /* 更新进度 */
+    answered++;
+    if (chosen === answer) correct++;
+    refresh();
+  });
+
+  /* ---------- 回到顶部按钮 ---------- */
+  var toTop = document.querySelector('.to-top');
+  if (toTop) {
+    window.addEventListener('scroll', function () {
+      if (window.pageYOffset > 420) toTop.classList.add('show');
+      else toTop.classList.remove('show');
+    }, { passive: true });
+  }
+
+  /* ---------- MathJax 加载失败兜底提示 ---------- */
+  setTimeout(function () {
+    var ready = window.MathJax && typeof window.MathJax.typesetPromise === 'function';
+    if (!ready) {
+      var warn = document.getElementById('mjx-warning');
+      if (warn) warn.classList.add('show');
+    }
+  }, 3500);
+
+})();
+</script>
+
+</body>
+</html>

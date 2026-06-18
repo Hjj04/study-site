@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 9 复习梳理 · 频率派 vs 贝叶斯估计</title>
+
+<!-- MathJax 配置 + CDN -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)'], ['$', '$']],
+      displayMath: [['\\[', '\\]'], ['$$', '$$']],
+      processEscapes: true
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+  :root{
+    --bg:#f6f5f1;
+    --surface:#ffffff;
+    --surface-2:#fbfaf7;
+    --text:#23282d;
+    --muted:#5c6670;
+    --border:#e4dfd5;
+    --border-strong:#d6cfc1;
+
+    /* 两大门派配色：频率派=青，贝叶斯=琥珀 */
+    --freq:#1d6a73;
+    --freq-soft:#e1eff0;
+    --freq-line:#bcdadc;
+    --bayes:#b06a2c;
+    --bayes-soft:#f6ece0;
+    --bayes-line:#ecd6bd;
+
+    --correct:#2e7d52;
+    --correct-bg:#e7f4ec;
+    --wrong:#c0392b;
+    --wrong-bg:#fbeae8;
+
+    --star-hi:#c0392b;
+    --star-mid:#cc8a14;
+    --star-lo:#9aa1a7;
+
+    --shadow:0 1px 2px rgba(40,40,40,.05), 0 6px 20px rgba(40,40,40,.05);
+    --radius:14px;
+    --maxw:920px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",Roboto,Helvetica,Arial,sans-serif;
+    font-size:16.5px;
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .serif{font-family:Georgia,"Times New Roman","Songti SC",serif;}
+
+  /* ---------- 顶部导航 ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    background:rgba(246,245,241,.92);
+    backdrop-filter:saturate(160%) blur(8px);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar-inner{
+    max-width:var(--maxw); margin:0 auto; padding:10px 18px;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .brand{font-family:Georgia,serif; font-weight:700; font-size:1.02rem; color:var(--text); white-space:nowrap;}
+  .brand small{display:block; font-weight:400; font-size:.7rem; color:var(--muted); letter-spacing:.04em;}
+  .navlinks{display:flex; gap:6px; flex-wrap:wrap; margin-left:auto;}
+  .navlinks a{
+    text-decoration:none; color:var(--muted); font-size:.86rem; font-weight:600;
+    padding:6px 11px; border-radius:999px; border:1px solid transparent; transition:.15s;
+  }
+  .navlinks a:hover{color:var(--text); background:var(--surface); border-color:var(--border);}
+
+  /* ---------- 进度面板 ---------- */
+  .progress-wrap{
+    max-width:var(--maxw); margin:18px auto 0; padding:0 18px;
+  }
+  .progress-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px 18px; box-shadow:var(--shadow);
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  }
+  .progress-stats{display:flex; gap:20px; flex-wrap:wrap; font-size:.9rem;}
+  .progress-stats b{font-size:1.15rem; font-family:Georgia,serif;}
+  .progress-stats .s-correct b{color:var(--correct);}
+  .progress-bar{flex:1; min-width:160px; height:9px; background:#eceae3; border-radius:999px; overflow:hidden;}
+  .progress-fill{height:100%; width:0; background:linear-gradient(90deg,var(--freq),var(--bayes)); transition:width .4s ease;}
+  .ctrl-btns{display:flex; gap:8px; flex-wrap:wrap;}
+  .btn{
+    cursor:pointer; border:1px solid var(--border-strong); background:var(--surface-2);
+    color:var(--text); font-size:.82rem; font-weight:600; padding:7px 12px; border-radius:9px; transition:.15s;
+    font-family:inherit;
+  }
+  .btn:hover{background:#fff; border-color:#bdb6a6;}
+
+  /* ---------- 容器与区块 ---------- */
+  main{max-width:var(--maxw); margin:0 auto; padding:8px 18px 90px;}
+  .part{margin-top:46px; scroll-margin-top:72px;}
+  .part-head{display:flex; align-items:baseline; gap:14px; border-bottom:2px solid var(--text); padding-bottom:10px; margin-bottom:6px;}
+  .part-num{font-family:Georgia,serif; font-size:2.1rem; line-height:1; color:var(--text);}
+  .part-title{font-family:Georgia,serif; font-size:1.5rem; margin:0;}
+  .part-sub{color:var(--muted); font-size:.9rem; margin:4px 0 24px;}
+
+  h3.block-title{
+    font-family:Georgia,serif; font-size:1.22rem; margin:34px 0 12px; padding-left:12px;
+    border-left:4px solid var(--freq);
+  }
+  h4{font-size:1.05rem; margin:22px 0 8px;}
+  p{margin:12px 0;}
+
+  .lead{font-size:1.05rem;}
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px 20px; box-shadow:var(--shadow); margin:16px 0;
+  }
+
+  /* 类比 / 提示框 */
+  .callout{border-radius:12px; padding:14px 16px 14px 18px; margin:16px 0; border:1px solid; font-size:.97rem;}
+  .callout .tag{font-weight:700; font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; display:block; margin-bottom:4px;}
+  .callout.analogy{background:#fdf8ee; border-color:#ecdcb8;}
+  .callout.analogy .tag{color:#b07d1a;}
+  .callout.warn{background:var(--wrong-bg); border-color:#f0c4bd;}
+  .callout.warn .tag{color:var(--wrong);}
+  .callout.key{background:#eef5f1; border-color:#c5ddcf;}
+  .callout.key .tag{color:var(--correct);}
+
+  /* 频率派/贝叶斯 对照双栏 */
+  .paradigm{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0;}
+  .pcol{border-radius:12px; padding:14px 16px; border:1px solid;}
+  .pcol h5{margin:0 0 8px; font-size:1rem; display:flex; align-items:center; gap:8px;}
+  .pcol.freq{background:var(--freq-soft); border-color:var(--freq-line);}
+  .pcol.freq h5{color:var(--freq);}
+  .pcol.bayes{background:var(--bayes-soft); border-color:var(--bayes-line);}
+  .pcol.bayes h5{color:var(--bayes);}
+  .pcol ul{margin:6px 0 0; padding-left:18px;}
+  .pcol li{margin:5px 0;}
+  .chip{display:inline-block; font-size:.7rem; font-weight:700; padding:2px 8px; border-radius:999px; color:#fff;}
+  .chip.f{background:var(--freq);}
+  .chip.b{background:var(--bayes);}
+
+  /* 表格 */
+  .tbl-scroll{overflow-x:auto; margin:16px 0;}
+  table{border-collapse:collapse; width:100%; font-size:.92rem; background:var(--surface);}
+  th,td{border:1px solid var(--border); padding:9px 12px; text-align:left; vertical-align:top;}
+  th{background:var(--surface-2); font-weight:700;}
+  tbody tr:nth-child(even){background:var(--surface-2);}
+
+  code.inline{background:#eeece6; padding:1px 6px; border-radius:5px; font-size:.9em;}
+  ul.clean{padding-left:20px;}
+  ul.clean li{margin:6px 0;}
+
+  /* ---------- 考点卡 ---------- */
+  .kp{
+    background:var(--surface); border:1px solid var(--border); border-left:5px solid var(--border-strong);
+    border-radius:10px; padding:14px 16px; margin:12px 0; box-shadow:var(--shadow);
+  }
+  .kp.hi{border-left-color:var(--star-hi);}
+  .kp.mid{border-left-color:var(--star-mid);}
+  .kp.lo{border-left-color:var(--star-lo);}
+  .kp-top{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px;}
+  .kp-name{font-weight:700; font-size:1.02rem;}
+  .stars{font-size:.85rem; letter-spacing:1px;}
+  .stars.hi{color:var(--star-hi);}
+  .stars.mid{color:var(--star-mid);}
+  .stars.lo{color:var(--star-lo);}
+  .badge{font-size:.7rem; font-weight:700; padding:2px 9px; border-radius:999px; border:1px solid;}
+  .badge.mem{background:#eef2fb; border-color:#cdd9f3; color:#3b5bbf;}
+  .badge.calc{background:#fdf0ec; border-color:#f3cdc0; color:#bb5a37;}
+  .kp-body{font-size:.95rem;}
+  .kp-body .lab{font-weight:700; color:var(--muted); font-size:.82rem; text-transform:uppercase; letter-spacing:.04em;}
+  .mix{background:var(--wrong-bg); border:1px dashed #e3a89e; border-radius:8px; padding:8px 12px; margin-top:8px; font-size:.9rem;}
+  .mix b{color:var(--wrong);}
+
+  /* ---------- 题目卡 ---------- */
+  .q{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:16px 18px; margin:18px 0; box-shadow:var(--shadow);
+  }
+  .q-head{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px;}
+  .q-no{font-family:Georgia,serif; font-weight:700; font-size:1.05rem;}
+  .pill{font-size:.7rem; font-weight:700; padding:2px 9px; border-radius:999px; border:1px solid var(--border-strong); color:var(--muted); background:var(--surface-2);}
+  .pill.type{background:#eef5f3; border-color:#c8e0d6; color:#2c7a5d;}
+  .pill.d1{background:#eef6ee; border-color:#cbe3cb; color:#4a8a4a;}
+  .pill.d2{background:#fdf6e8; border-color:#eedcb4; color:#b08518;}
+  .pill.d3{background:#fbeef0; border-color:#efc7cf; color:#bb476a;}
+  .pill.kp{background:#f1eefb; border-color:#d6cdef; color:#6b54c0;}
+  .q-stem{margin:6px 0 12px;}
+
+  .options{list-style:none; margin:0; padding:0;}
+  .option{
+    border:1px solid var(--border); border-radius:9px; padding:9px 13px; margin:8px 0;
+    cursor:pointer; transition:.12s; background:var(--surface-2); user-select:none;
+  }
+  .option:hover{border-color:#bdb6a6; background:#fff;}
+  .option .ol{font-weight:700; margin-right:7px;}
+  .mc.answered .option{cursor:default;}
+  .option.correct{background:var(--correct-bg); border-color:#9fd3b3; color:#1f5e3c;}
+  .option.correct::after{content:" ✓"; color:var(--correct); font-weight:700;}
+  .option.wrong{background:var(--wrong-bg); border-color:#e7afa6; color:#94352a;}
+  .option.wrong::after{content:" ✗"; color:var(--wrong); font-weight:700;}
+
+  /* 原生 details 折叠答案 */
+  details.answer-block{margin-top:12px; border:1px solid var(--freq-line); border-radius:10px; overflow:hidden; background:var(--freq-soft);}
+  details.answer-block > summary{
+    cursor:pointer; list-style:none; padding:10px 14px; font-weight:700; font-size:.92rem;
+    color:var(--freq); background:var(--freq-soft); display:flex; align-items:center; gap:8px;
+  }
+  details.answer-block > summary::-webkit-details-marker{display:none;}
+  details.answer-block > summary::before{content:"▶"; font-size:.7rem; transition:transform .2s;}
+  details.answer-block[open] > summary::before{transform:rotate(90deg);}
+  details.answer-block[open] > summary{border-bottom:1px solid var(--freq-line);}
+  .answer-content{padding:14px 16px; background:var(--surface); font-size:.95rem;}
+  .answer-content .ans-final{background:#eef5f1; border-left:4px solid var(--correct); padding:8px 12px; margin:10px 0; border-radius:0 8px 8px 0;}
+  .answer-content .step{margin:10px 0;}
+  .answer-content .lab{font-weight:700; color:var(--muted); font-size:.8rem; text-transform:uppercase; letter-spacing:.04em;}
+  .answer-content hr{border:none; border-top:1px dashed var(--border); margin:12px 0;}
+
+  /* 回到顶部 */
+  #toTop{
+    position:fixed; right:18px; bottom:18px; z-index:60;
+    width:46px; height:46px; border-radius:50%; border:1px solid var(--border-strong);
+    background:var(--surface); color:var(--text); cursor:pointer; box-shadow:var(--shadow);
+    font-size:1.1rem; display:none; align-items:center; justify-content:center;
+  }
+  #toTop.show{display:flex;}
+
+  /* MathJax 失败提示 */
+  #mjx-warn{display:none; max-width:var(--maxw); margin:14px auto 0; padding:0 18px;}
+  #mjx-warn .inner{background:#fff7e6; border:1px solid #f0d9a0; color:#8a6400; border-radius:10px; padding:10px 14px; font-size:.88rem;}
+
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:.82rem; color:var(--muted); margin:10px 0 0;}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .dot{width:11px; height:11px; border-radius:3px; display:inline-block;}
+
+  .site-footer{max-width:var(--maxw); margin:10px auto 0; padding:22px 18px 40px; border-top:1px solid var(--border); color:var(--muted); font-size:.85rem; text-align:center;}
+  .site-footer p{margin:4px 0;}
+  .site-footer .foot-note{font-size:.78rem; opacity:.85;}
+
+  @media (max-width:680px){
+    body{font-size:15.5px;}
+    .paradigm{grid-template-columns:1fr;}
+    .part-num{font-size:1.7rem;}
+    .part-title{font-size:1.25rem;}
+    .navlinks{width:100%; margin-left:0; justify-content:flex-start;}
+    .progress-card{gap:12px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important; scroll-behavior:auto !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">Lecture 9 · 期末复习<small>FREQUENTIST vs BAYESIAN ESTIMATION</small></div>
+    <nav class="navlinks">
+      <a href="#part1">①讲解</a>
+      <a href="#part2">②考点</a>
+      <a href="#part3">③题目</a>
+      <a href="#sum">速查表</a>
+    </nav>
+  </div>
+</div>
+
+<div id="mjx-warn"><div class="inner">⚠️ 数学公式渲染库（MathJax）加载失败，公式将以源码形式显示。请检查网络后刷新页面；其余文字内容不受影响。</div></div>
+
+<div class="progress-wrap">
+  <div class="progress-card">
+    <div class="progress-stats">
+      <span class="s-answered">已作答 <b id="stat-answered">0</b> / <span id="stat-total">0</span></span>
+      <span class="s-correct">答对 <b id="stat-correct">0</b></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="ctrl-btns">
+      <button class="btn" data-action="expand-all">展开全部答案</button>
+      <button class="btn" data-action="collapse-all">收起全部</button>
+    </div>
+  </div>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--freq)"></i>频率派 Frequentist</span>
+    <span><i class="dot" style="background:var(--bayes)"></i>贝叶斯派 Bayesian</span>
+    <span><i class="dot" style="background:var(--star-hi)"></i>★★★高频</span>
+    <span><i class="dot" style="background:var(--star-mid)"></i>★★中等</span>
+    <span><i class="dot" style="background:var(--star-lo)"></i>★低频</span>
+  </div>
+</div>
+
+<main>
+
+<!-- ============================================================= -->
+<!-- 第一部分：课程内容讲解                                          -->
+<!-- ============================================================= -->
+<section class="part" id="part1">
+  <div class="part-head">
+    <span class="part-num serif">01</span>
+    <h2 class="part-title">课程内容讲解</h2>
+  </div>
+  <p class="part-sub">面向第一次接触的同学：先建立整体地图，再逐块拆解。</p>
+
+  <div class="card">
+    <h4 style="margin-top:4px;">这门课在解决一个什么问题？</h4>
+    <p class="lead">现实世界里，我们想知道某个<b>总体真值（population parameter）</b>\(\theta\)——比如"一枚硬币正面朝上的真实概率""一种新疫苗真正的有效率""通勤者使用公交的真实比例"。可是我们<b>永远无法测量整个总体</b>（太大、太贵、根本做不到）。</p>
+    <p>于是我们退而求其次：抽一个<b>随机样本（random sample）</b> \(Y_1,\dots,Y_n\)，算出一个<b>样本统计量（statistic）</b> \(\hat\theta\)，再用 \(\hat\theta\) 去<b>推断</b>那个看不见的 \(\theta\)。整门课要回答三个递进的问题：</p>
+    <ul class="clean">
+      <li><b>① 点估计：</b>用一个数去猜 \(\theta\)，怎样的猜法才算"好"？</li>
+      <li><b>② 区间估计：</b>只给一个数太武断，能不能给一个"\(\theta\) 大概落在哪"的范围，并说明把握有多大？</li>
+      <li><b>③ 假设检验：</b>面对一个具体主张（"新疗法更好""硬币是公平的"），数据到底支不支持它？</li>
+    </ul>
+    <p>而贯穿这三块的，是<b>两种世界观（two paradigms）</b>：<span class="chip f">频率派 Frequentist</span> 与 <span class="chip b">贝叶斯派 Bayesian</span>。它们对"\(\theta\) 到底是什么"有根本分歧——这正是本讲的灵魂，也是考试反复考的对照。</p>
+  </div>
+
+  <h3 class="block-title">核心舞台：总体参数 vs 样本统计量</h3>
+  <p>务必分清两个角色：</p>
+  <div class="paradigm">
+    <div class="pcol freq" style="background:#eef1f4; border-color:#d3d9df;">
+      <h5 style="color:#3a4650;">总体参数 \(\theta\)（真值）</h5>
+      <ul>
+        <li><b>固定不变（fixed）</b>但<b>未知（unknown）</b></li>
+        <li>是整个总体的一个客观特征</li>
+        <li>例：真实正面概率、真实有效率</li>
+      </ul>
+    </div>
+    <div class="pcol bayes" style="background:#f3f1ec; border-color:#ddd7c9;">
+      <h5 style="color:#6a5f4a;">样本统计量 \(\hat\theta\)（估计量）</h5>
+      <ul>
+        <li><b>随机的（random）</b>：换一个样本，值就变</li>
+        <li>由手头这批数据算出来</li>
+        <li>例：样本均值、样本中位数</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout key"><span class="tag">一句话记住</span> \(\theta\) 是靶心（不动），\(\hat\theta\) 是我们射出的箭（每次落点不同）。整门课就是在研究"这支箭打得准不准"。</div>
+
+  <h3 class="block-title">理解一切的钥匙：抽样分布（Sampling Distribution）</h3>
+  <p>既然每抽一个样本就得到一个不同的 \(\hat\theta\)，那么"把抽样实验重复无数次、所有可能的 \(\hat\theta\) 取值"就构成了一个分布——这就是<b>抽样分布</b>。它是频率派一切推断的地基。</p>
+  <div class="callout analogy"><span class="tag">类比</span> 想象你用一把<b>略微抖动的尺子</b>反复量同一根棍子。每次读数都不太一样，把成千上万次读数画成直方图，就是"读数的抽样分布"。这个分布的<b>中心</b>告诉你尺子有没有系统性偏差，<b>胖瘦</b>告诉你尺子抖得有多厉害。</p></div>
+  <p>抽样分布有两个关键属性，正好对应估计量好坏的两把尺子：</p>
+  <ul class="clean">
+    <li><b>中心（centre）→ 偏差 Bias：</b>估计量平均而言是否对准了真值 \(\theta\)。</li>
+    <li><b>离散程度（spread）→ 方差 Variance：</b>估计量在不同样本间波动有多大。</li>
+    <li><b>两者合起来 → 均方误差 MSE：</b>衡量整体准确度。</li>
+  </ul>
+  <p><b>课件经典例子：</b>估计硬币正面概率 \(\theta\)。抛 \(n=100\) 次，记正面数 \(Y\sim\text{binomial}(100,\theta)\)，取 \(\hat\theta=Y/100\)。由<b>中心极限定理（CLT）</b>，当 \(n\) 较大时：</p>
+  <p style="text-align:center;">\[ \hat\theta \sim N\!\left(\theta,\ \frac{\theta(1-\theta)}{n}\right). \]</p>
+  <p>这个分布的中心恰是真值 \(\theta\)（说明无偏），而且 \(n\) 越大越"瘦"（越集中），估计越可靠。</p>
+
+  <h3 class="block-title">本讲灵魂：两大门派如何看待 \(\theta\)</h3>
+  <div class="paradigm">
+    <div class="pcol freq">
+      <h5><span class="chip f">F</span>频率派 Frequentist</h5>
+      <ul>
+        <li>\(\theta\) 是<b>固定的未知常数</b></li>
+        <li>永远<b>不能</b>对 \(\theta\) 本身谈概率</li>
+        <li>推断依赖 \(\hat\theta\) 的<b>抽样分布</b></li>
+        <li>不确定性是关于<b>"程序/方法"</b>的，不是关于 \(\theta\) 的</li>
+      </ul>
+    </div>
+    <div class="pcol bayes">
+      <h5><span class="chip b">B</span>贝叶斯派 Bayesian</h5>
+      <ul>
+        <li>\(\theta\) 是<b>随机变量</b></li>
+        <li>先用<b>先验 prior</b> \(p(\theta)\) 表达初始不确定</li>
+        <li>看到数据后更新为<b>后验 posterior</b> \(p(\theta\mid Y)\)</li>
+        <li>不确定性<b>直接</b>是关于 \(\theta\) 的</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout analogy"><span class="tag">直觉类比</span> 频率派像一位<b>质检员</b>：硬币的真实概率是个定数，他关心的是"我这套检验流程，长期反复用下去表现如何（误判率多少）"。贝叶斯派像一位<b>侦探</b>：他对"真值是多少"本身持有一份会随线索更新的<b>信念分布</b>——看到新数据，就用贝叶斯定理把信念从先验更新为后验。</p></div>
+
+  <h3 class="block-title">第一块拼图：点估计（Point Estimates）</h3>
+  <p>点估计就是用<b>一个数</b>来猜 \(\theta\)。频率派用三把尺子来判断好坏：</p>
+  <div class="card">
+    <p><b>① 偏差 Bias</b>：\(\text{Bias}[\hat\theta,\theta]=E[\hat\theta]-\theta\)。若 \(E[\hat\theta]=\theta\) 则称<b>无偏（unbiased）</b>。<br><b>② 方差 Variance</b>：抽样分布的胖瘦。在所有无偏估计里，方差最小的叫 <b>MVUE（最小方差无偏估计）</b>。<br><b>③ 均方误差 MSE</b>：\(\text{MSE}[\hat\theta]=E[(\hat\theta-\theta)^2]=\text{Bias}^2+\text{Var}\)。频率派<b>总是选 MSE 最小</b>的估计量。</p>
+  </div>
+  <div class="callout analogy"><span class="tag">飞镖类比</span> <b>偏差</b>＝你平均落点离靶心有多远（瞄歪了）；<b>方差</b>＝你的镖散得有多开（手抖）。一个好镖手既要瞄得准（低偏差）又要手稳（低方差）。<b>MSE</b> 就是把这两种错误合并成一个总分。</p></div>
+  <p><b>例（二项数据）：</b>样本均值 \(\hat\theta_f=Y/n\) 满足 \(E[\hat\theta_f]=\theta\)，无偏；可证其在所有无偏估计中方差最小，故 \(\hat\theta_f=Y/n\) 是 \(\theta\) 的 <b>MVUE</b>，同时也是<b>最小 MSE 频率估计</b>。课件还演示了样本均值方差 \(\theta(1-\theta)/n\) 小于样本中位数方差 \(\approx \pi\theta(1-\theta)/(2n)\)（因 \(\pi/2\approx1.57>1\)）。</p>
+
+  <h4>贝叶斯怎么做点估计？</h4>
+  <p>贝叶斯不看抽样分布，而是看<b>后验分布</b>。它用 <b>PMSE（后验均方误差）</b> 衡量：</p>
+  <p style="text-align:center;">\[ \text{PMSE}[\hat\theta]=\int(\theta-\hat\theta)^2\,p(\theta\mid Y)\,d\theta=\text{Var}[\theta\mid Y]+\big(E[\theta\mid Y]-\hat\theta\big)^2. \]</p>
+  <p>这个量在 \(\hat\theta_b=E[\theta\mid Y]\)（<b>后验均值</b>）时取最小。所以<b>贝叶斯点估计就是后验均值</b>。</p>
+  <div class="callout warn"><span class="tag">最易混！频率 MSE vs 贝叶斯 PMSE</span> 两个公式长得像，但"谁在变"完全相反：<br>• <b>频率 MSE</b>：\(\hat\theta\) 是随机的（跑遍所有样本），\(\theta\) 是固定常数。<br>• <b>贝叶斯 PMSE</b>：\(\hat\theta\) 是固定的，\(\theta\) 是随机的（跑遍后验的所有取值），只依赖手头这批数据、不再抽新样本。</p></div>
+  <p><b>二项共轭例子（beta 先验）：</b>数据 \(Y\sim\text{binomial}(n,\theta)\)，先验 \(\theta\sim\text{beta}(1,1)\)（即均匀先验），则后验 \(\theta\mid Y\sim\text{beta}(1+y,\,1+n-y)\)，贝叶斯估计 \(\hat\theta_b=\dfrac{1+Y}{2+n}\)，而频率估计 \(\hat\theta_f=\dfrac{Y}{n}\)。</p>
+
+  <h4>贝叶斯一定更好吗？——不！</h4>
+  <p>贝叶斯估计会把结果<b>朝先验均值方向"拉"</b>。先验选得准时这是助力；选得不准时就是阻力。课件用 beta(1,1)（先验均值 0.5）举例：</p>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>情形（\(n=10\)）</th><th>频率 \(\hat\theta_f=Y/n\)</th><th>贝叶斯 \(\hat\theta_b=(1+Y)/(2+n)\)</th><th>结论</th></tr></thead>
+    <tbody>
+      <tr><td>真值 \(\theta=0.5\)（贴近先验）</td><td>MSE = 0.025</td><td>MSE = 0.017</td><td>贝叶斯更优 ✓</td></tr>
+      <tr><td>真值 \(\theta=0.1\)（远离先验）</td><td>MSE = 0.009</td><td>MSE = 0.011</td><td>频率更优 ✗</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout key"><span class="tag">核心教训</span> 先验<b>设得好</b>，贝叶斯锦上添花；先验<b>设错了</b>（真值远离先验均值），偏差项会主导 MSE，把估计往错误方向拉，反而不如频率派。<b>没有免费的午餐。</b></p></div>
+  <p>泊松数据同理：\(Y_i\sim\text{Pois}(\mu)\)，频率估计是样本均值；先验 \(\mu\sim\text{gamma}(r,v)\)，后验 \(\mu\mid Y\sim\text{gamma}(r+\sum y_i,\ v+n)\)，贝叶斯估计 \(\hat\mu_b=\dfrac{r+\sum y_i}{v+n}\)。</p>
+
+  <h3 class="block-title">第二块拼图：区间估计（Interval Estimates）</h3>
+  <p>点估计只给一个数，太"独断"。区间估计给出<b>一段合理取值范围 + 一个把握程度</b>。两派各有招式，<b>数值常常很接近，但解释天差地别</b>——这是高频考点。</p>
+  <div class="paradigm">
+    <div class="pcol freq">
+      <h5><span class="chip f">F</span>置信区间 Confidence Interval</h5>
+      <ul>
+        <li>由 \(\hat\theta\) 的<b>抽样分布</b>算出：\(\hat\theta\pm z_{1-\alpha/2}\cdot \text{s.d.}(\hat\theta)\)</li>
+        <li><b>正确</b>说法：把实验重复无数次，95% 的区间会盖住 \(\theta\)</li>
+        <li><b>错误</b>说法：这个具体区间有 95% 概率含 \(\theta\)（❌）</li>
+      </ul>
+    </div>
+    <div class="pcol bayes">
+      <h5><span class="chip b">B</span>可信区间 Credible Interval</h5>
+      <ul>
+        <li>由<b>后验分布</b>算出：\(P(a\le\theta\le b\mid Y)=\alpha\)</li>
+        <li><b>可以</b>直接说：\(\theta\) 有 95% 概率落在 \([a,b]\) ✓</li>
+        <li>这是关于 \(\theta\) 的<b>直接概率陈述</b></li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout warn"><span class="tag">最经典的陷阱</span> 频率派眼里 \(\theta\) 是固定的，所以对一个<b>已经算出来</b>的区间 \([a,b]\)，要么 \(\theta\) 在里面（概率 1）、要么不在（概率 0），<b>不存在</b>"95% 概率"。那个 95% 形容的是"造区间这套程序的长期命中率"，不是这一个区间。</p></div>
+  <div class="callout analogy"><span class="tag">捞鱼类比</span> 池里有一条<b>位置固定</b>的鱼（\(\theta\)）。你有一张"95% 命中率"的网（造区间的程序）：长期看，100 次撒网约 95 次罩住鱼。可一旦你<b>已经撒下这一网</b>，鱼要么在网里要么不在——这一网谈不上"95% 概率"。贝叶斯则相反：它把"鱼在哪"看成一份概率信念，于是"这个范围有 95% 概率含鱼"是合法的说法。</p></div>
+
+  <h4>最高密度区域 HDR（Highest Density Region）</h4>
+  <p>贝叶斯可信区间不唯一。<b>HDR</b> 是其中最讲究的一种，需同时满足：①含 \(\alpha\%\) 后验概率；②区域内每一点的后验密度都<b>高于</b>区域外任一点。它是<b>最短</b>的 \(\alpha\%\) 区间，只圈住最可能的取值。</p>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th></th><th>等尾区间 Equal-tailed</th><th>HDR</th></tr></thead>
+    <tbody>
+      <tr><td>做法</td><td>每尾各切 \(\alpha/2\)，靠分位数，易算</td><td>只保留密度最高的区域</td></tr>
+      <tr><td>长度</td><td>不一定最短</td><td><b>永远最短</b></td></tr>
+      <tr><td>偏态后验时</td><td>可能纳入低密度区，偏宽</td><td>排除低密度区，更精炼</td></tr>
+      <tr><td>对称后验时</td><td colspan="2" style="text-align:center;">两者<b>重合</b>（也＝置信区间数值）</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>双峰后验</b>最能体现 HDR 的价值：等尾区间会把两峰之间的"低密度山谷"也圈进来，又宽又没信息；而 HDR 直接跳过山谷，可以是<b>两段不相连</b>的区间，只报告 \(\theta\) 真正可能出现的地方。</p>
+  <div class="callout key"><span class="tag">怎么算（笔算·大样本）</span> ① 由贝叶斯定理求后验 \(p(\theta\mid Y)\propto p(Y\mid\theta)p(\theta)\)；② 算后验均值 \(m\)、方差 \(s^2\)；③ 大样本时后验近似对称 \(N(m,s^2)\)，于是 <b>95% HDR \(=m\pm1.96\,s\)</b>。对称时它同时等于等尾可信区间。<br><b>判断对称的小技巧：</b>比较后验<b>均值</b>与<b>众数（mode）</b>，两者接近即近似对称。</p></div>
+
+  <h3 class="block-title">第三块拼图：假设检验（Hypothesis Testing）</h3>
+  <p>场景：判断某处理（treatment）是否真有效果。把"数据上看到的差异"归因于两种可能：</p>
+  <ul class="clean">
+    <li><b>原假设 \(H_0\)：</b>差异纯属随机波动（碰巧）。</li>
+    <li><b>备择假设 \(H_1\)：</b>至少有一部分差异来自真实的处理效应。</li>
+  </ul>
+  <p style="font-size:.92rem; color:var(--muted);">注意：说"\(H_0\) 成立"不代表它字面为真，只代表"随机碰巧"是个说得过去的解释。</p>
+
+  <h4>单侧检验（One-sided）：只关心一个方向</h4>
+  <p>\(H_0:\pi\le\pi_0\) vs \(H_1:\pi>\pi_0\)。例：标准疗法有效率 \(\pi_0=0.6\)，问新疗法是否更好。\(n=10\) 人中 \(y=8\) 见效。</p>
+  <div class="paradigm">
+    <div class="pcol freq">
+      <h5><span class="chip f">F</span>频率检验：p 值</h5>
+      <ul>
+        <li>p 值＝<b>假设 \(H_0\) 为真</b>时，观测到当前或更极端数据的概率</li>
+        <li>\(P(Y\ge8\mid\pi=0.6)=0.1672\)</li>
+        <li>\(0.1672>0.05\)，<b>不能拒绝</b> \(H_0\)（一种反证法）</li>
+      </ul>
+    </div>
+    <div class="pcol bayes">
+      <h5><span class="chip b">B</span>贝叶斯检验：后验概率</h5>
+      <ul>
+        <li>直接算<b>给定数据后 \(H_0\) 为真</b>的后验概率</li>
+        <li>后验 \(\pi\mid Y\sim\text{beta}(9,3)\)，\(P(\pi\le0.6\mid Y)=0.1189\)</li>
+        <li>\(0.1189>0.05\)，同样<b>不能拒绝</b> \(H_0\)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h4>检察官谬误（Prosecutor's Fallacy）——务必理解</h4>
+  <div class="callout warn"><span class="tag">致命混淆</span> \(P(\text{数据}\mid H_0)\ \ne\ P(H_0\mid\text{数据})\)。<br>p 值回答的是"<b>假设 \(H_0\) 为真</b>，看到这么极端数据的可能性"；你真正想知道的是"<b>看到这些数据后</b>，\(H_0\) 为真的可能性"。只有贝叶斯后验 \(P(H_0\mid Y)\) 直接回答后者。</p></div>
+  <p><b>血型例子：</b>"只有 1/1000 的人是这种血型，所以被告无辜的概率只有 1/1000"——这就是谬误。检方算的其实是 \(P(\text{匹配}\mid\text{无辜})=0.001\)，却当成了 \(P(\text{无辜}\mid\text{匹配})\)。若城里有 100 万人、约 1000 人都匹配，那么单凭血型匹配，被告无辜的后验概率其实<b>接近 1</b>。差异完全由<b>先验（基础概率）</b>驱动。</p>
+  <p><b>癌症筛查例子：</b>患病率 1%、灵敏度 90%、假阳性率 9%。某人检测阳性。由贝叶斯定理 \(P(\text{患病}\mid+)=\dfrac{0.9\times0.01}{0.9\times0.01+0.09\times0.99}=\dfrac{0.009}{0.0981}\approx0.092\)。即使阳性，真正患病的概率<b>也只有约 9.2%</b>——低患病率（先验）起了决定性作用。频率式只看 \(P(+\mid H_0)=0.09\) 就草率"拒绝"，会严重误导。</p>
+
+  <h4>双侧检验（Two-sided）：关心任意方向的改变</h4>
+  <p>\(H_0:\pi=\pi_0\) vs \(H_1:\pi\ne\pi_0\)。例：抛硬币 15 次得 10 个正面，硬币公平吗？（\(\pi_0=0.5\)）</p>
+  <ul class="clean">
+    <li><b>频率派：</b>两尾都要算。零分布关于 \(\mu_0=n\pi_0=7.5\) 对称，观测 \(y=10\) 比均值高 2.5，对称地另一侧"同样极端"是 \(\le5\)。p 值 \(=P(Y\ge10)+P(Y\le5)=0.302>0.05\)，不能拒绝。<b>或</b>用置信区间：若 \(\pi_0\notin[a,b]\) 则拒绝。</li>
+    <li><b>贝叶斯派：</b>后验连续，故 \(P(\pi=0.5\mid Y)=0\)，不能直接算点概率，<b>改用可信区间/HDR</b>：后验 \(\pi\mid Y\sim\text{beta}(11,6)\)，95% 可信区间 \([0.426,0.868]\) 含 0.5，故不能拒绝。</li>
+  </ul>
+  <div class="callout key"><span class="tag">为什么用区间做双侧检验很自然</span> 因为后验是连续分布，"\(\theta\) 恰等于某个点"的概率为 0，没法直接比较。于是问法自然变成：<b>那个零值 \(\theta_0\) 是否落在"可信的取值范围"之内</b>？在内就不能拒绝，在外就拒绝。同一套逻辑对二项、泊松、正态数据都适用。</p></div>
+</section>
+
+<!-- ============================================================= -->
+<!-- 第二部分：考点梳理                                              -->
+<!-- ============================================================= -->
+<section class="part" id="part2">
+  <div class="part-head">
+    <span class="part-num serif">02</span>
+    <h2 class="part-title">考点梳理</h2>
+  </div>
+  <p class="part-sub">按四大主题分类，逐条给出定义、公式、易混点与重要程度。<span class="badge mem" style="margin:0 4px;">记忆</span>＝需背诵；<span class="badge calc" style="margin:0 4px;">理解·计算</span>＝需会推导/算。</p>
+
+  <h3 class="block-title">主题 A · 基础概念与两大门派</h3>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">总体参数 vs 样本统计量</span><span class="stars hi">★★★</span><span class="badge mem">记忆</span></div>
+    <div class="kp-body">
+      <p><span class="lab">定义</span> 总体参数 \(\theta\)：整个总体的固定但未知特征；样本统计量（估计量）\(\hat\theta\)：由随机样本算出、用于推断 \(\theta\) 的量。</p>
+      <div class="mix"><b>易混：</b> \(\theta\) <b>固定</b>、\(\hat\theta\) <b>随机</b>。考试常考"哪个是随机变量"——答案随门派而变：频率派只有 \(\hat\theta\) 随机；贝叶斯派 \(\theta\) 也是随机变量。</div>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">抽样分布 Sampling Distribution</span><span class="stars hi">★★★</span><span class="badge calc">理解</span></div>
+    <div class="kp-body">
+      <p><span class="lab">定义</span> 统计量 \(\hat\theta\) 在"容量为 \(n\) 的所有可能样本"上的概率分布。中心 → 偏差；离散 → 方差；合起来 → MSE。</p>
+      <p><span class="lab">关键公式</span> 二项例：\(\hat\theta=Y/n\) 由 CLT 近似 \(N\!\big(\theta,\ \theta(1-\theta)/n\big)\)。\(n\) 越大越集中。</p>
+      <div class="mix"><b>易混：</b> 抽样分布是<b>统计量 \(\hat\theta\)</b> 的分布，不是单个数据点的分布，也不是总体的分布。</div>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">频率派 vs 贝叶斯派（核心对照）</span><span class="stars hi">★★★</span><span class="badge mem">记忆</span></div>
+    <div class="kp-body">
+      <p><span class="lab">频率派</span> \(\theta\) 固定未知；不能对 \(\theta\) 谈概率；靠 \(\hat\theta\) 的抽样分布；不确定性关于"程序"。</p>
+      <p><span class="lab">贝叶斯派</span> \(\theta\) 是随机变量；先验 \(p(\theta)\) → 后验 \(p(\theta\mid Y)\)；不确定性直接关于 \(\theta\)。</p>
+      <div class="mix"><b>常错：</b> 把"先验/后验"安到频率派头上。先验、后验、可信区间、PMSE、\(P(H_0\mid Y)\) 全是<b>贝叶斯</b>概念；p 值、置信区间、抽样分布是<b>频率</b>概念。</div>
+    </div>
+  </div>
+
+  <h3 class="block-title" style="border-left-color:var(--bayes);">主题 B · 点估计 Point Estimates</h3>
+
+  <div class="kp mid">
+    <div class="kp-top"><span class="kp-name">点估计定义</span><span class="stars mid">★★</span><span class="badge mem">记忆</span></div>
+    <div class="kp-body"><p><span class="lab">定义</span> 由样本数据算出、用来估计未知 \(\theta\) 的<b>单个</b>统计量。例：样本均值、样本中位数。</p></div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">偏差 Bias</span><span class="stars hi">★★★</span><span class="badge calc">理解·计算</span></div>
+    <div class="kp-body">
+      <p><span class="lab">公式</span> \(\text{Bias}[\hat\theta,\theta]=E[\hat\theta]-\theta\)。\(E[\hat\theta]=\theta\) ⇔ <b>无偏 unbiased</b>。</p>
+      <p><span class="lab">关键结论</span> 只要 \(E[Y_i]=\theta\)，样本均值就<b>恒为无偏</b>（对任意分布成立）。</p>
+      <div class="mix"><b>常错：</b> 无偏只约束"平均位置对准"，<b>不</b>保证方差小，更不保证单次估计准。</div>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">最小方差无偏估计 MVUE</span><span class="stars hi">★★★</span><span class="badge calc">理解</span></div>
+    <div class="kp-body">
+      <p><span class="lab">定义</span> 同时满足：① 无偏 \(E[\hat\theta]=\theta\)；② 在<b>所有无偏估计</b>中方差最小。</p>
+      <p><span class="lab">典型例</span> 二项数据中样本均值 \(Y/n\)（方差 \(\theta(1-\theta)/n\)）方差小于样本中位数（方差 \(\approx\pi\theta(1-\theta)/(2n)\)，因 \(\pi/2\approx1.57>1\)），故 \(Y/n\) 是 MVUE。</p>
+      <div class="mix"><b>易混：</b> 移位估计 \(\hat\theta_2=(Y+1)/(n+2)\) 是<b>有偏</b>的，直接被排除出 MVUE 竞争（先比无偏，再在无偏里比方差）。</div>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">均方误差 MSE（频率）</span><span class="stars hi">★★★</span><span class="badge calc">理解·计算</span></div>
+    <div class="kp-body">
+      <p><span class="lab">公式</span> \(\text{MSE}[\hat\theta]=E[(\hat\theta-\theta)^2]=\text{Bias}^2+\text{Var}\)。频率派<b>总选 MSE 最小</b>者。</p>
+      <p><span class="lab">二项例</span> \(\hat\theta_f=Y/n\) 无偏，故 \(\text{MSE}=\text{Var}=\theta(1-\theta)/n\)，是最小 MSE 频率估计。</p>
+      <div class="mix"><b>必记拆解：</b> 偏差与方差可以"互换"——有偏但方差更小的估计，MSE 反而可能更低。所以无偏不等于最优。</div>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">贝叶斯点估计 = 后验均值 &amp; PMSE</span><span class="stars hi">★★★</span><span class="badge calc">理解·计算</span></div>
+    <div class="kp-body">
+      <p><span class="lab">PMSE</span> \(\displaystyle\text{PMSE}[\hat\theta]=\int(\theta-\hat\theta)^2 p(\theta\mid Y)\,d\theta=\text{Var}[\theta\mid Y]+\big(E[\theta\mid Y]-\hat\theta\big)^2\)。</p>
+      <p><span class="lab">结论</span> PMSE 在 \(\hat\theta_b=E[\theta\mid Y]\)（<b>后验均值</b>）处最小 ⇒ 贝叶斯点估计取后验均值，此时 \(\text{PMSE}=\text{Var}[\theta\mid Y]\)。</p>
+      <div class="mix"><b>核心易混：</b> 频率 MSE 中 \(\hat\theta\) 随机、\(\theta\) 固定（跑遍样本）；贝叶斯 PMSE 中 \(\hat\theta\) 固定、\(\theta\) 随机（跑遍后验）。</div>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">共轭：二项–Beta</span><span class="stars hi">★★★</span><span class="badge calc">记忆·计算</span></div>
+    <div class="kp-body">
+      <p><span class="lab">模型</span> 数据 \(Y\sim\text{binomial}(n,\theta)\)，先验 \(\theta\sim\text{beta}(a,b)\) ⇒ 后验 \(\theta\mid Y\sim\text{beta}(a+y,\ b+n-y)\)。</p>
+      <p><span class="lab">取均匀先验 beta(1,1)</span> 后验 \(\text{beta}(1+y,\ 1+n-y)\)，估计 \(\hat\theta_b=\dfrac{1+Y}{2+n}\)。后验均值 \(\dfrac{a+y}{a+b+n}\)，众数 \(\dfrac{a+y-1}{a+b+n-2}\)，方差 \(\dfrac{(a+y)(b+n-y)}{(a+b+n)^2(a+b+n+1)}\)。</p>
+      <div class="mix"><b>常错：</b> 写后验参数时别漏 \(n-y\)（失败次数）；均匀先验是 beta(1,1) 不是 beta(0,0)。</div>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">共轭：泊松–Gamma</span><span class="stars hi">★★★</span><span class="badge calc">记忆·计算</span></div>
+    <div class="kp-body">
+      <p><span class="lab">模型</span> \(Y_i\sim\text{Pois}(\mu)\)，先验 \(\mu\sim\text{gamma}(r,v)\) ⇒ 后验 \(\mu\mid Y\sim\text{gamma}\big(r+\sum y_i,\ v+n\big)\)。</p>
+      <p><span class="lab">估计与矩</span> \(\hat\mu_b=E[\mu\mid Y]=\dfrac{r+\sum y_i}{v+n}\)，\(\text{Var}[\mu\mid Y]=\dfrac{r+\sum y_i}{(v+n)^2}\)。频率估计 \(\hat\mu_f=\dfrac{\sum y_i}{n}\)。</p>
+      <div class="mix"><b>约定：</b> 本课 gamma(r,v) 用"形状 r、率 v"参数化：均值 \(r/v\)、方差 \(r/v^2\)。先把 \(\sum y_i\) 和 \(n\) 算对再代入。</div>
+    </div>
+  </div>
+
+  <div class="kp mid">
+    <div class="kp-top"><span class="kp-name">贝叶斯何时更差（先验误设）</span><span class="stars mid">★★</span><span class="badge calc">理解</span></div>
+    <div class="kp-body">
+      <p><span class="lab">机理</span> 贝叶斯估计把结果朝先验均值"收缩"。\(\text{MSE}[\hat\theta_b]=\big(\tfrac{1-2\theta}{2+n}\big)^2+\tfrac{n\theta(1-\theta)}{(2+n)^2}\)（beta(1,1)）。第一项（平方偏差）仅在 \(\theta=0.5\) 时为 0。</p>
+      <p><span class="lab">结论</span> 真值<b>远离</b>先验均值（如 \(\theta=0.1\)）时偏差主导，\(\text{MSE}[\hat\theta_b]>\text{MSE}[\hat\theta_f]\)，频率派胜。</p>
+    </div>
+  </div>
+
+  <h3 class="block-title">主题 C · 区间估计 Interval Estimates</h3>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">频率置信区间 CI &amp; 其解释</span><span class="stars hi">★★★</span><span class="badge calc">记忆·计算</span></div>
+    <div class="kp-body">
+      <p><span class="lab">公式</span> \(\hat\theta\pm z_{1-\alpha/2}\cdot\text{s.d.}(\hat\theta)\)，95% 时 \(z=1.96\)。二项 \(\text{s.d.}=\sqrt{\hat\theta(1-\hat\theta)/n}\)。</p>
+      <p><span class="lab">正确解释</span> 实验重复无数次，95% 的区间会含 \(\theta\)。</p>
+      <div class="mix"><b>头号陷阱：</b> 对一个<b>已算出</b>的区间 \([a,b]\)，<b>不能</b>说"\(\theta\) 有 95% 概率在内"。因 \(\theta\) 固定，\(P(\theta\in[a,b])\) 非 0 即 1。</div>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">贝叶斯可信区间 Credible Interval</span><span class="stars hi">★★★</span><span class="badge calc">记忆·计算</span></div>
+    <div class="kp-body">
+      <p><span class="lab">定义</span> 由后验得 \(P(a\le\theta\le b\mid Y)=\alpha\)。大样本正态近似：\(m\pm z_{1-\alpha/2}\sqrt{s^2}\)，其中 \(m=E[\theta\mid Y]\)、\(s^2=\text{Var}[\theta\mid Y]\)。</p>
+      <p><span class="lab">正确解释</span> <b>可以</b>说"\(\theta\) 有 95% 概率落在 \([a,b]\)"——直接的概率陈述。</p>
+      <div class="mix"><b>对比记忆：</b> CI 的 95% 形容"程序"，credible interval 的 95% 形容"\(\theta\) 本身"。数值常接近，解释根本不同。</div>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">最高密度区域 HDR</span><span class="stars hi">★★★</span><span class="badge calc">理解·计算</span></div>
+    <div class="kp-body">
+      <p><span class="lab">定义</span> 满足：① 含 \(\alpha\%\) 后验概率；② 区内每点密度 ≥ 区外每点密度。是<b>最短</b>的 \(\alpha\%\) 可信区间。</p>
+      <p><span class="lab">笔算（大样本）</span> 后验近似 \(N(m,s^2)\) ⇒ 95% HDR \(=m\pm1.96\,s\)。</p>
+      <div class="mix"><b>关键：</b> 对称后验时 HDR = 等尾可信区间 = 数值上的 CI；<b>偏态/双峰</b>时 HDR 严格更短、更有信息（双峰时可为两段不相连区间）。</div>
+    </div>
+  </div>
+
+  <div class="kp mid">
+    <div class="kp-top"><span class="kp-name">HDR vs 等尾 &amp; 对称性判断</span><span class="stars mid">★★</span><span class="badge calc">理解·计算</span></div>
+    <div class="kp-body">
+      <p><span class="lab">等尾</span> 每尾切 \(\alpha/2\)，易算但偏态时含低密度区、不最短。</p>
+      <p><span class="lab">对称性技巧</span> 比较后验<b>均值</b>与<b>众数</b>：接近 ⇒ 近似对称 ⇒ HDR ≈ 等尾 ≈ CI。例 beta(19,33)：均值 0.365、众数 0.36，近似对称。</p>
+    </div>
+  </div>
+
+  <div class="kp lo">
+    <div class="kp-top"><span class="kp-name">双峰后验为何需要 HDR</span><span class="stars lo">★</span><span class="badge mem">理解</span></div>
+    <div class="kp-body"><p><span class="lab">要点</span> 双峰可源于先验与似然强烈冲突、数据两簇、或混合模型。等尾会圈进中间"山谷"（低密度），HDR 跳过山谷、只报两峰，更精炼。</p></div>
+  </div>
+
+  <h3 class="block-title" style="border-left-color:var(--bayes);">主题 D · 假设检验 Hypothesis Testing</h3>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">原假设 / 备择假设</span><span class="stars hi">★★★</span><span class="badge mem">记忆</span></div>
+    <div class="kp-body">
+      <p><span class="lab">定义</span> \(H_0\)：差异纯属随机；\(H_1\)：差异至少部分源于处理效应。单侧 \(H_0:\pi\le\pi_0\) vs \(H_1:\pi>\pi_0\)；双侧 \(H_0:\pi=\pi_0\) vs \(H_1:\pi\ne\pi_0\)。</p>
+      <div class="mix"><b>易错：</b> "不拒绝 \(H_0\)" ≠ "\(H_0\) 为真"，只表示"随机碰巧"是合理解释、证据不足以推翻它。</div>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">频率单侧检验：p 值</span><span class="stars hi">★★★</span><span class="badge calc">理解·计算</span></div>
+    <div class="kp-body">
+      <p><span class="lab">定义</span> p 值＝在 \(H_0\) 为真下观测到当前或更极端数据的概率。\(p<\alpha\) ⇒ 拒绝 \(H_0\)（反证法）。</p>
+      <p><span class="lab">例</span> \(P(Y\ge8\mid\pi=0.6)=0.1209+0.0403+0.006=0.1672>0.05\) ⇒ 不能拒绝。</p>
+      <div class="mix"><b>常错：</b> 上侧检验把<b>等于及更极端</b>都算进去（\(Y\ge\) 观测值），别只算等于观测值那一项。</div>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">贝叶斯单侧检验：\(P(H_0\mid Y)\)</span><span class="stars hi">★★★</span><span class="badge calc">理解·计算</span></div>
+    <div class="kp-body">
+      <p><span class="lab">定义</span> 算后验概率 \(P(H_0:\pi\le\pi_0\mid Y)=\int_0^{\pi_0}p(\pi\mid Y)\,d\pi\)；若 \(<\alpha\) 则拒绝（小概率法）。</p>
+      <p><span class="lab">大样本做法</span> 后验近似 \(N(m,s^2)\)，用 \(Z=\dfrac{\pi_0-m}{s}\) 查标准正态。</p>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">检察官谬误（基础概率）</span><span class="stars hi">★★★</span><span class="badge mem">理解</span></div>
+    <div class="kp-body">
+      <p><span class="lab">核心</span> \(P(\text{数据}\mid H_0)\ne P(H_0\mid\text{数据})\)。p 值是前者；想要的是后者，只有贝叶斯后验直接给出。</p>
+      <p><span class="lab">癌症筛查</span> 患病率 1%、灵敏度 90%、假阳性 9% ⇒ \(P(\text{患病}\mid+)=\dfrac{0.9(0.01)}{0.9(0.01)+0.09(0.99)}=\dfrac{0.009}{0.0981}\approx0.092\)。</p>
+      <div class="mix"><b>结论：</b> 当 \(H_0\) 先验概率高（罕见病/罕见事件）时，忽略先验会让频率结论严重误导。</div>
+    </div>
+  </div>
+
+  <div class="kp hi">
+    <div class="kp-top"><span class="kp-name">双侧检验（两派做法）</span><span class="stars hi">★★★</span><span class="badge calc">理解·计算</span></div>
+    <div class="kp-body">
+      <p><span class="lab">频率</span> 双尾 p 值：零分布关于 \(\mu_0=n\pi_0\) 对称，把两侧"同样极端"区域概率相加；或看 \(\pi_0\) 是否落在 \((1-\alpha)\) 置信区间内（在内不拒绝）。例 \(n=15,y=10\)：\(P(Y\ge10)+P(Y\le5)=0.302\)。</p>
+      <p><span class="lab">贝叶斯</span> 后验连续 ⇒ \(P(\pi=\pi_0\mid Y)=0\)，改用可信区间/HDR：\(\pi_0\) 在区间内则不拒绝。例后验 beta(11,6)，95% CI \([0.426,0.868]\) 含 0.5 ⇒ 不拒绝。</p>
+      <div class="mix"><b>通用：</b> 对泊松/正态同理——频率查 \(\mu_0/\sigma_0\) 是否在 CI 内，贝叶斯查是否在 credible interval/HDR 内。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- 第三部分：复习题目                                              -->
+<!-- ============================================================= -->
+<section class="part" id="part3">
+  <div class="part-head">
+    <span class="part-num serif">03</span>
+    <h2 class="part-title">复习题目</h2>
+  </div>
+  <p class="part-sub">难度梯度：<span class="pill d1">基础</span> → <span class="pill d2">进阶</span> → <span class="pill d3">综合</span>。选择题/判断题点选项即时判分，其余点"显示答案与解析"。计算题含完整步骤。</p>
+
+  <h3 class="block-title">一、选择题（点选项作答）</h3>
+
+  <div class="q mc" data-correct="B">
+    <div class="q-head"><span class="q-no">选择 1</span><span class="pill type">选择</span><span class="pill d1">基础</span><span class="pill kp">两大门派</span></div>
+    <div class="q-stem">在<b>频率派</b>框架下，总体参数 \(\theta\) 是：</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="ol">A.</span> 带有概率分布的随机变量</li>
+      <li class="option" data-opt="B"><span class="ol">B.</span> 固定但未知的常数</li>
+      <li class="option" data-opt="C"><span class="ol">C.</span> 永远等于样本均值</li>
+      <li class="option" data-opt="D"><span class="ol">D.</span> 抽样前就已知</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：B</b></div>
+      <p><span class="lab">解析</span> 频率派视 \(\theta\) 为固定未知常数，随机的是估计量 \(\hat\theta\)；只有贝叶斯派才把 \(\theta\) 看作随机变量（A 是贝叶斯观点）。这是两派最根本的分水岭。</p>
+    </div></details>
+  </div>
+
+  <div class="q mc" data-correct="C">
+    <div class="q-head"><span class="q-no">选择 2</span><span class="pill type">选择</span><span class="pill d1">基础</span><span class="pill kp">抽样分布</span></div>
+    <div class="q-stem">抽样分布描述的是下列哪一项的波动？</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="ol">A.</span> 总体参数 \(\theta\)</li>
+      <li class="option" data-opt="B"><span class="ol">B.</span> 单个数据点 \(Y_i\)</li>
+      <li class="option" data-opt="C"><span class="ol">C.</span> 估计量 \(\hat\theta\) 在重复抽样间的取值</li>
+      <li class="option" data-opt="D"><span class="ol">D.</span> 先验分布</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：C</b></div>
+      <p><span class="lab">解析</span> 抽样分布＝统计量 \(\hat\theta\) 在"所有可能样本"上的分布。其中心反映偏差、离散反映方差。它不是 \(\theta\)（固定）的分布，也不是单点或先验的分布。</p>
+    </div></details>
+  </div>
+
+  <div class="q mc" data-correct="C">
+    <div class="q-head"><span class="q-no">选择 3</span><span class="pill type">选择</span><span class="pill d2">进阶</span><span class="pill kp">MSE</span></div>
+    <div class="q-stem">频率派估计量的均方误差 MSE 等于：</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="ol">A.</span> 仅偏差</li>
+      <li class="option" data-opt="B"><span class="ol">B.</span> 仅方差</li>
+      <li class="option" data-opt="C"><span class="ol">C.</span> \(\text{Bias}^2+\text{Var}\)</li>
+      <li class="option" data-opt="D"><span class="ol">D.</span> \(\text{Bias}+\text{Var}\)</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：C</b></div>
+      <p><span class="lab">解析</span> \(\text{MSE}=E[(\hat\theta-\theta)^2]=\text{Bias}^2+\text{Var}\)。注意是偏差的<b>平方</b>，不是偏差本身。无偏时 MSE 退化为方差。</p>
+    </div></details>
+  </div>
+
+  <div class="q mc" data-correct="B">
+    <div class="q-head"><span class="q-no">选择 4</span><span class="pill type">选择</span><span class="pill d2">进阶</span><span class="pill kp">置信区间解释</span></div>
+    <div class="q-stem">某 95% <b>置信区间</b>算得为 \((0.227,0.493)\)。下列解释正确的是：</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="ol">A.</span> \(\theta\) 有 95% 概率落在该区间</li>
+      <li class="option" data-opt="B"><span class="ol">B.</span> 若重复实验多次，约 95% 的此类区间会含 \(\theta\)</li>
+      <li class="option" data-opt="C"><span class="ol">C.</span> 95% 的数据落在该区间</li>
+      <li class="option" data-opt="D"><span class="ol">D.</span> \(\theta=0.493\) 的把握为 95%</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：B</b></div>
+      <p><span class="lab">解析</span> 频率派中 \(\theta\) 固定，对已算出的具体区间不能谈"95% 概率含 \(\theta\)"（A 是<b>可信区间</b>的说法，是经典陷阱）。95% 形容的是"造区间这套程序的长期命中率"。C、D 是对置信水平的常见误读。</p>
+    </div></details>
+  </div>
+
+  <div class="q mc" data-correct="C">
+    <div class="q-head"><span class="q-no">选择 5</span><span class="pill type">选择</span><span class="pill d2">进阶</span><span class="pill kp">HDR</span></div>
+    <div class="q-stem">关于最高密度区域（HDR），正确的是：</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="ol">A.</span> 永远等于等尾区间</li>
+      <li class="option" data-opt="B"><span class="ol">B.</span> 是含 \(\alpha\%\) 概率的<b>最长</b>区间</li>
+      <li class="option" data-opt="C"><span class="ol">C.</span> 是含 \(\alpha\%\) 概率的<b>最短</b>区间</li>
+      <li class="option" data-opt="D"><span class="ol">D.</span> 只对正态后验有定义</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：C</b></div>
+      <p><span class="lab">解析</span> HDR 只圈密度最高的取值，是<b>最短</b>的 \(\alpha\%\) 区间。仅当后验对称单峰时才与等尾区间重合（A 只在对称时成立）；偏态/双峰时 HDR 严格更短，且可为多段。任何后验都可定义 HDR。</p>
+    </div></details>
+  </div>
+
+  <div class="q mc" data-correct="B">
+    <div class="q-head"><span class="q-no">选择 6</span><span class="pill type">选择</span><span class="pill d3">综合</span><span class="pill kp">检察官谬误</span></div>
+    <div class="q-stem">"检察官谬误"混淆了下列哪两个量？</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="ol">A.</span> 先验与后验</li>
+      <li class="option" data-opt="B"><span class="ol">B.</span> \(P(\text{数据}\mid H_0)\) 与 \(P(H_0\mid\text{数据})\)</li>
+      <li class="option" data-opt="C"><span class="ol">C.</span> 第一类与第二类错误</li>
+      <li class="option" data-opt="D"><span class="ol">D.</span> 偏差与方差</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：B</b></div>
+      <p><span class="lab">解析</span> p 值是 \(P(\text{数据}\mid H_0)\)；人们真正想知道的是 \(P(H_0\mid\text{数据})\)。两者并不相等，把前者当后者就是检察官谬误。血型/癌症筛查例子表明：忽略先验（基础概率）会得出大相径庭的结论。</p>
+    </div></details>
+  </div>
+
+  <div class="q mc" data-correct="B">
+    <div class="q-head"><span class="q-no">选择 7</span><span class="pill type">选择</span><span class="pill d2">进阶</span><span class="pill kp">二项–Beta 共轭</span></div>
+    <div class="q-stem">二项数据配 \(\text{beta}(1,1)\) 先验时，贝叶斯点估计（后验均值）为：</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="ol">A.</span> \(Y/n\)</li>
+      <li class="option" data-opt="B"><span class="ol">B.</span> \((1+Y)/(2+n)\)</li>
+      <li class="option" data-opt="C"><span class="ol">C.</span> \((Y-1)/(n-2)\)</li>
+      <li class="option" data-opt="D"><span class="ol">D.</span> 后验众数</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：B</b></div>
+      <p><span class="lab">解析</span> 后验为 \(\text{beta}(1+y,\,1+n-y)\)，其均值 \(=\dfrac{1+y}{(1+y)+(1+n-y)}=\dfrac{1+y}{2+n}\)。A 是频率估计；贝叶斯点估计取后验<b>均值</b>而非众数（D）。</p>
+    </div></details>
+  </div>
+
+  <div class="q mc" data-correct="C">
+    <div class="q-head"><span class="q-no">选择 8</span><span class="pill type">选择</span><span class="pill d3">综合</span><span class="pill kp">先验误设</span></div>
+    <div class="q-stem">用 \(\text{beta}(1,1)\) 先验的贝叶斯估计，在什么情况下 MSE <b>反而高于</b>频率估计？</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="ol">A.</span> \(n\) 很大时</li>
+      <li class="option" data-opt="B"><span class="ol">B.</span> 真值 \(\theta\) 接近 0.5 时</li>
+      <li class="option" data-opt="C"><span class="ol">C.</span> 真值 \(\theta\) 远离先验均值 0.5 时</li>
+      <li class="option" data-opt="D"><span class="ol">D.</span> 数据对称时</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：C</b></div>
+      <p><span class="lab">解析</span> beta(1,1) 先验均值为 0.5。贝叶斯估计把结果朝 0.5 收缩；当真值远离 0.5（如 \(\theta=0.1\)）时，平方偏差 \((\tfrac{1-2\theta}{2+n})^2\) 变大并主导 MSE，于是 \(\text{MSE}[\hat\theta_b]>\text{MSE}[\hat\theta_f]\)。\(\theta=0.5\) 时偏差为 0、贝叶斯更优。</p>
+    </div></details>
+  </div>
+
+  <h3 class="block-title" style="border-left-color:var(--bayes);">二、填空题</h3>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">填空 1</span><span class="pill type">填空</span><span class="pill d1">基础</span><span class="pill kp">偏差</span></div>
+    <div class="q-stem">估计量 \(\hat\theta\) 称为无偏，当且仅当 \(E[\hat\theta]=\underline{\quad\quad}\)。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：\(\theta\)</b>（真值）</div>
+      <p><span class="lab">解析</span> 无偏 ⇔ 估计量的期望等于被估参数本身，即 \(\text{Bias}=E[\hat\theta]-\theta=0\)。</p>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">填空 2</span><span class="pill type">填空</span><span class="pill d1">基础</span><span class="pill kp">MSE</span></div>
+    <div class="q-stem">均方误差的分解：\(\text{MSE}[\hat\theta]=\underline{\quad}^{\,2}+\underline{\quad}\)。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：\(\text{Bias}^2+\text{Var}\)</b>（偏差的平方 + 方差）</div>
+      <p><span class="lab">解析</span> 由 \(E[(\hat\theta-\theta)^2]\) 展开即得。这条分解是判断"无偏 vs 有偏但低方差"哪个更优的核心工具。</p>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">填空 3</span><span class="pill type">填空</span><span class="pill d2">进阶</span><span class="pill kp">二项–Beta</span></div>
+    <div class="q-stem">二项数据 \(Y\sim\text{binomial}(n,\theta)\) 配 \(\text{beta}(a,b)\) 先验，后验为 \(\text{beta}(\underline{\quad},\ \underline{\quad})\)。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：\(\text{beta}(a+y,\ b+n-y)\)</b></div>
+      <p><span class="lab">解析</span> 共轭更新：成功数 \(y\) 加到第一个参数，失败数 \(n-y\) 加到第二个参数。均匀先验 beta(1,1) 时即 \(\text{beta}(1+y,\,1+n-y)\)。</p>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">填空 4</span><span class="pill type">填空</span><span class="pill d2">进阶</span><span class="pill kp">泊松–Gamma</span></div>
+    <div class="q-stem">泊松数据 \(Y_i\sim\text{Pois}(\mu)\) 配 \(\text{gamma}(r,v)\) 先验，后验为 \(\text{gamma}(\underline{\quad},\ \underline{\quad})\)。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：\(\text{gamma}\big(r+\sum y_i,\ v+n\big)\)</b></div>
+      <p><span class="lab">解析</span> 形状参数加上总计数 \(\sum y_i\)，率参数加上样本量 \(n\)。后验均值 \(\dfrac{r+\sum y_i}{v+n}\)、方差 \(\dfrac{r+\sum y_i}{(v+n)^2}\)。</p>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">填空 5</span><span class="pill type">填空</span><span class="pill d2">进阶</span><span class="pill kp">置信区间</span></div>
+    <div class="q-stem">频率置信区间的一般形式为 \(\hat\theta\pm\underline{\quad\quad}\times\text{s.d.}(\hat\theta)\)；95% 水平时该乘数 ≈ \(\underline{\quad}\)。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：\(z_{1-\alpha/2}\)；95% 时 ≈ 1.96</b></div>
+      <p><span class="lab">解析</span> 由 CLT，\(\hat\theta\) 近似正态，故用标准正态分位数 \(z_{1-\alpha/2}\)。同一形式（\(m\pm1.96\,s\)）也用于贝叶斯可信区间/HDR 的正态近似。</p>
+    </div></details>
+  </div>
+
+  <h3 class="block-title">三、判断题（点"正确/错误"作答）</h3>
+
+  <div class="q mc" data-correct="T">
+    <div class="q-head"><span class="q-no">判断 1</span><span class="pill type">判断</span><span class="pill d1">基础</span><span class="pill kp">范式</span></div>
+    <div class="q-stem">在贝叶斯统计中，参数 \(\theta\) 被当作随机变量处理。</div>
+    <ul class="options">
+      <li class="option" data-opt="T"><span class="ol">○</span> 正确</li>
+      <li class="option" data-opt="F"><span class="ol">○</span> 错误</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：正确</b></div>
+      <p><span class="lab">解析</span> 这正是贝叶斯派与频率派的根本区别：贝叶斯用先验/后验分布描述对 \(\theta\) 的信念，\(\theta\) 是随机变量；频率派中 \(\theta\) 固定。</p>
+    </div></details>
+  </div>
+
+  <div class="q mc" data-correct="F">
+    <div class="q-head"><span class="q-no">判断 2</span><span class="pill type">判断</span><span class="pill d2">进阶</span><span class="pill kp">置信区间</span></div>
+    <div class="q-stem">给定一个已算出的 95% 置信区间 \([a,b]\)，可以说"\(\theta\) 有 95% 概率落在 \([a,b]\) 内"。</div>
+    <ul class="options">
+      <li class="option" data-opt="T"><span class="ol">○</span> 正确</li>
+      <li class="option" data-opt="F"><span class="ol">○</span> 错误</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：错误</b></div>
+      <p><span class="lab">解析</span> 这是把置信区间当成可信区间的经典错误。频率派中 \(\theta\) 固定，对具体区间 \(P(\theta\in[a,b])\) 非 0 即 1。只有<b>贝叶斯可信区间</b>才允许"95% 概率含 \(\theta\)"的直接概率陈述。</p>
+    </div></details>
+  </div>
+
+  <div class="q mc" data-correct="F">
+    <div class="q-head"><span class="q-no">判断 3</span><span class="pill type">判断</span><span class="pill d2">进阶</span><span class="pill kp">MVUE/MSE</span></div>
+    <div class="q-stem">无偏估计量总是优于任何有偏估计量。</div>
+    <ul class="options">
+      <li class="option" data-opt="T"><span class="ol">○</span> 正确</li>
+      <li class="option" data-opt="F"><span class="ol">○</span> 错误</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：错误</b></div>
+      <p><span class="lab">解析</span> 因 \(\text{MSE}=\text{Bias}^2+\text{Var}\)，一个<b>有偏但方差更小</b>的估计量可能 MSE 更低、整体更优。课件明确指出：MVUE 是"最好的无偏估计"，但综合 MSE 看，带小偏差小方差者可能更可取。</p>
+    </div></details>
+  </div>
+
+  <div class="q mc" data-correct="T">
+    <div class="q-head"><span class="q-no">判断 4</span><span class="pill type">判断</span><span class="pill d1">基础</span><span class="pill kp">HDR</span></div>
+    <div class="q-stem">对于对称的单峰后验，HDR 与等尾可信区间重合。</div>
+    <ul class="options">
+      <li class="option" data-opt="T"><span class="ol">○</span> 正确</li>
+      <li class="option" data-opt="F"><span class="ol">○</span> 错误</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：正确</b></div>
+      <p><span class="lab">解析</span> 对称单峰（如正态）后验，最高密度区域恰好是关于中心对称、两尾等概率的区间，故 HDR = 等尾区间。只有偏态/双峰时两者才分道扬镳，HDR 更短。</p>
+    </div></details>
+  </div>
+
+  <div class="q mc" data-correct="T">
+    <div class="q-head"><span class="q-no">判断 5</span><span class="pill type">判断</span><span class="pill d2">进阶</span><span class="pill kp">贝叶斯双侧检验</span></div>
+    <div class="q-stem">由于后验连续，\(P(\theta=\theta_0\mid Y)=0\)，所以双侧贝叶斯检验改用可信区间来做。</div>
+    <ul class="options">
+      <li class="option" data-opt="T"><span class="ol">○</span> 正确</li>
+      <li class="option" data-opt="F"><span class="ol">○</span> 错误</li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="ans-final"><b>答案：正确</b></div>
+      <p><span class="lab">解析</span> 连续后验下任一点的概率为 0，无法直接比较 \(P(\theta=\theta_0\mid Y)\)。自然的替代是看 \(\theta_0\) 是否落在可信区间/HDR 内：在内不拒绝，在外拒绝。</p>
+    </div></details>
+  </div>
+
+  <h3 class="block-title" style="border-left-color:var(--bayes);">四、简答题</h3>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">简答 1</span><span class="pill type">简答</span><span class="pill d2">进阶</span><span class="pill kp">范式区别</span></div>
+    <div class="q-stem">解释频率派与贝叶斯派对待未知参数 \(\theta\) 的根本不同。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <p><span class="lab">要点</span> <b>频率派</b>把 \(\theta\) 视为固定但未知的常数，不能对它本身赋予概率；一切推断来自估计量 \(\hat\theta\) 的<b>抽样分布</b>，不确定性是关于"反复使用某程序的长期表现"。<b>贝叶斯派</b>把 \(\theta\) 视为随机变量，先用<b>先验</b> \(p(\theta)\) 表达初始信念，观测数据后用贝叶斯定理更新为<b>后验</b> \(p(\theta\mid Y)\)，不确定性直接是关于 \(\theta\) 的。</p>
+      <p><span class="lab">一句话</span> 频率派问"我的方法表现如何"，贝叶斯派问"在已有证据下，\(\theta\) 取各值的可能性如何"。</p>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">简答 2</span><span class="pill type">简答</span><span class="pill d2">进阶</span><span class="pill kp">MVUE</span></div>
+    <div class="q-stem">用通俗语言说明：为什么我们偏爱最小方差无偏估计（MVUE）？</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <p><span class="lab">要点</span> 无偏保证"平均而言对准真值"；在所有无偏估计中再挑<b>方差最小</b>的，意味着它在不同样本间波动最小、抽样分布最"瘦"、最集中在 \(\theta\) 附近。结果是：<b>任意一次</b>用它得到的单个估计都更可能贴近真值、更可靠。课件用 \(\theta=0.5,n=20\) 的例子说明，样本均值（方差 0.0125）比样本中位数（方差 0.0196）在重复抽样中更紧地围绕真值，故取样本均值为 MVUE。</p>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">简答 3</span><span class="pill type">简答</span><span class="pill d3">综合</span><span class="pill kp">CI vs Credible</span></div>
+    <div class="q-stem">大样本时频率 95% 置信区间与贝叶斯 95% 可信区间数值接近。请说明二者解释上的根本差异。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <p><span class="lab">要点</span> <b>置信区间</b>的 95% 形容的是"造区间这套<b>程序</b>"：若把实验重复无数次、每次造一个区间，约 95% 的区间会盖住固定的 \(\theta\)；对<b>某一个</b>已算出的区间不能说"\(\theta\) 有 95% 概率在内"（\(\theta\) 固定，非 0 即 1）。<b>可信区间</b>的 95% 直接形容 \(\theta\) 本身：在给定数据的后验下，\(P(\theta\in[a,b]\mid Y)=0.95\)，是一句关于 \(\theta\) 的<b>直接概率陈述</b>。</p>
+      <p><span class="lab">结论</span> 数值相近（大样本、近对称后验所致），但一个谈"程序的长期命中率"，一个谈"参数的概率"，含义不可混用。</p>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">简答 4</span><span class="pill type">简答</span><span class="pill d3">综合</span><span class="pill kp">先验/基础概率</span></div>
+    <div class="q-stem">用癌症筛查例子说明：为何忽略先验会导致误导性结论？</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <p><span class="lab">要点</span> 设患病率（先验）1%、灵敏度 90%、假阳性率 9%。阳性结果下，由贝叶斯定理 \(P(\text{患病}\mid+)=\dfrac{0.9\times0.01}{0.9\times0.01+0.09\times0.99}=\dfrac{0.009}{0.0981}\approx0.092\)。即使检测为阳性，真正患病的概率<b>仅约 9.2%</b>。若只看 \(P(+\mid H_0)=0.09\) 就在 \(\alpha=0.10\) 下"拒绝无病"，会严重高估患病可能。</p>
+      <p><span class="lab">教训</span> 当 \(H_0\) 的先验概率很高（罕见病/罕见事件），低基础概率会主导后验；忽略它就犯了检察官谬误。</p>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">简答 5</span><span class="pill type">简答</span><span class="pill d2">进阶</span><span class="pill kp">HDR 价值</span></div>
+    <div class="q-stem">对双峰后验，为什么 HDR 比等尾区间更有信息量？</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <p><span class="lab">要点</span> 双峰后验在两峰之间有一段低密度"山谷"。<b>等尾区间</b>只机械地各切 5% 尾部，会把山谷整段圈进来，既宽又包含 \(\theta\) 几乎不可能取到的值。<b>HDR</b> 按"密度高于阈值"取舍，直接跳过山谷，可以输出<b>两段不相连</b>的区间，只报告 \(\theta\) 真正高概率出现的位置，因而更短、更精确地刻画了"\(\theta\) 可能在哪"。</p>
+    </div></details>
+  </div>
+
+  <h3 class="block-title" style="border-left-color:var(--freq);">五、计算题（基于习题册 6 题，含完整步骤）</h3>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">计算 1</span><span class="pill type">计算</span><span class="pill d3">综合</span><span class="pill kp">二项点估计·偏倚/方差/MSE</span></div>
+    <div class="q-stem"><b>疫苗试验。</b> 设 \(\pi\) 为疫苗产生阳性免疫应答的真实概率。试验 \(n=40\) 人，其中 \(y=28\) 人阳性。<br>(a) 写出 \(Y\)（阳性人数）的分布。(b) 频率估计量 \(\hat\pi_f=Y/n\)，证明其无偏并求值。(c) 求 \(\mathrm{Var}[\hat\pi_f]\) 与 \(\mathrm{MSE}[\hat\pi_f]\)。(d) 考虑 \(\hat\pi_2=Y/(n+2)\)，证明它有偏；你更偏好哪个估计量？(e) 用通俗语言说明为何样本均值是此处的 MVUE。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="step"><span class="lab">(a)</span> 每人独立、成功概率相同，故 \(Y\sim \text{binomial}(40,\pi)\)。</div>
+      <div class="step"><span class="lab">(b)</span> \(E[\hat\pi_f]=E[Y/n]=\dfrac{n\pi}{n}=\pi\)，故无偏。代入：\(\hat\pi_f=\dfrac{28}{40}=0.7\)。</div>
+      <div class="step"><span class="lab">(c)</span> \(\mathrm{Var}[\hat\pi_f]=\dfrac{\pi(1-\pi)}{n}\)，用 \(\hat\pi=0.7\) 估计：\(\dfrac{0.7\times0.3}{40}=\dfrac{0.21}{40}=0.00525\)。因无偏，\(\mathrm{MSE}=\text{Bias}^2+\mathrm{Var}=0+0.00525=\mathbf{0.00525}\)。</div>
+      <div class="step"><span class="lab">(d)</span> \(\hat\pi_2=\dfrac{Y}{42}\)，\(E[\hat\pi_2]=\dfrac{40\pi}{42}=\dfrac{20\pi}{21}\neq\pi\) → <b>有偏</b>，\(\text{Bias}=\dfrac{20\pi}{21}-\pi=-\dfrac{\pi}{21}\)。在 \(\pi=0.7\)：\(\text{Bias}=-0.03333\)，\(\text{Bias}^2=0.001111\)；\(\mathrm{Var}[\hat\pi_2]=\dfrac{n\pi(1-\pi)}{42^2}=\dfrac{8.4}{1764}=0.004762\)；\(\mathrm{MSE}[\hat\pi_2]=0.001111+0.004762=0.005873\)。
+      <div class="tbl-scroll"><table><thead><tr><th>估计量</th><th>偏倚</th><th>方差</th><th>MSE</th></tr></thead><tbody>
+        <tr><td>\(\hat\pi_f=Y/40\)</td><td>0（无偏）</td><td>0.00525</td><td><b>0.00525</b></td></tr>
+        <tr><td>\(\hat\pi_2=Y/42\)</td><td>\(-0.0333\)</td><td>0.004762</td><td>0.005873</td></tr>
+      </tbody></table></div>
+      \(\hat\pi_f\) 既无偏、MSE 又更小，故<b>首选 \(\hat\pi_f\)</b>。（\(\hat\pi_2\) 虽方差略小，但偏倚拉高了总 MSE。）</div>
+      <div class="step"><span class="lab">(e)</span> 在所有"平均对准真值"（无偏）的估计量里，样本均值的<b>方差最小</b>，抽样分布最紧地围绕 \(\pi\)。这意味着无论抽到哪个样本，单次得到的估计都最可能贴近真值、最可靠——这正是 MVUE 的含义。</div>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">计算 2</span><span class="pill type">计算</span><span class="pill d3">综合</span><span class="pill kp">泊松·gamma 共轭·PMSE</span></div>
+    <div class="q-stem"><b>工厂缺陷。</b> 每小时缺陷数 \(Y_i\sim\text{Poisson}(\mu)\)，\(n=6\) 小时观测为 \(3,1,4,2,3,1\)，先验 \(\mu\sim\text{gamma}(2,1)\)。<br>(a) 写出频率估计量 \(\hat\mu_f\) 并求值。(b) 求后验 \(\mu\mid Y\)。(c) 写出 \(\hat\mu_b=E[\mu\mid Y]\) 并求值。(d) 求 \(\text{Bias}[\hat\mu_b]\)、\(\mathrm{Var}[\hat\mu_b]\)、\(\mathrm{MSE}[\hat\mu_b]\)。(e) 求 \(\mathrm{PMSE}[\hat\mu_b]\)。(f) 比较 \(\mathrm{MSE}[\hat\mu_f]\) 与 \(\mathrm{MSE}[\hat\mu_b]\)，哪个在频率度量下更优？</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="step"><span class="lab">预备</span> \(\sum y_i=3+1+4+2+3+1=14\)，\(n=6\)；先验参数 \(r=2,\ v=1\)。</div>
+      <div class="step"><span class="lab">(a)</span> \(\hat\mu_f=\dfrac{\sum y_i}{n}=\dfrac{14}{6}\approx \mathbf{2.333}\)（样本均值，泊松最小 MSE 频率估计）。</div>
+      <div class="step"><span class="lab">(b)</span> gamma 与泊松共轭：\(\mu\mid Y\sim\text{gamma}\big(r+\sum y_i,\ v+n\big)=\text{gamma}(2+14,\ 1+6)=\mathbf{\text{gamma}(16,7)}\)。</div>
+      <div class="step"><span class="lab">(c)</span> \(\hat\mu_b=E[\mu\mid Y]=\dfrac{r+\sum y_i}{v+n}=\dfrac{16}{7}\approx \mathbf{2.286}\)。</div>
+      <div class="step"><span class="lab">(d)</span> 偏倚/方差是相对<b>真值 \(\mu\)</b>（未知）而言，用 \(\mu\) 表示。\(E[\sum y_i]=n\mu=6\mu\)：
+      <div style="margin:6px 0;">\( \text{Bias}=E[\hat\mu_b]-\mu=\dfrac{2+6\mu}{7}-\mu=\dfrac{2-\mu}{7} \)</div>
+      <div style="margin:6px 0;">\( \mathrm{Var}[\hat\mu_b]=\dfrac{\mathrm{Var}[\sum y_i]}{(v+n)^2}=\dfrac{n\mu}{49}=\dfrac{6\mu}{49} \)</div>
+      <div style="margin:6px 0;">\( \mathrm{MSE}[\hat\mu_b]=\Big(\dfrac{2-\mu}{7}\Big)^2+\dfrac{6\mu}{49}=\dfrac{(2-\mu)^2+6\mu}{49} \)</div></div>
+      <div class="step"><span class="lab">(e)</span> \(\mathrm{PMSE}[\hat\mu_b]=\mathrm{Var}[\mu\mid Y]=\dfrac{r+\sum y_i}{(v+n)^2}=\dfrac{16}{49}\approx \mathbf{0.3265}\)。</div>
+      <div class="step"><span class="lab">(f)</span> 频率：\(\mathrm{MSE}[\hat\mu_f]=\mathrm{Var}=\dfrac{\mu}{n}=\dfrac{\mu}{6}\)（无偏）。需代入 \(\mu\) 的估计才能比较，取 \(\hat\mu\approx2.333\)：
+      <div class="tbl-scroll"><table><thead><tr><th>估计量</th><th>MSE 公式</th><th>代入 \(\mu\approx2.333\)</th></tr></thead><tbody>
+        <tr><td>频率 \(\hat\mu_f\)</td><td>\(\mu/6\)</td><td>0.389</td></tr>
+        <tr><td>贝叶斯 \(\hat\mu_b\)</td><td>\([(2-\mu)^2+6\mu]/49\)</td><td><b>0.288</b></td></tr>
+      </tbody></table></div>
+      此数据下<b>贝叶斯更优</b>（0.288 &lt; 0.389）。原因：先验均值 \(r/v=2\) 与数据均值 2.33 很接近，先验设定良好，"向先验收缩"帮了忙。若真值远离 2，结论可能反转。</div>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">计算 3</span><span class="pill type">计算</span><span class="pill d2">进阶</span><span class="pill kp">二项·可信区间/HDR</span></div>
+    <div class="q-stem"><b>30 天再入院率。</b> \(\pi\) 为患者 30 天内再入院的真实概率，\(n=80\) 人中 \(y=12\) 再入院，先验 \(\pi\sim\text{beta}(1,1)\)。<br>(a) 求后验。(b) 求后验均值与方差。(c) 用正态近似求 95% 可信区间。(d) 比较后验均值与众数判断是否近似对称，HDR 是否与可信区间重合。(e) 解释 95% HDR，并说明与频率置信区间的解释差异。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="step"><span class="lab">(a)</span> beta 与二项共轭：\(\pi\mid Y\sim\text{beta}(1+y,\ 1+n-y)=\text{beta}(13,\ 69)\)。</div>
+      <div class="step"><span class="lab">(b)</span> 均值 \(=\dfrac{a}{a+b}=\dfrac{13}{82}\approx 0.1585\)；方差 \(=\dfrac{ab}{(a+b)^2(a+b+1)}=\dfrac{13\times69}{82^2\times83}=\dfrac{897}{558092}\approx 0.001607\)。</div>
+      <div class="step"><span class="lab">(c)</span> \(s=\sqrt{0.001607}\approx 0.0401\)。95% 可信区间 \(=0.1585\pm1.96\times0.0401=0.1585\pm0.0786=\mathbf{(0.080,\ 0.237)}\)。</div>
+      <div class="step"><span class="lab">(d)</span> 众数 \(=\dfrac{a-1}{a+b-2}=\dfrac{12}{80}=0.15\)。均值 0.1585 ≈ 众数 0.15 → 后验<b>近似对称</b> → <b>HDR ≈ 可信区间</b> \((0.080,0.237)\)。</div>
+      <div class="step"><span class="lab">(e)</span> <b>HDR 解释：</b>给定数据，有 95% 概率 \(\pi\in(0.080,0.237)\)——一句关于 \(\pi\) 的<b>直接概率陈述</b>，且是含 95% 后验概率的最短区间。<b>频率置信区间</b>则不同：它说"重复实验无数次、每次造一个区间，约 95% 的区间会盖住固定的 \(\pi\)"；对<b>已算出的某一个</b>区间不能说"\(\pi\) 有 95% 概率在内"。</div>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">计算 4</span><span class="pill type">计算</span><span class="pill d3">综合</span><span class="pill kp">三区间对比·CI/Credible/HDR</span></div>
+    <div class="q-stem"><b>公共交通使用率。</b> 估计早高峰使用公共交通的比例 \(\pi\)，\(n=120\) 人中 \(y=45\) 使用。<br>(a) 求频率估计 \(\hat\pi_f\) 与 95% 置信区间。(b) 用先验 \(\text{beta}(1,1)\) 求后验及其均值、方差。(c) 用正态近似求 95% 可信区间。(d) 比较均值与众数判断对称性，写出 95% HDR。(e) 用表格汇总三个区间并说明解释差异。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="step"><span class="lab">(a)</span> \(\hat\pi_f=\dfrac{45}{120}=0.375\)；\(\text{s.d.}=\sqrt{\dfrac{0.375\times0.625}{120}}=\sqrt{0.001953}=0.0442\)。95% CI \(=0.375\pm1.96\times0.0442=\mathbf{(0.288,\ 0.462)}\)。</div>
+      <div class="step"><span class="lab">(b)</span> 后验 \(\text{beta}(1+45,\ 1+75)=\text{beta}(46,76)\)；均值 \(=\dfrac{46}{122}\approx 0.377\)；方差 \(=\dfrac{46\times76}{122^2\times123}=\dfrac{3496}{1830732}\approx 0.001910\)。</div>
+      <div class="step"><span class="lab">(c)</span> \(s=\sqrt{0.001910}\approx 0.0437\)。95% 可信区间 \(=0.377\pm1.96\times0.0437=\mathbf{(0.291,\ 0.463)}\)。</div>
+      <div class="step"><span class="lab">(d)</span> 众数 \(=\dfrac{46-1}{122-2}=\dfrac{45}{120}=0.375\) ≈ 均值 0.377 → <b>对称</b> → 95% HDR \(=\mathbf{(0.291,\ 0.463)}\)。</div>
+      <div class="step"><span class="lab">(e)</span>
+      <div class="tbl-scroll"><table><thead><tr><th>方法</th><th>95% 区间</th><th>解释</th></tr></thead><tbody>
+        <tr><td>频率置信区间</td><td>(0.288, 0.462)</td><td>重复实验中 95% 的区间盖住 \(\pi\)；对单个区间<b>无</b>直接概率陈述。</td></tr>
+        <tr><td>贝叶斯可信区间</td><td>(0.291, 0.463)</td><td>给定数据，\(\pi\) 有 95% 概率落在此。</td></tr>
+        <tr><td>贝叶斯 HDR</td><td>(0.291, 0.463)</td><td>含 95% 后验概率的<b>最短</b>区间；对称后验下与可信区间重合。</td></tr>
+      </tbody></table></div>
+      三者数值接近（大样本、近对称后验），但<b>含义根本不同</b>：频率谈"程序的长期命中率"，贝叶斯谈"参数本身的概率"。</div>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">计算 5</span><span class="pill type">计算</span><span class="pill d3">综合</span><span class="pill kp">假设检验·单侧·p 值 vs 后验</span></div>
+    <div class="q-stem"><b>新药单侧检验。</b> 公司称新药对超过 60%（\(\pi_0=0.60\)）患者有效。\(n=15\) 人中 \(y=11\) 报告症状缓解。<br>(a) 写出原假设与备择假设。(b) 求频率 p 值 \(P(Y\ge11\mid\pi=0.6)\)（用所给二项概率表），\(\alpha=0.05\) 下结论。(c) 用先验 \(\text{beta}(1,1)\) 求后验。(d) 用正态近似求 \(P(\pi\le0.6\mid Y)\)，\(\alpha=0.05\) 下结论。(e) 比较两个结论，指出 p 值与后验概率的关键概念差异。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="step"><span class="lab">(a)</span> \(H_0:\pi\le0.6\) vs \(H_1:\pi>0.6\)（单侧，检验"是否更好"）。</div>
+      <div class="step"><span class="lab">(b)</span> p 值 \(=P(Y\ge11\mid\pi=0.6)=0.1268+0.0634+0.0203+0.0035+0.0005=\mathbf{0.2145}\)。因 \(0.2145>0.05\) → <b>不能拒绝 \(H_0\)</b>，证据不足以断言新药更优。</div>
+      <div class="step"><span class="lab">(c)</span> 后验 \(\pi\mid Y\sim\text{beta}(1+11,\ 1+4)=\text{beta}(12,5)\)。</div>
+      <div class="step"><span class="lab">(d)</span> 均值 \(=\dfrac{12}{17}\approx0.7059\)；方差 \(=\dfrac{12\times5}{17^2\times18}=\dfrac{60}{5202}\approx0.011534\)，\(s\approx0.1074\)。正态近似：\(Z=\dfrac{0.6-0.7059}{0.1074}\approx-0.986\)，\(P(\pi\le0.6\mid Y)\approx\Phi(-0.986)\approx\mathbf{0.162}\)。因 \(0.162>0.05\) → <b>不能拒绝 \(H_0\)</b>。</div>
+      <div class="step"><span class="lab">(e)</span> 两法<b>结论一致</b>（都不能拒绝），但回答的问题不同：<b>p 值</b> \(=P(\text{数据}\mid H_0)\)，是"假设 \(H_0\) 为真，看到这么极端数据的概率"；<b>后验概率</b> \(=P(H_0\mid\text{数据})\)，是"给定数据，\(H_0\) 成立的概率"。把前者当后者就是<b>检察官谬误</b>。</div>
+    </div></details>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-no">计算 6</span><span class="pill type">计算</span><span class="pill d3">综合</span><span class="pill kp">假设检验·双侧·泊松 HDR</span></div>
+    <div class="q-stem"><b>服务器错误双侧检验。</b> 管理员认为每小时错误数 \(\sim\text{Poisson}(\mu_0=3)\)。更新后 \(n=10\) 小时为 \(2,1,4,2,3,1,2,3,2,2\)，先验 \(\mu\sim\text{gamma}(3,1)\)。<br>(a) 写出双侧检验的假设。(b) 求后验。(c) 求后验均值与方差。(d) 用正态近似求 95% HDR。(e) 用 HDR 在 \(\alpha=0.05\) 下做双侧检验，更新是否改变了错误率？(f) 解释为何用 HDR 是做双侧检验的自然方式。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <div class="step"><span class="lab">预备</span> \(\sum y_i=2+1+4+2+3+1+2+3+2+2=22\)，\(n=10\)；先验 \(r=3,\ v=1\)。</div>
+      <div class="step"><span class="lab">(a)</span> \(H_0:\mu=3\) vs \(H_1:\mu\neq3\)（双侧，检测任一方向的改变）。</div>
+      <div class="step"><span class="lab">(b)</span> 后验 \(\mu\mid Y\sim\text{gamma}\big(r+\sum y_i,\ v+n\big)=\text{gamma}(3+22,\ 1+10)=\mathbf{\text{gamma}(25,11)}\)。</div>
+      <div class="step"><span class="lab">(c)</span> 均值 \(=\dfrac{25}{11}\approx2.273\)；方差 \(=\dfrac{25}{11^2}=\dfrac{25}{121}\approx0.2066\)。</div>
+      <div class="step"><span class="lab">(d)</span> \(s=\sqrt{0.2066}\approx0.4545\)。95% HDR \(=2.273\pm1.96\times0.4545=2.273\pm0.891=\mathbf{(1.382,\ 3.164)}\)。</div>
+      <div class="step"><span class="lab">(e)</span> 检验值 \(\mu_0=3\) <b>落在</b> HDR \((1.382,3.164)\) 内 → <b>不能拒绝 \(H_0\)</b>：没有证据表明系统更新改变了错误率。</div>
+      <div class="step"><span class="lab">(f)</span> 后验是<b>连续</b>分布，任一单点的概率为 0，故 \(P(\mu=\mu_0\mid Y)=0\)，无法直接比较。自然的替代是看 \(\mu_0\) 是否落在后验<b>高密度可信区间（HDR）</b>内：在内说明 \(\mu_0\) 仍是合理值（不拒绝），在外说明数据把 \(\mu\) 推离了 \(\mu_0\)（拒绝）。这恰好对应双侧"任一方向偏离"的检验逻辑。</div>
+    </div></details>
+  </div>
+
+</section>
+
+<section class="part" id="sum">
+  <div class="part-head">
+    <span class="part-num serif">04</span>
+    <h2 class="part-title">考前速查表</h2>
+  </div>
+  <p class="part-sub">两派对照 + 共轭更新 + 区间/检验公式，临场快速回忆。</p>
+
+  <h3 class="block-title">一、频率派 vs 贝叶斯派（课件总表）</h3>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th></th><th style="color:var(--freq);">频率派 Frequentist</th><th style="color:var(--bayes);">贝叶斯派 Bayesian</th></tr></thead>
+    <tbody>
+      <tr><td><b>参数 \(\theta\)</b></td><td>固定、未知（不能赋概率）</td><td>随机变量（用先验/后验描述）</td></tr>
+      <tr><td><b>点估计</b></td><td>最小 MSE 估计 \(\hat\theta_f\)（如样本均值）</td><td>后验均值 \(\hat\theta_b=E[\theta\mid Y]\)（最小 PMSE）</td></tr>
+      <tr><td><b>区间估计</b></td><td>置信区间 Confidence Interval</td><td>可信区间 / HDR（最高密度区）</td></tr>
+      <tr><td><b>区间解释</b></td><td>重复实验中 95% 的区间盖住 \(\theta\)；对单个区间无概率陈述</td><td>有 95% 概率 \(\theta\) 在此区间；HDR 是最短的这种区间</td></tr>
+      <tr><td><b>假设检验</b></td><td>p 值（事前）：\(P(\text{数据}\mid H_0)\)</td><td>后验概率（事后）：\(P(H_0\mid Y)\)</td></tr>
+      <tr><td><b>不确定性</b></td><td>关于<b>程序</b>的长期表现</td><td>直接关于 <b>\(\theta\)</b></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="block-title" style="border-left-color:var(--bayes);">二、共轭更新速记（一眼写出后验）</h3>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>数据</th><th>先验</th><th>后验</th><th>后验均值</th><th>后验方差</th></tr></thead>
+    <tbody>
+      <tr><td>\(Y\sim\text{bin}(n,\pi)\)</td><td>\(\pi\sim\text{beta}(a,b)\)</td><td>\(\text{beta}(a+y,\ b+n-y)\)</td><td>\(\dfrac{a+y}{a+b+n}\)</td><td>\(\dfrac{a'b'}{(a'+b')^2(a'+b'+1)}\)</td></tr>
+      <tr><td>\(Y_i\sim\text{Pois}(\mu)\)</td><td>\(\mu\sim\text{gamma}(r,v)\)</td><td>\(\text{gamma}(r+\sum y_i,\ v+n)\)</td><td>\(\dfrac{r+\sum y_i}{v+n}\)</td><td>\(\dfrac{r+\sum y_i}{(v+n)^2}\)</td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:.88rem; color:var(--muted); margin-top:-6px;">注：\(a'=a+y,\ b'=b+n-y\)；beta 众数 \(=\dfrac{a'-1}{a'+b'-2}\)，均值≈众数即近似对称。均匀先验即 \(\text{beta}(1,1)\)。</p>
+
+  <h3 class="block-title">三、区间与检验公式</h3>
+  <div class="tbl-scroll"><table>
+    <thead><tr><th>目标</th><th>公式</th></tr></thead>
+    <tbody>
+      <tr><td>频率二项点估计/方差</td><td>\(\hat\pi_f=\dfrac{y}{n}\)，\(\mathrm{Var}=\dfrac{\pi(1-\pi)}{n}=\mathrm{MSE}\)（无偏）</td></tr>
+      <tr><td>频率 95% 置信区间</td><td>\(\hat\theta_f\pm1.96\times\text{s.d.}(\hat\theta_f)\)，\(\text{s.d.}=\sqrt{\dfrac{\hat\pi(1-\hat\pi)}{n}}\)</td></tr>
+      <tr><td>贝叶斯 95% 可信区间/HDR</td><td>正态近似：\(m\pm1.96\sqrt{s^2}\)，\(m=E[\theta\mid Y],\ s^2=\mathrm{Var}[\theta\mid Y]\)</td></tr>
+      <tr><td>MSE 分解</td><td>\(\mathrm{MSE}=\text{Bias}^2+\mathrm{Var}\)；\(\text{Bias}=E[\hat\theta]-\theta\)</td></tr>
+      <tr><td>PMSE</td><td>\(\mathrm{PMSE}[\hat\theta_b]=\mathrm{Var}[\theta\mid Y]\)（取后验均值时）</td></tr>
+      <tr><td>单侧检验</td><td>频率：\(p=P(Y\ge y_{obs}\mid\theta_0)\)；贝叶斯：\(P(\theta\le\theta_0\mid Y)\)。\(<\alpha\) 则拒绝</td></tr>
+      <tr><td>双侧检验</td><td>看 \(\theta_0\) 是否落在区间内：在内不拒绝，在外拒绝（点零假设后验概率为 0）</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="mix" style="margin-top:18px;">
+    <b>三大易错点：</b>
+    <p>① <b>检察官谬误</b>：\(P(\text{数据}\mid H_0)\neq P(H_0\mid\text{数据})\)，p 值不是"\(H_0\) 为真的概率"。<br>
+    ② <b>置信区间解释</b>：95% 形容"造区间的程序"，不能对已算出的单个区间说"\(\theta\) 有 95% 概率在内"。<br>
+    ③ <b>先验设定</b>：贝叶斯并非永远更优；先验均值远离真值时，收缩会把估计拉偏，MSE 反而更大。</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <p>《Frequentist vs Bayesian Estimation》Lecture 9 复习梳理 · 含课程讲解 / 考点梳理 / 复习题目 / 速查表四部分</p>
+  <p class="foot-note">基于 Dr. Nivedita Viswanathan 讲义与习题册（Bolstad &amp; Curran, Ch. 8–13）整理。区间数值采用正态近似，可能与精确分位数略有差异。</p>
+</footer>
+
+<button id="toTop" data-action="top" aria-label="回到顶部" title="回到顶部">↑</button>
+
+<script>
+(function () {
+  // ---- progress state (kept local; nothing attached to window) ----
+  var answered = 0, correct = 0;
+  var total = document.querySelectorAll('.q.mc').length;
+  var elAnswered = document.getElementById('stat-answered');
+  var elCorrect  = document.getElementById('stat-correct');
+  var elTotal    = document.getElementById('stat-total');
+  var elFill     = document.getElementById('progress-fill');
+  if (elTotal) elTotal.textContent = total;
+
+  function updateProgress(isCorrect) {
+    answered += 1;
+    if (isCorrect) correct += 1;
+    if (elAnswered) elAnswered.textContent = answered;
+    if (elCorrect)  elCorrect.textContent  = correct;
+    if (elFill && total > 0) elFill.style.width = (answered / total * 100) + '%';
+  }
+
+  // ---- single delegated click listener (no inline onclick anywhere) ----
+  document.addEventListener('click', function (e) {
+    // (1) multiple-choice / true-false option clicks
+    var opt = e.target.closest('.option');
+    if (opt) {
+      var q = opt.closest('.q.mc');
+      if (!q || q.classList.contains('answered')) return; // locked after first answer
+      var key = q.getAttribute('data-correct');
+      var picked = opt.getAttribute('data-opt');
+      var isCorrect = (picked === key);
+
+      opt.classList.add(isCorrect ? 'correct' : 'wrong');
+      if (!isCorrect) {
+        // reveal the right option when the user picked wrong
+        var all = q.querySelectorAll('.option');
+        for (var i = 0; i < all.length; i++) {
+          if (all[i].getAttribute('data-opt') === key) all[i].classList.add('correct');
+        }
+      }
+      q.classList.add('answered');            // lock this question
+      var det = q.querySelector('details.answer-block');
+      if (det) det.open = true;               // auto-open explanation
+      updateProgress(isCorrect);
+      return;
+    }
+
+    // (2) global action buttons (expand / collapse / back-to-top)
+    var act = e.target.closest('[data-action]');
+    if (!act) return;
+    var action = act.getAttribute('data-action');
+    if (action === 'expand-all') {
+      document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+    } else if (action === 'collapse-all') {
+      document.querySelectorAll('details').forEach(function (d) { d.open = false; });
+    } else if (action === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+
+  // ---- show / hide back-to-top button on scroll ----
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () {
+    if (!toTop) return;
+    if (window.pageYOffset > 400) toTop.classList.add('show');
+    else toTop.classList.remove('show');
+  });
+
+  // ---- friendly MathJax fallback (JS only enhances; details work regardless) ----
+  window.addEventListener('load', function () {
+    setTimeout(function () {
+      var rendered = window.MathJax && window.MathJax.startup && window.MathJax.startup.document;
+      if (!rendered) {
+        var warn = document.getElementById('mjx-warn');
+        if (warn) warn.style.display = 'block';
+      }
+    }, 3000);
+  });
+})();
+</script>
+</body>
+</html>

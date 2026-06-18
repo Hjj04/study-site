@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 2 · 概率分布 复习指南</title>
+<style>
+  :root{
+    --ink:#1a2b4a;        /* deep textbook blue */
+    --ink-soft:#33486e;
+    --paper:#f6f2e9;      /* warm paper */
+    --paper-2:#fbf8f1;
+    --card:#ffffff;
+    --line:#d8cfbd;
+    --line-soft:#e7e0d0;
+    --accent:#a8341f;     /* vermilion ink */
+    --accent-soft:#c46a52;
+    --gold:#b88a2b;
+    --green:#2e6b3f;
+    --green-bg:#e3f0e6;
+    --red:#a8341f;
+    --red-bg:#f6e3df;
+    --text:#23304a;
+    --muted:#6b6657;
+    --hl:#fdf3d4;         /* highlight box */
+    --serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;
+    --sans:"Inter","Helvetica Neue",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--paper);color:var(--text);
+    font-family:var(--sans);line-height:1.7;font-size:16px;
+    -webkit-text-size-adjust:100%;
+  }
+  /* ---------- Header ---------- */
+  header.masthead{
+    background:var(--ink);color:var(--paper-2);
+    padding:48px 24px 40px;position:relative;overflow:hidden;
+    border-bottom:4px solid var(--accent);
+  }
+  .masthead-inner{max-width:920px;margin:0 auto;position:relative;z-index:2;}
+  .eyebrow{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.32em;
+    text-transform:uppercase;color:var(--gold);margin:0 0 14px;
+  }
+  header.masthead h1{
+    font-family:var(--serif);font-weight:600;font-size:clamp(2rem,6vw,3.3rem);
+    line-height:1.08;margin:0 0 16px;letter-spacing:.01em;
+  }
+  header.masthead p.sub{
+    margin:0;font-size:1rem;color:#cdd6e6;max-width:640px;
+  }
+  .masthead .sigma{
+    position:absolute;right:-30px;top:-40px;font-family:var(--serif);
+    font-size:clamp(220px,40vw,420px);line-height:1;color:rgba(255,255,255,.045);
+    z-index:1;user-select:none;font-style:italic;
+  }
+  .meta-row{
+    margin-top:24px;display:flex;flex-wrap:wrap;gap:10px;font-size:.8rem;
+  }
+  .meta-pill{
+    border:1px solid rgba(255,255,255,.25);border-radius:2px;
+    padding:5px 11px;font-family:var(--mono);letter-spacing:.05em;color:#dfe5f0;
+  }
+  /* ---------- Nav ---------- */
+  nav.toc{
+    position:sticky;top:0;z-index:50;background:var(--paper-2);
+    border-bottom:1px solid var(--line);
+    box-shadow:0 1px 0 rgba(0,0,0,.02);
+  }
+  .toc-inner{
+    max-width:920px;margin:0 auto;display:flex;flex-wrap:wrap;
+    gap:4px;padding:8px 16px;align-items:center;
+  }
+  nav.toc a{
+    font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;
+    text-decoration:none;color:var(--ink-soft);padding:7px 12px;
+    border-radius:2px;transition:background .15s,color .15s;text-transform:uppercase;
+  }
+  nav.toc a:hover{background:var(--ink);color:var(--paper-2);}
+  nav.toc a .n{color:var(--accent);font-weight:700;margin-right:6px;}
+  /* ---------- Layout ---------- */
+  main{max-width:920px;margin:0 auto;padding:0 20px 90px;}
+  section{padding-top:54px;}
+  .sec-head{
+    display:flex;align-items:baseline;gap:16px;margin-bottom:8px;
+    border-bottom:2px solid var(--ink);padding-bottom:10px;
+  }
+  .sec-num{
+    font-family:var(--serif);font-style:italic;font-size:2.1rem;
+    color:var(--accent);line-height:1;font-weight:600;
+  }
+  .sec-head h2{
+    font-family:var(--serif);font-weight:600;font-size:1.7rem;margin:0;color:var(--ink);
+  }
+  .sec-tag{
+    margin-left:auto;font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--muted);align-self:flex-end;
+  }
+  h3{
+    font-family:var(--serif);font-weight:600;font-size:1.28rem;color:var(--ink);
+    margin:34px 0 10px;
+  }
+  h4{
+    font-family:var(--sans);font-weight:700;font-size:1.02rem;color:var(--ink-soft);
+    margin:22px 0 6px;letter-spacing:.01em;
+  }
+  p{margin:10px 0;}
+  ul,ol{margin:10px 0;padding-left:22px;}
+  li{margin:5px 0;}
+  strong{color:var(--ink);}
+  code{font-family:var(--mono);background:#efe9da;padding:1px 5px;border-radius:3px;font-size:.88em;}
+  a.inl{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-soft);}
+
+  /* ---------- Callout boxes ---------- */
+  .box{
+    border-radius:4px;padding:14px 18px;margin:16px 0;border:1px solid var(--line);
+    background:var(--card);
+  }
+  .box .box-title{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
+    margin:0 0 8px;font-weight:700;
+  }
+  .box.def{background:var(--paper-2);border-left:4px solid var(--ink);}
+  .box.def .box-title{color:var(--ink);}
+  .box.hl{background:var(--hl);border-left:4px solid var(--gold);}
+  .box.hl .box-title{color:var(--gold);}
+  .box.warn{background:var(--red-bg);border-left:4px solid var(--accent);}
+  .box.warn .box-title{color:var(--accent);}
+  .box.tip{background:var(--green-bg);border-left:4px solid var(--green);}
+  .box.tip .box-title{color:var(--green);}
+
+  .analogy{
+    font-style:italic;color:var(--ink-soft);
+    border-left:3px solid var(--accent-soft);padding-left:14px;margin:12px 0;
+  }
+
+  /* ---------- Distribution cards ---------- */
+  .dist-grid{display:grid;grid-template-columns:1fr;gap:16px;margin:18px 0;}
+  @media(min-width:640px){.dist-grid{grid-template-columns:1fr 1fr;}}
+  .dist-card{
+    background:var(--card);border:1px solid var(--line);border-radius:5px;
+    padding:16px 18px;position:relative;
+  }
+  .dist-card::before{
+    content:attr(data-type);position:absolute;top:14px;right:16px;
+    font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;
+    text-transform:uppercase;padding:3px 7px;border-radius:2px;
+  }
+  .dist-card[data-type="离散"]::before{background:#e8edf6;color:var(--ink);}
+  .dist-card[data-type="连续"]::before{background:#f3e8df;color:var(--accent);}
+  .dist-card h4{margin:0 0 4px;font-family:var(--serif);font-size:1.15rem;color:var(--ink);}
+  .dist-card .pname{font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-bottom:8px;}
+  .dist-card .mv{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;font-size:.92rem;}
+  .dist-card .mv span b{color:var(--accent);}
+
+  /* ---------- Tables ---------- */
+  .tbl-wrap{overflow-x:auto;margin:14px 0;}
+  table{border-collapse:collapse;width:100%;font-size:.92rem;background:var(--card);}
+  th,td{border:1px solid var(--line-soft);padding:8px 11px;text-align:left;vertical-align:top;}
+  th{background:var(--ink);color:var(--paper-2);font-weight:600;font-family:var(--sans);
+     letter-spacing:.02em;font-size:.86rem;}
+  tr:nth-child(even) td{background:var(--paper-2);}
+
+  /* ---------- Importance stars ---------- */
+  .imp{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;white-space:nowrap;}
+  .imp.high{color:var(--accent);font-weight:700;}
+  .imp.mid{color:var(--gold);font-weight:700;}
+  .imp.low{color:var(--muted);}
+  .badge{
+    display:inline-block;font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;
+    text-transform:uppercase;padding:2px 7px;border-radius:2px;margin-right:6px;vertical-align:middle;
+  }
+  .b-mem{background:#efe1f0;color:#6a2a72;}
+  .b-calc{background:#dde9f3;color:#1d4e79;}
+
+  /* ---------- Questions ---------- */
+  .qcard{
+    background:var(--card);border:1px solid var(--line);border-radius:6px;
+    padding:18px 20px;margin:18px 0;
+  }
+  .qtop{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;}
+  .qid{
+    font-family:var(--serif);font-weight:700;font-size:1.05rem;color:var(--ink);
+    background:var(--paper-2);border:1px solid var(--line);border-radius:3px;
+    padding:2px 11px;font-style:italic;
+  }
+  .tag{
+    font-family:var(--mono);font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;
+    padding:3px 8px;border-radius:2px;
+  }
+  .t-type{background:#e8edf6;color:var(--ink);}
+  .t-kp{background:var(--hl);color:var(--gold);}
+  .t-d1{background:var(--green-bg);color:var(--green);}
+  .t-d2{background:#fdeccf;color:#9a6a12;}
+  .t-d3{background:var(--red-bg);color:var(--accent);}
+  .qbody{margin:6px 0 4px;}
+  .qbody p{margin:6px 0;}
+
+  /* MCQ options */
+  .opts{list-style:none;padding:0;margin:12px 0;}
+  .opts li{
+    border:1px solid var(--line);border-radius:4px;padding:10px 14px;margin:7px 0;
+    cursor:pointer;transition:background .12s,border-color .12s;background:var(--paper-2);
+    display:flex;gap:10px;align-items:flex-start;
+  }
+  .opts li:hover{border-color:var(--ink-soft);background:#fff;}
+  .opts li .ol{font-family:var(--mono);font-weight:700;color:var(--ink-soft);}
+  .opts.locked li{cursor:default;}
+  .opts li.correct{background:var(--green-bg);border-color:var(--green);color:#1f4a2c;}
+  .opts li.correct .ol{color:var(--green);}
+  .opts li.wrong{background:var(--red-bg);border-color:var(--red);color:#7a2415;}
+  .opts li.wrong .ol{color:var(--red);}
+
+  /* details / summary */
+  details.answer-block{
+    margin:12px 0 2px;border:1px solid var(--line);border-radius:5px;overflow:hidden;
+    background:var(--paper-2);
+  }
+  details.answer-block>summary{
+    cursor:pointer;list-style:none;padding:11px 16px;font-family:var(--mono);
+    font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+    color:var(--paper-2);background:var(--ink-soft);user-select:none;
+    display:flex;justify-content:space-between;align-items:center;
+    transition:background .15s;
+  }
+  details.answer-block>summary:hover{background:var(--ink);}
+  details.answer-block>summary::-webkit-details-marker{display:none;}
+  details.answer-block>summary .chev{transition:transform .2s;font-size:.9rem;}
+  details.answer-block[open]>summary .chev{transform:rotate(180deg);}
+  details.answer-block[open]>summary{background:var(--accent);}
+  .answer-content{padding:14px 18px 16px;border-top:1px solid var(--line);}
+  .answer-content .ans-final{
+    background:var(--hl);border-left:4px solid var(--gold);padding:8px 14px;
+    border-radius:3px;margin:10px 0;font-weight:600;
+  }
+  .steps{counter-reset:step;padding-left:0;list-style:none;}
+  .steps li{position:relative;padding:4px 0 4px 34px;margin:4px 0;}
+  .steps li::before{
+    counter-increment:step;content:counter(step);
+    position:absolute;left:0;top:3px;width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:var(--paper-2);font-family:var(--mono);font-size:.72rem;
+    display:flex;align-items:center;justify-content:center;font-weight:700;
+  }
+  .pitfall{font-size:.9rem;color:var(--accent);margin-top:8px;}
+  .pitfall b{color:var(--accent);}
+
+  /* progress widget */
+  .progress-bar{
+    position:sticky;top:46px;z-index:40;background:var(--paper);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .pb-inner{
+    max-width:920px;margin:0 auto;padding:8px 20px;display:flex;
+    align-items:center;gap:16px;flex-wrap:wrap;font-size:.8rem;
+  }
+  .pb-stat{font-family:var(--mono);letter-spacing:.04em;color:var(--ink-soft);}
+  .pb-stat b{color:var(--accent);font-size:1rem;}
+  .pb-track{flex:1;min-width:120px;height:8px;background:#e3dccc;border-radius:99px;overflow:hidden;}
+  .pb-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--accent));transition:width .4s;}
+  .pb-actions{display:flex;gap:8px;}
+  .btn{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;
+    border:1px solid var(--ink);background:transparent;color:var(--ink);
+    padding:6px 12px;border-radius:3px;cursor:pointer;transition:all .15s;
+  }
+  .btn:hover{background:var(--ink);color:var(--paper-2);}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn.primary:hover{background:#86240f;}
+
+  /* MathJax fallback */
+  #mjx-warn{
+    display:none;background:var(--red-bg);border:1px solid var(--accent);color:var(--accent);
+    padding:10px 16px;border-radius:4px;margin:16px 20px;max-width:880px;font-size:.88rem;
+    font-family:var(--sans);
+  }
+  #mjx-warn.show{display:block;max-width:880px;margin-left:auto;margin-right:auto;}
+
+  /* back to top */
+  #toTop{
+    position:fixed;right:18px;bottom:18px;z-index:60;width:46px;height:46px;
+    border-radius:50%;border:none;background:var(--ink);color:var(--paper-2);
+    font-size:1.1rem;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .25s;
+    box-shadow:0 4px 14px rgba(0,0,0,.22);
+  }
+  #toTop.show{opacity:1;pointer-events:auto;}
+  #toTop:hover{background:var(--accent);}
+
+  footer{
+    text-align:center;color:var(--muted);font-size:.8rem;padding:30px 20px 40px;
+    border-top:1px solid var(--line);margin-top:30px;font-family:var(--mono);letter-spacing:.04em;
+  }
+  .assume{font-size:.82rem;color:var(--muted);font-style:italic;border-left:2px solid var(--line);padding-left:10px;margin:8px 0;}
+</style>
+<script>
+  window.MathJax = {
+    tex:{inlineMath:[['\\(','\\)'],['$','$']], displayMath:[['\\[','\\]'],['$$','$$']]},
+    svg:{fontCache:'global'},
+    startup:{ pageReady:()=>MathJax.startup.defaultPageReady().then(()=>{window.__mjxOK=true;}) }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" id="mjx" async></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="sigma">&Sigma;</div>
+  <div class="masthead-inner">
+    <p class="eyebrow">Lecture 2 · Probability &amp; Statistics</p>
+    <h1>随机变量与概率分布</h1>
+    <p class="sub">从随机变量的定义出发，建立 pmf / pdf 的概念，掌握六大常见分布，并学会计算随机变量函数的期望与方差。本指南含讲解、考点与配套复习题。</p>
+    <div class="meta-row">
+      <span class="meta-pill">Dr. Nivedita Viswanathan</span>
+      <span class="meta-pill">Queen Mary, U. of London</span>
+      <span class="meta-pill">12 道复习题 · 含详解</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="目录">
+  <div class="toc-inner">
+    <a href="#part1"><span class="n">一</span>课程讲解</a>
+    <a href="#part2"><span class="n">二</span>考点梳理</a>
+    <a href="#part3"><span class="n">三</span>复习题目</a>
+    <a href="#cheatsheet"><span class="n">★</span>公式速查</a>
+  </div>
+</nav>
+
+<div class="progress-bar">
+  <div class="pb-inner">
+    <span class="pb-stat">已答 <b id="ans-count">0</b>/<span id="total-q">0</span></span>
+    <span class="pb-stat">正确 <b id="correct-count">0</b></span>
+    <div class="pb-track"><div class="pb-fill" id="pb-fill"></div></div>
+    <div class="pb-actions">
+      <button class="btn" id="expand-all">展开全部</button>
+      <button class="btn" id="collapse-all">收起全部</button>
+    </div>
+  </div>
+</div>
+
+<div id="mjx-warn">⚠ 数学公式渲染库（MathJax）加载失败，可能因网络受限。公式将以原始文本显示（如 <code>E[X]=\sum x p(x)</code>），内容依然完整可读。</div>
+
+<main>
+
+<!-- ============ PART 1 ============ -->
+<section id="part1">
+  <div class="sec-head">
+    <span class="sec-num">I</span>
+    <h2>课程内容讲解</h2>
+    <span class="sec-tag">建立整体认知</span>
+  </div>
+
+  <div class="box def">
+    <p class="box-title">这一讲在解决什么问题</p>
+    <p style="margin:0">现实世界充满不确定性——明天会不会下雨、一页书上有几个错字、一个病人治疗是否成功。<strong>随机变量</strong>把这些不确定的结果"翻译"成数字；<strong>概率分布</strong>则描述这些数字各自出现的可能性。掌握了它，我们就能回答两类核心问题：①某件事发生的概率是多少？②如果重复很多次，平均会怎样、波动有多大（期望与方差）？</p>
+  </div>
+
+  <h3>整体知识脉络</h3>
+  <p>这一讲可以看成一条由"抽象 → 具体 → 应用"的主线，分四步推进：</p>
+  <ol>
+    <li><strong>随机变量是什么</strong>：把实验结果映射成实数的函数；并分成<strong>离散</strong>与<strong>连续</strong>两类。</li>
+    <li><strong>如何描述它的概率</strong>：离散用<strong>概率质量函数 pmf</strong> <code>p(x)</code>，连续用<strong>概率密度函数 pdf</strong> <code>f(x)</code>。</li>
+    <li><strong>常见的"现成模板"</strong>：把六种最常用的分布（二项、泊松、均匀、贝塔、正态、伽马）当成工具箱，遇到合适场景直接套用其公式与均值/方差。</li>
+    <li><strong>随机变量的函数</strong>：当我们关心的不是 <code>X</code> 而是 <code>g(X)</code>（如 <code>2X+3</code>、<code>(X-E[X])²</code>）时，如何求它的期望——这正是方差定义的来源。</li>
+  </ol>
+
+  <h3>模块一 · 随机变量</h3>
+  <p>课件给出的定义："<strong>当一个变量的取值受到随机变化的支配时，它就被称为随机变量。</strong>"更精确地说，随机变量是<strong>实验结果的实数值函数</strong>——它给样本空间里的每个结果贴上一个数字标签。</p>
+  <div class="analogy">类比：样本空间是一堆形状各异的实验结果（下雨/不下雨、掷出的点数……），随机变量就像一台"贴价签的机器"，把每个结果都标上一个数。贴完之后，我们就能用数学处理这些不确定性了。</div>
+  <p>随机变量可以是<strong>定量的</strong>（如点数）或<strong>定性的</strong>（如是/否）；定性的常被赋数字，例如 <code>{是}=1</code>、<code>{否}=0</code>。课件用"掷一对四面骰、取较大点数"举例：若掷出 (3,4)，则 <code>X=4</code>。</p>
+
+  <h4>离散 vs 连续</h4>
+  <div class="dist-grid">
+    <div class="dist-card" data-type="离散">
+      <h4>离散随机变量</h4>
+      <p class="pname">Discrete R.V.</p>
+      <p style="margin:0">取值只有<strong>有限个或可数个</strong>。例如骰子点数、一页书的错字数、五个病人中成功的人数。</p>
+    </div>
+    <div class="dist-card" data-type="连续">
+      <h4>连续随机变量</h4>
+      <p class="pname">Continuous R.V.</p>
+      <p style="margin:0">取值有<strong>无穷多个</strong>（一个区间内的任意实数）。例如运动员上场时间、考试分数、等待时长。</p>
+    </div>
+  </div>
+
+  <h3>模块二 · 描述概率：pmf 与 pdf</h3>
+  <h4>概率质量函数 (pmf) —— 给离散变量用</h4>
+  <p>pmf <code>p(x)</code> 直接给出离散变量取每个值的概率。三条必须满足的性质：</p>
+  <div class="box hl">
+    <p class="box-title">pmf 的三条性质</p>
+    <p style="margin:4px 0">① 每个概率介于 0 和 1：<span class="mq">\(0 \le p(x) \le 1\)</span><br>
+    ② 全部概率加起来等于 1：<span class="mq">\(\sum_{x\in\mathcal X} p(x)=1\)</span><br>
+    ③ 落入子集 A 的概率是把 A 内各值概率相加：<span class="mq">\(p(X\in A)=\sum_{x\in A}p(x)\)</span></p>
+  </div>
+
+  <h4>概率密度函数 (pdf) —— 给连续变量用</h4>
+  <p>连续变量取某个<strong>具体值</strong>的概率为 0，我们只能谈它落在某<strong>区间</strong>的概率，这通过对 pdf <code>f(x)</code> 做积分（即"曲线下面积"）得到：</p>
+  <p style="text-align:center"><span class="mq">\(p(a\le X\le b)=\displaystyle\int_a^b f(x)\,dx\)</span></p>
+  <div class="analogy">类比：pdf 像一根质量分布不均的细棒的"线密度"。问"某一个点的质量是多少"没有意义（答案是 0），但问"某一小段的质量"就有意义——把那段的密度积分起来即可。</div>
+  <div class="box warn">
+    <p class="box-title">最容易踩的两个坑</p>
+    <p style="margin:4px 0">• 对连续变量，<strong>\(p(X=a)=0\)</strong>，所以 <code>≤</code> 和 <code>&lt;</code> 在连续情形下给出相同概率。<br>
+    • <strong>\(f(x)\) 可以大于 1！</strong> 它是密度不是概率；唯一硬性约束是整条曲线下总面积 <span class="mq">\(\int_{-\infty}^{\infty} f(x)\,dx = 1\)</span> 且 \(f(x)\ge 0\)。</p>
+  </div>
+
+  <h3>模块三 · 六大常见分布（工具箱）</h3>
+  <p>这些是"现成模板"。识别题目场景 → 选对分布 → 直接套均值/方差公式。下方卡片给出每个分布的核心参数与矩；详细公式见<a class="inl" href="#part2">第二部分</a>与<a class="inl" href="#cheatsheet">速查表</a>。</p>
+  <div class="dist-grid">
+    <div class="dist-card" data-type="离散">
+      <h4>二项 Binomial</h4>
+      <p class="pname">Y ~ Bin(n, p)</p>
+      <p style="margin:0">固定 <code>n</code> 次<strong>独立</strong>试验，每次成功概率 <code>p</code> 不变，数"成功次数"。</p>
+      <div class="mv"><span>均值 <b>\(np\)</b></span><span>方差 <b>\(np(1-p)\)</b></span></div>
+    </div>
+    <div class="dist-card" data-type="离散">
+      <h4>泊松 Poisson</h4>
+      <p class="pname">Y ~ Pois(μ)</p>
+      <p style="margin:0">单位时间/空间内稀有事件的发生次数；是二项在 <code>n→∞, p→0, np=μ</code> 时的极限。</p>
+      <div class="mv"><span>均值 <b>\(\mu\)</b></span><span>方差 <b>\(\mu\)</b></span></div>
+    </div>
+    <div class="dist-card" data-type="连续">
+      <h4>均匀 Uniform</h4>
+      <p class="pname">X ~ U(a, b)</p>
+      <p style="margin:0">区间 <code>[a,b]</code> 内"等可能"，密度处处相等。</p>
+      <div class="mv"><span>均值 <b>\(\frac{a+b}{2}\)</b></span><span>方差 <b>\(\frac{(b-a)^2}{12}\)</b></span></div>
+    </div>
+    <div class="dist-card" data-type="连续">
+      <h4>贝塔 Beta</h4>
+      <p class="pname">X ~ Beta(a, b)</p>
+      <p style="margin:0">定义在 <code>(0,1)</code> 上，常用于描述"比例/概率"本身。<code>a=b=1</code> 时退化为均匀分布。</p>
+      <div class="mv"><span>均值 <b>\(\frac{a}{a+b}\)</b></span><span>方差 <b>\(\frac{ab}{(a+b)^2(a+b+1)}\)</b></span></div>
+    </div>
+    <div class="dist-card" data-type="连续">
+      <h4>正态 Normal</h4>
+      <p class="pname">X ~ N(μ, σ²)</p>
+      <p style="margin:0">钟形对称分布；<code>N(0,1)</code> 为标准正态，概率查正态表。靠标准化 <code>Z=(X-μ)/σ</code> 转换。</p>
+      <div class="mv"><span>均值 <b>\(\mu\)</b></span><span>方差 <b>\(\sigma^2\)</b></span></div>
+    </div>
+    <div class="dist-card" data-type="连续">
+      <h4>伽马 Gamma</h4>
+      <p class="pname">X ~ gamma(a, b)</p>
+      <p style="margin:0">取正值的连续分布（此课件用 <code>b</code> 作"速率 rate"参数）。</p>
+      <div class="mv"><span>均值 <b>\(\frac{a}{b}\)</b></span><span>方差 <b>\(\frac{a}{b^2}\)</b></span></div>
+    </div>
+  </div>
+  <div class="box tip">
+    <p class="box-title">记忆抓手</p>
+    <p style="margin:0">泊松最特别：<strong>均值=方差=μ</strong>。二项 ↔ 泊松是"有限多次试验 ↔ 无穷多次稀有试验"的极限关系。贝塔与均匀是亲戚（<code>a=b=1</code>）。正态题几乎都靠<strong>标准化</strong>解决。</p>
+  </div>
+
+  <h3>模块四 · 随机变量的函数</h3>
+  <p>很多时候我们关心的不是 <code>X</code> 本身，而是它的某个函数 <code>Y=g(X)</code>（例如把摄氏温度换算成华氏，或把收益翻倍再加固定项）。核心工具是<strong>"期望值法则 (LOTUS)"</strong>：不必先求出 Y 的分布，直接用 X 的分布加权即可。</p>
+  <div class="box hl">
+    <p class="box-title">期望值法则 (Law of the Unconscious Statistician)</p>
+    <p style="margin:4px 0">离散：<span class="mq">\(E[g(X)]=\sum_x g(x)\,p(x)\)</span><br>
+    连续：<span class="mq">\(E[g(X)]=\displaystyle\int_{-\infty}^{\infty} g(x)\,f(x)\,dx\)</span></p>
+  </div>
+  <p>方差正是这一法则的特例：取 <code>g(X)=(X−E[X])²</code>，就得到 <span class="mq">\(\mathrm{Var}[X]=E[(X-E[X])^2]\)</span>。方差的平方根叫<strong>标准差 \(\sigma_X\)</strong>。</p>
+  <div class="box tip">
+    <p class="box-title">两条极其常用的线性性质（务必记牢）</p>
+    <p style="margin:4px 0">对 <code>W = aX + b</code>：<br>
+    • <span class="mq">\(E[aX+b]=a\,E[X]+b\)</span>（常数项 b 进入期望）<br>
+    • <span class="mq">\(\mathrm{Var}[aX+b]=a^2\,\mathrm{Var}[X]\)</span>（常数项 b <strong>不</strong>影响方差，系数要<strong>平方</strong>）</p>
+  </div>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<section id="part2">
+  <div class="sec-head">
+    <span class="sec-num">II</span>
+    <h2>考点梳理</h2>
+    <span class="sec-tag">系统 · 全面 · 不遗漏</span>
+  </div>
+
+  <p>下方按主题分类。重要程度依课件强调程度判断：<span class="imp high">★★★ 高频</span> · <span class="imp mid">★★ 中等</span> · <span class="imp low">★ 低频</span>。属性标签：<span class="badge b-mem">记忆</span> 需背诵 ／ <span class="badge b-calc">理解·计算</span> 需会用。</p>
+
+  <h3>主题 A · 随机变量基础</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th style="width:24%">考点</th><th>要点 / 公式</th><th style="width:30%">易混淆点 &amp; 常见错误</th><th style="width:11%">程度</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>随机变量定义</strong> <span class="badge b-mem">记忆</span></td>
+        <td>实验结果的实数值函数；其值受随机变化支配。</td>
+        <td>误以为随机变量是"概率值"——它是"取值"，概率由分布另行给出。</td>
+        <td><span class="imp high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>离散 vs 连续判别</strong> <span class="badge b-calc">理解</span></td>
+        <td>离散=有限/可数个取值；连续=区间内无穷多取值。</td>
+        <td>判断依据是<strong>取值集合</strong>而非数值大小。表格列出有限几个值 → 离散。</td>
+        <td><span class="imp high">★★★</span></td>
+      </tr>
+      <tr>
+        <td>定量 / 定性随机变量</td>
+        <td>定性可赋数字编码（是=1，否=0）。</td>
+        <td>—</td>
+        <td><span class="imp low">★</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>主题 B · 概率质量/密度函数</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th style="width:24%">考点</th><th>要点 / 公式</th><th style="width:30%">易混淆点 &amp; 常见错误</th><th style="width:11%">程度</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>pmf 性质</strong> <span class="badge b-mem">记忆</span> <span class="badge b-calc">计算</span></td>
+        <td>\(0\le p(x)\le 1\)；\(\sum p(x)=1\)；\(p(X\in A)=\sum_{x\in A}p(x)\)。</td>
+        <td>用"总和=1"反求常数 c 是高频题型（见 Q3、Q4）。</td>
+        <td><span class="imp high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>pdf 性质</strong> <span class="badge b-mem">记忆</span></td>
+        <td>\(f(x)\ge 0\)；\(\int_{-\infty}^{\infty}f(x)dx=1\)；概率=区间积分（面积）。</td>
+        <td><b>f(x) 可 &gt;1</b>；<b>p(X=a)=0</b>，连续情形 ≤ 与 &lt; 等价。</td>
+        <td><span class="imp high">★★★</span></td>
+      </tr>
+      <tr>
+        <td>"成为概率函数"的判定</td>
+        <td>需同时满足非负且求和/积分为 1（含级数收敛）。</td>
+        <td>\(\sum 1/x\) 调和级数发散 → 无法归一化（Q3 核心）。</td>
+        <td><span class="imp mid">★★</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>主题 C · 期望与方差</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th style="width:24%">考点</th><th>要点 / 公式</th><th style="width:30%">易混淆点 &amp; 常见错误</th><th style="width:11%">程度</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>期望 E[X]</strong> <span class="badge b-mem">记忆</span> <span class="badge b-calc">计算</span></td>
+        <td>离散 \(E[X]=\sum x\,p(x)\)；连续 \(E[X]=\int x f(x)dx\)。</td>
+        <td>别忘了用概率加权，而非简单算术平均。</td>
+        <td><span class="imp high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>方差 Var[X]</strong> <span class="badge b-mem">记忆</span> <span class="badge b-calc">计算</span></td>
+        <td>\(\mathrm{Var}[X]=E[(X-E[X])^2]=E[X^2]-(E[X])^2\)。</td>
+        <td>最常用<strong>计算公式</strong> \(E[X^2]-(E[X])^2\)；注意是 \((E[X])^2\) 不是 \(E[X^2]\)。</td>
+        <td><span class="imp high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>线性变换 W=aX+b</strong> <span class="badge b-mem">记忆</span> <span class="badge b-calc">计算</span></td>
+        <td>\(E[aX+b]=aE[X]+b\)；\(\mathrm{Var}[aX+b]=a^2\mathrm{Var}[X]\)。</td>
+        <td>b 不进方差；系数 a 在方差里要<strong>平方</strong>（Q1 e,f）。</td>
+        <td><span class="imp high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>期望值法则 LOTUS</strong> <span class="badge b-calc">理解</span></td>
+        <td>\(E[g(X)]=\sum g(x)p(x)\) 或 \(\int g(x)f(x)dx\)。</td>
+        <td>不必先求 Y 的分布；方差是其 \(g(X)=(X-E[X])^2\) 的特例。</td>
+        <td><span class="imp mid">★★</span></td>
+      </tr>
+      <tr>
+        <td>标准差 σ</td>
+        <td>\(\sigma_X=\sqrt{\mathrm{Var}[X]}\)；恒非负。</td>
+        <td>单位与 X 相同（方差单位是平方）。</td>
+        <td><span class="imp mid">★★</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>主题 D · 六大分布（公式 + 矩）</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th style="width:14%">分布</th><th style="width:30%">pmf / pdf</th><th>E[X]</th><th>Var[X]</th><th style="width:18%">关键点 &amp; 错误</th><th style="width:8%">程度</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>二项</strong> Bin(n,p)<br><span class="badge b-mem">记忆</span></td>
+        <td>\(\binom{n}{y}p^y(1-p)^{n-y}\)</td>
+        <td>\(np\)</td>
+        <td>\(np(1-p)\)</td>
+        <td>试验独立、p 恒定；"至少/至多"用累加或补集。</td>
+        <td><span class="imp high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>泊松</strong> Pois(μ)<br><span class="badge b-mem">记忆</span></td>
+        <td>\(\dfrac{\mu^y e^{-\mu}}{y!}\)</td>
+        <td>\(\mu\)</td>
+        <td>\(\mu\)</td>
+        <td><b>均值=方差</b>；"至少一个"=\(1-e^{-\mu}\)。</td>
+        <td><span class="imp high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>均匀</strong> U(a,b)<br><span class="badge b-mem">记忆</span></td>
+        <td>\(\dfrac{1}{b-a}\), \(a\le x\le b\)</td>
+        <td>\(\dfrac{a+b}{2}\)</td>
+        <td>\(\dfrac{(b-a)^2}{12}\)</td>
+        <td>方差分母是 <strong>12</strong>。</td>
+        <td><span class="imp mid">★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>贝塔</strong> Beta(a,b)<br><span class="badge b-mem">记忆</span></td>
+        <td>\(\dfrac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}x^{a-1}(1-x)^{b-1}\)</td>
+        <td>\(\dfrac{a}{a+b}\)</td>
+        <td>\(\dfrac{ab}{(a+b)^2(a+b+1)}\)</td>
+        <td>定义域 (0,1)；a=b=1 → 均匀。</td>
+        <td><span class="imp mid">★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>正态</strong> N(μ,σ²)<br><span class="badge b-mem">记忆</span></td>
+        <td>\(\dfrac{1}{\sqrt{2\pi}\sigma}e^{-\frac12\left(\frac{x-\mu}{\sigma}\right)^2}\)</td>
+        <td>\(\mu\)</td>
+        <td>\(\sigma^2\)</td>
+        <td>标准化 \(Z=\frac{X-\mu}{\sigma}\)；查表；注意题给的是方差还是标准差。</td>
+        <td><span class="imp high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>伽马</strong> gamma(a,b)<br><span class="badge b-mem">记忆</span></td>
+        <td>\(\dfrac{b\,e^{-bx}(bx)^{a-1}}{\Gamma(a)}\), \(x\ge0\)</td>
+        <td>\(\dfrac{a}{b}\)</td>
+        <td>\(\dfrac{a}{b^2}\)</td>
+        <td>此课件 b 是<strong>速率(rate)</strong>；CDF 一般需查表/软件。</td>
+        <td><span class="imp mid">★★</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="assume">假设说明：课件第 6 页将伽马分布写作 <code>gamma(a,b)</code> 且密度中含 <code>e^{-bx}</code>，故本指南把第二个参数 <code>b</code> 一律理解为<strong>速率参数 (rate)</strong>，即 \(E=a/b,\ \mathrm{Var}=a/b^2\)。Q9 据此计算。</div>
+
+  <h3>主题 E · 进阶：分布的可加性（题目隐含考点）</h3>
+  <div class="box hl">
+    <p class="box-title">独立正态的线性组合（Q12 等综合题需要）</p>
+    <p style="margin:4px 0">若 \(X_i\) 独立且 \(\sim N(\mu_i,\sigma_i^2)\)，则线性组合仍是正态：\(\sum a_i X_i \sim N\!\left(\sum a_i\mu_i,\ \sum a_i^2\sigma_i^2\right)\)。<br>特例：样本均值 \(\bar X=\frac1n\sum X_i \sim N(\mu, \sigma^2/n)\)；两独立正态之差 \(X-Y\sim N(\mu_X-\mu_Y,\ \sigma_X^2+\sigma_Y^2)\)（方差<strong>相加</strong>）。</p>
+  </div>
+  <p class="assume">说明：可加性公式未在幻灯片正文逐条列出，但 Q10–Q12 必须用到（提示语已点明"独立""差的分布"）。这里作为解题必备前置知识补充，属<span class="imp mid">★★</span>。</p>
+</section>
+
+<!-- ============ PART 3 ============ -->
+<section id="part3">
+  <div class="sec-head">
+    <span class="sec-num">III</span>
+    <h2>复习题目</h2>
+    <span class="sec-tag">12 题 · 难度梯度 · 全详解</span>
+  </div>
+  <p>题目改编并扩充自原 Problem Sheet。点击选择题选项即时判分；点击每题下方<strong>「显示答案与解析」</strong>展开完整步骤。难度：<span class="tag t-d1">基础</span> <span class="tag t-d2">进阶</span> <span class="tag t-d3">综合</span>。</p>
+
+  <!-- Q0 warmup MCQ -->
+  <div class="qcard" data-q="w1">
+    <div class="qtop">
+      <span class="qid">热身 1</span>
+      <span class="tag t-type">选择</span>
+      <span class="tag t-kp">离散/连续判别</span>
+      <span class="tag t-d1">基础</span>
+    </div>
+    <div class="qbody">
+      <p>下列哪个随机变量是<strong>连续型</strong>的？</p>
+      <ul class="opts" data-correct="C">
+        <li data-opt="A"><span class="ol">A.</span><span>一页书上的印刷错误个数</span></li>
+        <li data-opt="B"><span class="ol">B.</span><span>掷一对四面骰所得的最大点数</span></li>
+        <li data-opt="C"><span class="ol">C.</span><span>篮球运动员一场比赛的上场分钟数</span></li>
+        <li data-opt="D"><span class="ol">D.</span><span>五个病人中治疗成功的人数</span></li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <div class="ans-final">答案：C</div>
+        <p>判别依据是<strong>取值集合</strong>。A、B、D 都只能取有限个或可数个整数 → 离散。C 的上场时间可在一个区间内取任意实数（如 23.7 分钟）→ 连续。</p>
+        <p class="pitfall"><b>易错：</b>不要看数值大小，要看"能否取区间内任意值"。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q0 warmup MCQ 2 -->
+  <div class="qcard" data-q="w2">
+    <div class="qtop">
+      <span class="qid">热身 2</span>
+      <span class="tag t-type">选择</span>
+      <span class="tag t-kp">pdf 性质</span>
+      <span class="tag t-d1">基础</span>
+    </div>
+    <div class="qbody">
+      <p>关于连续随机变量的概率密度函数 \(f(x)\)，下列说法<strong>正确</strong>的是？</p>
+      <ul class="opts" data-correct="B">
+        <li data-opt="A"><span class="ol">A.</span><span>\(f(x)\) 必须满足 \(f(x)\le 1\)</span></li>
+        <li data-opt="B"><span class="ol">B.</span><span>\(p(X=a)=0\) 对任意单点 a 成立</span></li>
+        <li data-opt="C"><span class="ol">C.</span><span>\(f(x)\) 就是 \(X=x\) 的概率</span></li>
+        <li data-opt="D"><span class="ol">D.</span><span>\(p(a\le X\le b)\) 与 \(p(a&lt;X&lt;b)\) 一般不相等</span></li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <div class="ans-final">答案：B</div>
+        <p>A 错：密度<strong>可以大于 1</strong>，只要总面积为 1。C 错：\(f(x)\) 是密度不是概率。D 错：连续情形单点概率为 0，故含不含端点结果相同，B 正确。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q1 -->
+  <div class="qcard" data-q="1">
+    <div class="qtop">
+      <span class="qid">Q1</span>
+      <span class="tag t-type">计算</span>
+      <span class="tag t-kp">E[X] · Var · 线性变换</span>
+      <span class="tag t-d1">基础</span>
+    </div>
+    <div class="qbody">
+      <p>随机变量 \(Y\) 的概率分布如下表：</p>
+      <div class="tbl-wrap"><table style="max-width:340px">
+        <thead><tr><th>\(y_i\)</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead>
+        <tbody><tr><td>\(f(y_i)\)</td><td>.2</td><td>.3</td><td>.3</td><td>.1</td><td>.1</td></tr></tbody>
+      </table></div>
+      <p>(a) \(Y\) 是离散还是连续？为什么？ (b) 求 \(P(1&lt;Y\le 3)\)。 (c) 求 \(E[Y]\)。 (d) 求 \(\mathrm{Var}[Y]\)。 设 \(W=2Y+3\)，(e) 求 \(E[W]\)，(f) 求 \(\mathrm{Var}[W]\)。</p>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <p><strong>(a)</strong> 离散。因为 \(Y\) 只取有限个值 \(\{0,1,2,3,4\}\)，由 pmf（表格）描述。</p>
+        <p><strong>(b)</strong> \(1&lt;Y\le3\) 即 \(Y\in\{2,3\}\)：</p>
+        <ul class="steps">
+          <li>\(P(1&lt;Y\le3)=f(2)+f(3)=0.3+0.1=\mathbf{0.4}\)</li>
+        </ul>
+        <p class="pitfall"><b>易错：</b>"\(1&lt;Y\)"不含 1，"\(\le3\)"含 3，只取 2 和 3。</p>
+        <p><strong>(c)</strong> 期望按概率加权：</p>
+        <ul class="steps">
+          <li>\(E[Y]=0(.2)+1(.3)+2(.3)+3(.1)+4(.1)\)</li>
+          <li>\(=0+0.3+0.6+0.3+0.4=\mathbf{1.6}\)</li>
+        </ul>
+        <p><strong>(d)</strong> 用 \(\mathrm{Var}[Y]=E[Y^2]-(E[Y])^2\)：</p>
+        <ul class="steps">
+          <li>\(E[Y^2]=0(.2)+1(.3)+4(.3)+9(.1)+16(.1)=0+0.3+1.2+0.9+1.6=4.0\)</li>
+          <li>\(\mathrm{Var}[Y]=4.0-(1.6)^2=4.0-2.56=\mathbf{1.44}\)</li>
+        </ul>
+        <p><strong>(e)</strong> 线性性质 \(E[aY+b]=aE[Y]+b\)：</p>
+        <ul class="steps"><li>\(E[W]=2E[Y]+3=2(1.6)+3=\mathbf{6.2}\)</li></ul>
+        <p><strong>(f)</strong> \(\mathrm{Var}[aY+b]=a^2\mathrm{Var}[Y]\)（常数 +3 不影响方差，系数平方）：</p>
+        <ul class="steps"><li>\(\mathrm{Var}[W]=2^2\cdot1.44=4\times1.44=\mathbf{5.76}\)</li></ul>
+        <p class="pitfall"><b>易错：</b>(f) 中很多人误算成 \(2\times1.44\) 或把 +3 算进方差——系数要平方，常数项丢弃。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q2 -->
+  <div class="qcard" data-q="2">
+    <div class="qtop">
+      <span class="qid">Q2</span>
+      <span class="tag t-type">计算</span>
+      <span class="tag t-kp">二项期望</span>
+      <span class="tag t-d1">基础</span>
+    </div>
+    <div class="qbody">
+      <p>两次独立抛硬币，每次正面概率 \(3/4\)，\(X\)=正面次数，即 \(X\sim\mathrm{Bin}(2,\,3/4)\)，其 PMF 为 \(P(X{=}0)=(1/4)^2,\ P(X{=}1)=2(1/4)(3/4),\ P(X{=}2)=(3/4)^2\)。求 \(E[X]\)。</p>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <p><strong>方法一（定义）</strong>：</p>
+        <ul class="steps">
+          <li>\(E[X]=0\cdot\tfrac{1}{16}+1\cdot\tfrac{6}{16}+2\cdot\tfrac{9}{16}=\tfrac{6}{16}+\tfrac{18}{16}=\tfrac{24}{16}\)</li>
+          <li>\(=\mathbf{1.5}\)</li>
+        </ul>
+        <p><strong>方法二（公式）</strong>：二项均值 \(E[X]=np=2\times\tfrac34=\mathbf{1.5}\)，瞬间得到。</p>
+        <div class="ans-final">答案：\(E[X]=1.5\)</div>
+        <p class="pitfall"><b>提醒：</b>识别为二项分布后直接用 \(np\) 最快，但要先验证"独立 + 成功概率恒定"。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q3 -->
+  <div class="qcard" data-q="3">
+    <div class="qtop">
+      <span class="qid">Q3</span>
+      <span class="tag t-type">证明 / 简答</span>
+      <span class="tag t-kp">归一化 · 级数收敛</span>
+      <span class="tag t-d2">进阶</span>
+    </div>
+    <div class="qbody">
+      <p>证明：不存在常数 \(c\) 使下列函数成为概率函数（pmf）：\(f(x)=c/x\)（\(x=1,2,\dots\)），其余为 0。</p>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <p><strong>思路：</strong>pmf 必须满足 \(\sum_x p(x)=1\)。检验该总和能否为有限值。</p>
+        <ul class="steps">
+          <li>要求 \(\displaystyle\sum_{x=1}^{\infty} \frac{c}{x}=c\sum_{x=1}^{\infty}\frac1x=1\)。</li>
+          <li>但 \(\sum_{x=1}^{\infty}\frac1x\) 是<strong>调和级数，发散到 \(+\infty\)</strong>。</li>
+          <li>于是对任意 \(c&gt;0\)，总和 \(=+\infty\neq1\)；若 \(c\le0\) 又违反 \(p(x)\ge0\)（且和为 0 或负）。</li>
+        </ul>
+        <div class="ans-final">结论：没有任何常数 \(c\) 能使 \(\sum p(x)=1\)，故 \(f\) 不能是概率函数。∎</div>
+        <p class="pitfall"><b>考查点：</b>pmf 的归一化条件 + 调和级数发散这一经典结论。注意区分：\(\sum 1/x\) 发散，但 \(\sum 1/x^2\) 收敛（那样就能归一化）。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q4 -->
+  <div class="qcard" data-q="4">
+    <div class="qtop">
+      <span class="qid">Q4</span>
+      <span class="tag t-type">计算</span>
+      <span class="tag t-kp">由比例式求 pmf · 累加概率</span>
+      <span class="tag t-d2">进阶</span>
+    </div>
+    <div class="qbody">
+      <p>左转车道最多容纳 7 辆车。红灯后车道中车辆数 \(X\) 满足：\(P(X{=}x)\propto(x+1)(8-x)\)，\(x\in\{1,2,\dots,7\}\)。(a) 求 \(X\) 的概率函数；(b) 求 \(P(X\ge5)\)。</p>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <p><strong>(a) 思路：</strong>"正比于"意味着 \(P(X{=}x)=k\,(x+1)(8-x)\)，由总和为 1 解出常数 \(k\)。</p>
+        <ul class="steps">
+          <li>先算各 \(x\) 的 \((x+1)(8-x)\)：<br>x=1:14, x=2:18, x=3:20, x=4:20, x=5:18, x=6:14, x=7:8。</li>
+          <li>求和 \(S=14+18+20+20+18+14+8=112\)。</li>
+          <li>归一化 \(k=1/112\)，故 \(\displaystyle P(X{=}x)=\frac{(x+1)(8-x)}{112}\)。</li>
+        </ul>
+        <div class="tbl-wrap"><table style="max-width:520px">
+          <thead><tr><th>x</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr></thead>
+          <tbody><tr><td>P(X=x)</td><td>14/112</td><td>18/112</td><td>20/112</td><td>20/112</td><td>18/112</td><td>14/112</td><td>8/112</td></tr></tbody>
+        </table></div>
+        <p><strong>(b)</strong> \(X\ge5\) 即 \(x\in\{5,6,7\}\)：</p>
+        <ul class="steps">
+          <li>\(P(X\ge5)=\dfrac{18+14+8}{112}=\dfrac{40}{112}=\dfrac{5}{14}\approx\mathbf{0.357}\)</li>
+        </ul>
+        <p class="pitfall"><b>易错：</b>"正比于"绝不等于"就等于"——必须先归一化。漏掉某个 x 或算错乘积会导致 S 出错。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q5 -->
+  <div class="qcard" data-q="5">
+    <div class="qtop">
+      <span class="qid">Q5</span>
+      <span class="tag t-type">计算</span>
+      <span class="tag t-kp">泊松 · 至少一个=补集</span>
+      <span class="tag t-d1">基础</span>
+    </div>
+    <div class="qbody">
+      <p>每页印刷错误数服从泊松分布，参数 \(\lambda=\tfrac12\)。求"这一页至少有一个错误"的概率。</p>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <p><strong>思路：</strong>"至少一个"用补集最省事：\(P(X\ge1)=1-P(X=0)\)。</p>
+        <ul class="steps">
+          <li>泊松 PMF：\(P(X=k)=\dfrac{\lambda^k e^{-\lambda}}{k!}\)。</li>
+          <li>\(P(X=0)=\dfrac{(0.5)^0 e^{-0.5}}{0!}=e^{-0.5}\)。</li>
+          <li>\(P(X\ge1)=1-e^{-0.5}\approx1-0.6065=\mathbf{0.3935}\)。</li>
+        </ul>
+        <div class="ans-final">答案：\(1-e^{-1/2}\approx0.393\)</div>
+        <p class="pitfall"><b>记忆：</b>泊松"至少一个"恒为 \(1-e^{-\lambda}\)。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q6 -->
+  <div class="qcard" data-q="6">
+    <div class="qtop">
+      <span class="qid">Q6</span>
+      <span class="tag t-type">计算</span>
+      <span class="tag t-kp">pdf=面积 · 分段密度</span>
+      <span class="tag t-d2">进阶</span>
+    </div>
+    <div class="qbody">
+      <p>某球员上场分钟数的 pdf 为分段常数（阶梯形）：在 \([10,20]\) 高度 \(0.025\)，在 \([20,30]\) 高度 \(0.050\)，在 \([30,40]\) 高度 \(0.025\)，其余为 0。求其上场 (a) 超过 15 分钟；(b) 在 20~35 分钟之间；(c) 少于 30 分钟；(d) 超过 36 分钟 的概率。</p>
+      <div class="box def" style="margin-top:8px"><p class="box-title">先验证归一化</p><p style="margin:0">总面积 \(=10(.025)+10(.05)+10(.025)=0.25+0.5+0.25=1\) ✓，密度合法。概率 = 对应区间的矩形面积之和（底×高）。</p></div>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <p>统一方法：把所求区间拆进三段，每段面积=宽度×高度后相加。</p>
+        <p><strong>(a) &gt;15 分钟：</strong>区间 \([15,40]\)</p>
+        <ul class="steps">
+          <li>\([15,20]\): \(5\times.025=0.125\)</li>
+          <li>\([20,30]\): \(10\times.05=0.5\)；\([30,40]\): \(10\times.025=0.25\)</li>
+          <li>合计 \(0.125+0.5+0.25=\mathbf{0.875}\)</li>
+        </ul>
+        <p><strong>(b) 20~35 分钟：</strong></p>
+        <ul class="steps">
+          <li>\([20,30]\): \(10\times.05=0.5\)；\([30,35]\): \(5\times.025=0.125\)</li>
+          <li>合计 \(0.5+0.125=\mathbf{0.625}\)</li>
+        </ul>
+        <p><strong>(c) &lt;30 分钟：</strong>区间 \([10,30]\)</p>
+        <ul class="steps">
+          <li>\([10,20]\): \(10\times.025=0.25\)；\([20,30]\): \(10\times.05=0.5\)</li>
+          <li>合计 \(0.25+0.5=\mathbf{0.75}\)</li>
+        </ul>
+        <p><strong>(d) &gt;36 分钟：</strong>区间 \([36,40]\)，全在高度 .025 段</p>
+        <ul class="steps">
+          <li>\(4\times.025=\mathbf{0.1}\)</li>
+        </ul>
+        <p class="pitfall"><b>易错：</b>务必按密度的"分段边界"把区间切开再算面积；直接拿一个高度乘整段会出错（如 (a) 跨了两个高度）。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q7 -->
+  <div class="qcard" data-q="7">
+    <div class="qtop">
+      <span class="qid">Q7</span>
+      <span class="tag t-type">计算</span>
+      <span class="tag t-kp">正态标准化 · 查表</span>
+      <span class="tag t-d2">进阶</span>
+    </div>
+    <div class="qbody">
+      <p>\(Y\sim N(\mu{=}860,\ \sigma^2{=}576)\)。(a) 求 \(P(Y\le900)\)；(b) 求 \(P(Y\ge825)\)。</p>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <p><strong>关键：</strong>题给的是<strong>方差</strong> 576，所以 \(\sigma=\sqrt{576}=24\)。用标准化 \(Z=\dfrac{Y-\mu}{\sigma}\) 转成标准正态后查表。</p>
+        <p><strong>(a)</strong></p>
+        <ul class="steps">
+          <li>\(z=\dfrac{900-860}{24}=\dfrac{40}{24}=1.667\)</li>
+          <li>\(P(Y\le900)=P(Z\le1.667)=\Phi(1.667)\approx\mathbf{0.952}\)</li>
+        </ul>
+        <p><strong>(b)</strong></p>
+        <ul class="steps">
+          <li>\(z=\dfrac{825-860}{24}=\dfrac{-35}{24}=-1.458\)</li>
+          <li>\(P(Y\ge825)=P(Z\ge-1.458)=\Phi(1.458)\approx\mathbf{0.928}\)</li>
+        </ul>
+        <p class="pitfall"><b>最常见错误：</b>把方差当成标准差直接用（应先开方得 σ=24）；以及处理 \(P(Z\ge -z)=\Phi(z)\) 时符号搞反。</p>
+        <p style="font-size:.85rem;color:var(--muted)">（数值依标准正态表，四舍五入到三位小数。）</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q8 -->
+  <div class="qcard" data-q="8">
+    <div class="qtop">
+      <span class="qid">Q8</span>
+      <span class="tag t-type">计算</span>
+      <span class="tag t-kp">贝塔分布矩</span>
+      <span class="tag t-d1">基础</span>
+    </div>
+    <div class="qbody">
+      <p>\(X\sim\mathrm{Beta}(12,4)\)。(a) 求 \(E(X)\)；(b) 求 \(\mathrm{Var}(X)\)。</p>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <p>直接套贝塔公式，\(a=12,\ b=4\)。</p>
+        <p><strong>(a)</strong></p>
+        <ul class="steps"><li>\(E(X)=\dfrac{a}{a+b}=\dfrac{12}{16}=\mathbf{0.75}\)</li></ul>
+        <p><strong>(b)</strong></p>
+        <ul class="steps">
+          <li>\(\mathrm{Var}(X)=\dfrac{ab}{(a+b)^2(a+b+1)}=\dfrac{12\times4}{16^2\times17}\)</li>
+          <li>\(=\dfrac{48}{256\times17}=\dfrac{48}{4352}\approx\mathbf{0.0110}\)</li>
+        </ul>
+        <p class="pitfall"><b>易错：</b>分母是 \((a+b)^2(a+b+1)\)，别漏掉 \(+1\) 那一项。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q9 -->
+  <div class="qcard" data-q="9">
+    <div class="qtop">
+      <span class="qid">Q9</span>
+      <span class="tag t-type">计算</span>
+      <span class="tag t-kp">伽马分布矩 · CDF</span>
+      <span class="tag t-d2">进阶</span>
+    </div>
+    <div class="qbody">
+      <p>\(Y\sim\mathrm{gamma}(12,4)\)（按课件，第二参数为速率 \(b=4\)）。(a) 求 \(E(Y)\)；(b) 求 \(\mathrm{Var}(Y)\)；(c) 求 \(P(Y\le4)\)。</p>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <p>用课件公式 \(a=12,\ b=4\)（rate 形式）。</p>
+        <p><strong>(a)</strong> \(E(Y)=\dfrac{a}{b}=\dfrac{12}{4}=\mathbf{3}\)。</p>
+        <p><strong>(b)</strong> \(\mathrm{Var}(Y)=\dfrac{a}{b^2}=\dfrac{12}{16}=\mathbf{0.75}\)。</p>
+        <p><strong>(c)</strong> \(P(Y\le4)\) 需要伽马的累积分布。对整数形状 \(a=12\)、rate \(b=4\)，可用正则化不完全伽马函数（或查表/软件）：</p>
+        <ul class="steps">
+          <li>\(P(Y\le4)=\dfrac{\gamma(12,\,b\cdot4)}{\Gamma(12)}=\dfrac{\gamma(12,16)}{11!}\)</li>
+          <li>数值计算得 \(P(Y\le4)\approx\mathbf{0.873}\)。</li>
+        </ul>
+        <div class="box def" style="margin-top:6px"><p class="box-title">说明</p><p style="margin:0">(c) 没有初等闭式，考试中通常给表、给软件输出或只要求列出积分式 \(\int_0^4 f(y)dy\)。能写出正确被积函数与上下限即得分关键。</p></div>
+        <p class="assume">若你的教材把第二参数当作<strong>尺度 (scale) θ</strong> 而非速率，则 \(E=a\theta=48,\ \mathrm{Var}=a\theta^2=192\)。本解按课件第 6 页的 rate 定义。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q10 -->
+  <div class="qcard" data-q="10">
+    <div class="qtop">
+      <span class="qid">Q10</span>
+      <span class="tag t-type">计算 / 论述</span>
+      <span class="tag t-kp">独立二项 · 联合枚举</span>
+      <span class="tag t-d3">综合</span>
+    </div>
+    <div class="qbody">
+      <p>临床试验两组，组1成功概率 0.5，组2成功概率 0.6，各 5 名病人，所有结果独立。求"组1成功数 \(\ge\) 组2成功数"的概率。</p>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <p><strong>建模：</strong>\(X_1\sim\mathrm{Bin}(5,0.5)\)，\(X_2\sim\mathrm{Bin}(5,0.6)\)，相互独立。所求 \(P(X_1\ge X_2)\)。</p>
+        <p><strong>思路：</strong>由独立性，联合概率 \(=P(X_1{=}i)P(X_2{=}j)\)，对所有 \(i\ge j\)（\(i,j\in\{0,\dots,5\}\)）求和：</p>
+        <p style="text-align:center">\(\displaystyle P(X_1\ge X_2)=\sum_{j=0}^{5}\sum_{i=j}^{5} P(X_1{=}i)\,P(X_2{=}j)\)</p>
+        <p>各二项概率（\(\binom{5}{k}p^k(1-p)^{5-k}\)）：</p>
+        <div class="tbl-wrap"><table style="max-width:560px">
+          <thead><tr><th>k</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+          <tbody>
+            <tr><td>X₁ (p=.5)</td><td>.03125</td><td>.15625</td><td>.3125</td><td>.3125</td><td>.15625</td><td>.03125</td></tr>
+            <tr><td>X₂ (p=.6)</td><td>.01024</td><td>.0768</td><td>.2304</td><td>.3456</td><td>.2592</td><td>.07776</td></tr>
+          </tbody>
+        </table></div>
+        <p>按上式对 \(i\ge j\) 累加（可逐个 j 计算 \(P(X_2{=}j)\cdot P(X_1\ge j)\) 再求和）：</p>
+        <ul class="steps">
+          <li>整理求和得到 \(P(X_1\ge X_2)\approx\mathbf{0.4957}\)。</li>
+        </ul>
+        <div class="ans-final">答案：约 0.496（即略小于 ½，因组2成功率更高，符合直觉）</div>
+        <p class="pitfall"><b>关键考点：</b>识别两个独立二项 + 用双重求和处理"一个随机变量 ≥ 另一个"。手算时按列分组可减少出错。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q11 -->
+  <div class="qcard" data-q="11">
+    <div class="qtop">
+      <span class="qid">Q11</span>
+      <span class="tag t-type">计算</span>
+      <span class="tag t-kp">二项建模 · 超额订票</span>
+      <span class="tag t-d3">综合</span>
+    </div>
+    <div class="qbody">
+      <p>航空公司为只有 198 个座位的航班卖出 200 张票（平均 1% 购票者不出现）。求"所有到场的人都有座位"的概率。</p>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <p><strong>建模：</strong>每位购票者独立"出现"的概率 \(p=0.99\)。设到场人数 \(X\sim\mathrm{Bin}(200,0.99)\)。"都有座位"即 \(X\le198\)。</p>
+        <p><strong>思路：</strong>用补集——超员当且仅当 199 或 200 人到场：</p>
+        <ul class="steps">
+          <li>\(P(X\le198)=1-P(X{=}199)-P(X{=}200)\)</li>
+          <li>\(P(X{=}200)=(0.99)^{200}\approx0.1340\)</li>
+          <li>\(P(X{=}199)=\binom{200}{199}(0.99)^{199}(0.01)^1=200(0.99)^{199}(0.01)\approx0.2707\)</li>
+          <li>\(P(X\le198)\approx1-0.1340-0.2707=\mathbf{0.5953}\)</li>
+        </ul>
+        <div class="ans-final">答案：约 0.595（≈59.5%）</div>
+        <p class="pitfall"><b>易错：</b>注意 \(p\) 是"出现"的概率 0.99，不是"缺席"的 0.01；以及补集只需减去最大的两个值，比正面累加 199 项高效得多。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q12 -->
+  <div class="qcard" data-q="12">
+    <div class="qtop">
+      <span class="qid">Q12</span>
+      <span class="tag t-type">论述 / 计算</span>
+      <span class="tag t-kp">正态可加性 · 均值之差</span>
+      <span class="tag t-d3">综合（挑战）</span>
+    </div>
+    <div class="qbody">
+      <p>大学A学生分数 \(\sim N(625,100)\)，大学B学生分数 \(\sim N(600,150)\)。A取2名、B取3名，求"A两名的平均分 &gt; B三名的平均分"的概率。<em>提示：求两个平均数之差的分布。</em></p>
+    </div>
+    <details class="answer-block"><summary><span>显示答案与解析</span><span class="chev">▼</span></summary>
+      <div class="answer-content">
+        <p><strong>Step 1 — 各组样本均值的分布</strong>（\(\bar X\sim N(\mu,\sigma^2/n)\)）：</p>
+        <ul class="steps">
+          <li>A：\(\bar A\sim N\!\left(625,\ \dfrac{100}{2}\right)=N(625,\,50)\)</li>
+          <li>B：\(\bar B\sim N\!\left(600,\ \dfrac{150}{3}\right)=N(600,\,50)\)</li>
+        </ul>
+        <p><strong>Step 2 — 差 \(D=\bar A-\bar B\) 的分布</strong>（独立正态相减：均值相减、方差相加）：</p>
+        <ul class="steps">
+          <li>均值 \(=625-600=25\)；方差 \(=50+50=100\) → \(D\sim N(25,100)\)，\(\sigma_D=10\)。</li>
+        </ul>
+        <p><strong>Step 3 — 标准化求 \(P(D&gt;0)\)：</strong></p>
+        <ul class="steps">
+          <li>\(z=\dfrac{0-25}{10}=-2.5\)</li>
+          <li>\(P(D&gt;0)=P(Z&gt;-2.5)=\Phi(2.5)\approx\mathbf{0.9938}\)</li>
+        </ul>
+        <div class="ans-final">答案：约 0.994（≈99.4%）</div>
+        <p class="pitfall"><b>三个关键考点：</b>① 样本均值方差缩小为 \(\sigma^2/n\)；② 独立正态之差方差<strong>相加</strong>（不是相减！）；③ 标准化后查表。最常见错误是漏除以 n，或把两个方差相减。</p>
+      </div>
+    </details>
+  </div>
+
+</section>
+
+<!-- ============ CHEAT SHEET ============ -->
+<section id="cheatsheet">
+  <div class="sec-head">
+    <span class="sec-num">★</span>
+    <h2>公式速查表</h2>
+    <span class="sec-tag">考前最后一眼</span>
+  </div>
+  <div class="dist-grid" style="grid-template-columns:1fr">
+    <div class="box def">
+      <p class="box-title">期望 · 方差 · 线性变换</p>
+      <p style="margin:4px 0">\(E[X]=\sum x p(x)\) 或 \(\int x f(x)dx\)　|　\(\mathrm{Var}[X]=E[X^2]-(E[X])^2\)<br>
+      \(E[aX+b]=aE[X]+b\)　|　\(\mathrm{Var}[aX+b]=a^2\mathrm{Var}[X]\)　|　\(\sigma=\sqrt{\mathrm{Var}}\)</p>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>分布</th><th>记法</th><th>E</th><th>Var</th><th>典型场景</th></tr></thead>
+      <tbody>
+        <tr><td>二项</td><td>Bin(n,p)</td><td>\(np\)</td><td>\(np(1-p)\)</td><td>固定 n 次独立试验数成功</td></tr>
+        <tr><td>泊松</td><td>Pois(μ)</td><td>\(\mu\)</td><td>\(\mu\)</td><td>单位时空稀有事件计数</td></tr>
+        <tr><td>均匀</td><td>U(a,b)</td><td>\(\frac{a+b}{2}\)</td><td>\(\frac{(b-a)^2}{12}\)</td><td>区间内等可能</td></tr>
+        <tr><td>贝塔</td><td>Beta(a,b)</td><td>\(\frac{a}{a+b}\)</td><td>\(\frac{ab}{(a+b)^2(a+b+1)}\)</td><td>(0,1) 上的比例</td></tr>
+        <tr><td>正态</td><td>N(μ,σ²)</td><td>\(\mu\)</td><td>\(\sigma^2\)</td><td>标准化查表</td></tr>
+        <tr><td>伽马</td><td>gamma(a,b)*</td><td>\(\frac{a}{b}\)</td><td>\(\frac{a}{b^2}\)</td><td>正值连续量（b=rate）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box tip">
+    <p class="box-title">独立正态可加性（综合题神器）</p>
+    <p style="margin:0">\(\bar X\sim N(\mu,\sigma^2/n)\)　|　\(X\pm Y\sim N(\mu_X\pm\mu_Y,\ \sigma_X^2+\sigma_Y^2)\)（方差永远相加）</p>
+  </div>
+  <div class="box warn">
+    <p class="box-title">五大高频失分点</p>
+    <p style="margin:0">① 方差里 \((E[X])^2\) 写成 \(E[X^2]\)；② \(\mathrm{Var}[aX+b]\) 漏平方或误加 b；③ 正态把方差当标准差；④ "正比于"忘归一化；⑤ 两正态之差方差误相减。</p>
+  </div>
+  <p style="font-size:.82rem;color:var(--muted)">* 本课件伽马第二参数为速率 (rate)。若教材用尺度参数，需相应改公式。</p>
+</section>
+
+</main>
+
+<button id="toTop" aria-label="回到顶部">↑</button>
+
+<footer>
+  Lecture 2 · Distributions — 复习指南 ｜ 基于 Dr. Nivedita Viswanathan 讲义生成 ｜ 共 14 道题（含 2 道热身）
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- MathJax load failure detection ----
+  setTimeout(function(){
+    if(!window.__mjxOK){
+      var w=document.getElementById('mjx-warn');
+      if(w) w.classList.add('show');
+    }
+  }, 6000);
+
+  // ---- helpers ----
+  function $(sel,ctx){return (ctx||document).querySelector(sel);}
+  function $all(sel,ctx){return Array.prototype.slice.call((ctx||document).querySelectorAll(sel));}
+
+  var answered = Object.create(null); // track answered MCQs by data-q
+
+  function updateProgress(){
+    var total = $all('.opts[data-correct]').length;
+    var ansCount = Object.keys(answered).length;
+    var correct = 0;
+    for(var k in answered){ if(answered[k]) correct++; }
+    var ac=$('#ans-count'), cc=$('#correct-count'), tq=$('#total-q'), fill=$('#pb-fill');
+    if(ac) ac.textContent = ansCount;
+    if(cc) cc.textContent = correct;
+    if(tq) tq.textContent = total;
+    if(fill) fill.style.width = total? (ansCount/total*100)+'%' : '0%';
+  }
+
+  // ---- single delegated click handler ----
+  document.addEventListener('click', function(ev){
+    var target = ev.target;
+
+    // Expand / collapse all
+    if(target.closest('#expand-all')){
+      $all('details.answer-block').forEach(function(d){ d.open = true; });
+      return;
+    }
+    if(target.closest('#collapse-all')){
+      $all('details.answer-block').forEach(function(d){ d.open = false; });
+      return;
+    }
+    // Back to top
+    if(target.closest('#toTop')){
+      window.scrollTo({top:0, behavior:'smooth'});
+      return;
+    }
+
+    // MCQ option click
+    var li = target.closest('.opts li');
+    if(li){
+      var ul = li.closest('.opts');
+      if(!ul || ul.classList.contains('locked')) return; // already answered -> ignore
+      var correct = ul.getAttribute('data-correct');
+      var chosen = li.getAttribute('data-opt');
+      var card = ul.closest('.qcard');
+      var qid = card ? card.getAttribute('data-q') : Math.random().toString();
+
+      // mark chosen
+      if(chosen === correct){
+        li.classList.add('correct');
+        answered[qid] = true;
+      } else {
+        li.classList.add('wrong');
+        // also reveal the correct one
+        var right = ul.querySelector('li[data-opt="'+correct+'"]');
+        if(right) right.classList.add('correct');
+        answered[qid] = false;
+      }
+      // lock the question
+      ul.classList.add('locked');
+
+      // auto-open the explanation details for this question
+      if(card){
+        var det = card.querySelector('details.answer-block');
+        if(det) det.open = true;
+      }
+      updateProgress();
+      return;
+    }
+  });
+
+  // ---- back-to-top visibility ----
+  var toTop = $('#toTop');
+  window.addEventListener('scroll', function(){
+    if(window.scrollY > 500){ toTop.classList.add('show'); }
+    else { toTop.classList.remove('show'); }
+  });
+
+  // ---- init counts ----
+  updateProgress();
+})();
+</script>
+</body>
+</html>

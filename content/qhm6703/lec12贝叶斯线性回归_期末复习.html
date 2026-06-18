@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>贝叶斯线性回归 · 期末复习（Lecture 12）</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- MathJax 配置：先于脚本加载 -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['\\[', '\\]']],
+      processEscapes: true,
+      tags: 'none'
+    },
+    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style>
+:root{
+  --bg:#f4f6f9;
+  --surface:#ffffff;
+  --surface-2:#eef1f6;
+  --ink:#212838;
+  --ink-soft:#525b70;
+  --ink-faint:#8a93a8;
+  --line:#e3e7ef;
+  --brand:#3a3f7a;          /* 深靛蓝：结构 */
+  --brand-soft:#ecedff;
+  --accent:#0f766e;         /* 青绿：后验 / 主强调 */
+  --prior:#b45309;          /* 琥珀：先验 */
+  --prior-soft:#fdf0d4;
+  --data:#1d4ed8;           /* 蓝：数据 */
+  --data-soft:#dde7fe;
+  --posterior:#0f766e;      /* 青绿：后验 */
+  --posterior-soft:#d4efe9;
+  --ok:#15803d; --ok-soft:#dcfce7; --ok-line:#86efac;
+  --bad:#b91c1c; --bad-soft:#fde8e8; --bad-line:#f3b4b4;
+  --pitfall:#be123c; --pitfall-soft:#ffe7ec;
+  --memo:#7c3aed; --memo-soft:#efe7fe;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(20,25,45,.04), 0 10px 28px rgba(20,25,45,.06);
+  --maxw:940px;
+  --fb: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --fd: "Spectral", Georgia, "Songti SC", serif;
+  --fm: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--fb); font-size:16.5px; line-height:1.75;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ---------- 顶部导航 ---------- */
+.nav{
+  position:sticky; top:0; z-index:50;
+  background:rgba(255,255,255,.88); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{
+  max-width:var(--maxw); margin:0 auto; padding:.55rem 1.1rem;
+  display:flex; align-items:center; gap:.5rem 1rem; flex-wrap:wrap;
+}
+.nav-brand{font-family:var(--fd); font-weight:600; color:var(--brand); font-size:1.02rem; letter-spacing:.2px; margin-right:.3rem}
+.nav-brand .dot{display:inline-block;width:.5rem;height:.5rem;border-radius:50%;background:var(--accent);margin-right:.45rem;vertical-align:middle}
+.nav-links{display:flex; gap:.2rem; flex-wrap:wrap}
+.nav-links a{
+  color:var(--ink-soft); font-size:.9rem; font-weight:500;
+  padding:.28rem .6rem; border-radius:8px;
+}
+.nav-links a:hover{background:var(--surface-2); color:var(--brand); text-decoration:none}
+.nav-actions{margin-left:auto; display:flex; gap:.4rem}
+.btn{
+  font-family:var(--fb); font-size:.82rem; font-weight:600;
+  border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
+  padding:.32rem .7rem; border-radius:9px; cursor:pointer; transition:.15s;
+}
+.btn:hover{border-color:var(--accent); color:var(--accent)}
+.btn-accent{background:var(--brand); color:#fff; border-color:var(--brand)}
+.btn-accent:hover{background:#2f3468; color:#fff; border-color:#2f3468}
+
+/* ---------- 容器 ---------- */
+.wrap{max-width:var(--maxw); margin:0 auto; padding:0 1.1rem 5rem}
+
+/* ---------- Hero ---------- */
+.hero{
+  margin:1.6rem auto 1.2rem; padding:2rem 1.7rem 1.8rem;
+  background:linear-gradient(160deg,#ffffff 0%, #f3f6ff 60%, #eef6f4 100%);
+  border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow);
+  display:grid; grid-template-columns:1.25fr .9fr; gap:1.4rem; align-items:center;
+}
+.hero-eyebrow{
+  font-size:.74rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:.55rem;
+}
+.hero h1{
+  font-family:var(--fd); font-weight:600; font-size:2.05rem; line-height:1.15;
+  margin:.1rem 0 .2rem; color:var(--brand); letter-spacing:.2px;
+}
+.hero h1 .cn{display:block; font-family:var(--fb); font-weight:700; font-size:1.18rem; color:var(--ink); margin-top:.45rem}
+.hero p.sub{color:var(--ink-soft); font-size:.98rem; margin:.6rem 0 0; max-width:42ch}
+.hero-eq{
+  margin-top:1.05rem; padding:.7rem .9rem; background:var(--surface);
+  border:1px solid var(--line); border-radius:12px; font-size:1.02rem;
+  display:inline-flex; align-items:center; gap:.45rem; flex-wrap:wrap;
+  box-shadow:0 1px 0 rgba(0,0,0,.02);
+}
+.hero-eq .lab{font-size:.78rem; color:var(--ink-faint); font-weight:600; margin-right:.2rem}
+.tau{font-family:var(--fm); font-weight:600; padding:.05rem .15rem; border-radius:5px}
+.tau.post{color:var(--posterior); background:var(--posterior-soft)}
+.tau.prior{color:var(--prior); background:var(--prior-soft)}
+.tau.data{color:var(--data); background:var(--data-soft)}
+.hero-eq .op{color:var(--ink-faint); font-weight:700}
+.hero-art{display:flex; justify-content:center; align-items:center}
+.hero-art svg{width:100%; max-width:320px; height:auto}
+
+/* ---------- 区块标题 ---------- */
+.section{margin-top:3rem; scroll-margin-top:64px}
+.sec-head{display:flex; align-items:baseline; gap:.8rem; margin-bottom:1rem; border-bottom:2px solid var(--brand-soft); padding-bottom:.55rem}
+.sec-num{font-family:var(--fd); font-size:1.6rem; font-weight:600; color:var(--accent); line-height:1}
+.sec-head h2{font-size:1.42rem; font-weight:700; margin:0; color:var(--brand)}
+.sec-head .en{font-size:.85rem; color:var(--ink-faint); font-weight:500; margin-left:auto}
+
+h3{font-size:1.12rem; font-weight:700; color:var(--ink); margin:1.8rem 0 .6rem; display:flex; align-items:center; gap:.5rem}
+h3 .bar{width:.28rem; height:1.05rem; background:var(--accent); border-radius:3px; display:inline-block}
+h4{font-size:1rem; font-weight:700; color:var(--brand); margin:1.2rem 0 .4rem}
+p{margin:.55rem 0}
+
+/* ---------- 卡片 / 盒子 ---------- */
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:1.05rem 1.15rem; box-shadow:var(--shadow); margin:.9rem 0}
+
+.box{border-radius:12px; padding:.85rem 1rem .85rem 1.05rem; margin:.85rem 0; border:1px solid var(--line); position:relative}
+.box .box-t{font-weight:700; font-size:.82rem; letter-spacing:.04em; text-transform:uppercase; margin-bottom:.3rem; display:flex; align-items:center; gap:.4rem}
+.box.def{background:var(--brand-soft); border-color:#d6d9fb; border-left:4px solid var(--brand)}
+.box.def .box-t{color:var(--brand)}
+.box.formula{background:#f7faf9; border-left:4px solid var(--accent)}
+.box.formula .box-t{color:var(--accent)}
+.box.pitfall{background:var(--pitfall-soft); border-left:4px solid var(--pitfall)}
+.box.pitfall .box-t{color:var(--pitfall)}
+.box.insight{background:var(--posterior-soft); border-left:4px solid var(--posterior)}
+.box.insight .box-t{color:var(--posterior)}
+.box.note{background:#fff8ec; border-left:4px solid var(--prior)}
+.box.note .box-t{color:var(--prior)}
+.box p:first-of-type{margin-top:.15rem}
+.box p:last-child{margin-bottom:0}
+
+/* 三色精度标识 */
+.chip{display:inline-block; font-size:.8rem; font-weight:600; padding:.08rem .5rem; border-radius:999px; font-family:var(--fm)}
+.chip.prior{color:var(--prior); background:var(--prior-soft)}
+.chip.data{color:var(--data); background:var(--data-soft)}
+.chip.post{color:var(--posterior); background:var(--posterior-soft)}
+
+/* 知识脉络流程 */
+.flow{display:flex; flex-wrap:wrap; gap:.4rem; align-items:stretch; margin:.6rem 0 .2rem}
+.flow .step{flex:1 1 150px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:.55rem .7rem; font-size:.86rem; box-shadow:var(--shadow)}
+.flow .step b{color:var(--brand)}
+.flow .arrow{align-self:center; color:var(--ink-faint); font-weight:700; padding:0 .1rem}
+
+/* 列表 */
+ul.tight{margin:.4rem 0 .4rem; padding-left:1.25rem}
+ul.tight li{margin:.28rem 0}
+
+/* 表格 */
+.tbl-wrap{overflow-x:auto; margin:.8rem 0}
+table{border-collapse:collapse; width:100%; font-size:.92rem; background:var(--surface); border-radius:10px; overflow:hidden}
+th,td{border:1px solid var(--line); padding:.5rem .65rem; text-align:left; vertical-align:top}
+th{background:var(--surface-2); font-weight:700; color:var(--brand)}
+td.num,th.num{font-family:var(--fm); text-align:right; white-space:nowrap}
+
+/* 重要度 / 标签 */
+.stars{font-size:.85rem; letter-spacing:1px; white-space:nowrap}
+.stars.s3{color:#dc2626}
+.stars.s2{color:#d97706}
+.stars.s1{color:#9aa3b2}
+.tag{display:inline-block; font-size:.72rem; font-weight:700; padding:.05rem .45rem; border-radius:6px; vertical-align:middle}
+.tag.memo{color:var(--memo); background:var(--memo-soft)}
+.tag.under{color:var(--accent); background:var(--posterior-soft)}
+.tag.calc{color:var(--data); background:var(--data-soft)}
+
+/* 考点条目 */
+.kp{border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:.85rem 1rem; margin:.7rem 0; box-shadow:var(--shadow)}
+.kp-head{display:flex; align-items:center; gap:.55rem; flex-wrap:wrap; margin-bottom:.35rem}
+.kp-head .kp-title{font-weight:700; font-size:1.02rem; color:var(--ink)}
+.kp-head .kp-meta{margin-left:auto; display:flex; gap:.4rem; align-items:center; flex-wrap:wrap}
+.kp dl{margin:.35rem 0 0; display:grid; grid-template-columns:auto 1fr; gap:.2rem .7rem; font-size:.94rem}
+.kp dt{font-weight:700; color:var(--ink-soft); white-space:nowrap}
+.kp dd{margin:0}
+
+/* ---------- 复习题 ---------- */
+.progress-card{position:sticky; top:54px; z-index:30; background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow); padding:.7rem .95rem; margin:.4rem 0 1.2rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap}
+.progress-stats{font-size:.9rem; color:var(--ink-soft); font-weight:600; white-space:nowrap}
+.progress-stats b{color:var(--brand); font-size:1.02rem}
+.progress-stats .c-ok{color:var(--ok)}
+.progress-track{flex:1 1 160px; height:9px; background:var(--surface-2); border-radius:999px; overflow:hidden; min-width:120px}
+.progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--brand)); border-radius:999px; transition:width .4s ease}
+
+.q-group-title{font-size:.95rem; font-weight:700; letter-spacing:.04em; color:var(--ink-faint); text-transform:uppercase; margin:1.8rem 0 .6rem; display:flex; align-items:center; gap:.6rem}
+.q-group-title::after{content:""; flex:1; height:1px; background:var(--line)}
+
+.question{border:1px solid var(--line); border-radius:13px; background:var(--surface); padding:1rem 1.1rem; margin:.85rem 0; box-shadow:var(--shadow)}
+.q-meta{display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; margin-bottom:.5rem}
+.q-badge{font-size:.72rem; font-weight:700; padding:.08rem .5rem; border-radius:6px; background:var(--surface-2); color:var(--ink-soft)}
+.q-badge.type{background:var(--brand-soft); color:var(--brand)}
+.q-badge.diff-1{background:#e8f6ee; color:#15803d}
+.q-badge.diff-2{background:#fdf0d4; color:#b45309}
+.q-badge.diff-3{background:#fde8e8; color:#b91c1c}
+.q-badge.kpt{background:#eef2f8; color:var(--ink-soft)}
+.q-text{font-weight:600; margin:.2rem 0 .55rem}
+.q-text .qn{color:var(--accent); font-family:var(--fd); font-weight:600; margin-right:.35rem}
+.q-sub{margin:.3rem 0 .3rem .2rem; font-weight:500}
+.q-given{background:var(--surface-2); border-radius:9px; padding:.5rem .75rem; font-size:.92rem; margin:.4rem 0 .6rem}
+
+/* 选择题选项 */
+.options{list-style:none; margin:.5rem 0 .2rem; padding:0; display:grid; gap:.45rem}
+.option{
+  border:1.5px solid var(--line); border-radius:10px; padding:.55rem .8rem; cursor:pointer;
+  display:flex; align-items:flex-start; gap:.55rem; transition:.13s; background:var(--surface); font-size:.96rem;
+}
+.option:hover{border-color:var(--accent); background:#f7faf9}
+.option .mk{font-weight:700; color:var(--ink-faint); flex:none; min-width:1.1em}
+.option.locked{cursor:default}
+.option.locked:hover{background:var(--surface); border-color:var(--line)}
+.option.correct{border-color:var(--ok-line); background:var(--ok-soft)}
+.option.correct .mk{color:var(--ok)}
+.option.correct::after{content:"✓ 正确"; margin-left:auto; color:var(--ok); font-weight:700; font-size:.82rem; flex:none}
+.option.incorrect{border-color:var(--bad-line); background:var(--bad-soft)}
+.option.incorrect .mk{color:var(--bad)}
+.option.incorrect::after{content:"✗ 你的选择"; margin-left:auto; color:var(--bad); font-weight:700; font-size:.82rem; flex:none}
+
+/* 答案折叠（原生 details/summary） */
+details.answer-block{margin-top:.7rem; border:1px solid var(--line); border-radius:10px; background:#fbfcfe; overflow:hidden}
+details.answer-block>summary{
+  cursor:pointer; list-style:none; padding:.55rem .85rem; font-weight:700; font-size:.92rem;
+  color:var(--accent); background:#f1f7f6; display:flex; align-items:center; gap:.45rem; user-select:none;
+}
+details.answer-block>summary::-webkit-details-marker{display:none}
+details.answer-block>summary::before{content:"▸"; transition:transform .15s; display:inline-block; color:var(--accent)}
+details.answer-block[open]>summary::before{transform:rotate(90deg)}
+details.answer-block[open]>summary{border-bottom:1px solid var(--line)}
+.answer-content{padding:.75rem .95rem .85rem}
+.answer-content p:first-child{margin-top:.1rem}
+.answer-content .ans-key{display:inline-block; font-weight:700; color:#fff; background:var(--accent); padding:.1rem .55rem; border-radius:6px; font-size:.86rem; margin:.2rem 0 .4rem}
+.answer-content .step{margin:.4rem 0}
+.answer-content .why{margin-top:.6rem; padding:.5rem .7rem; background:var(--prior-soft); border-radius:8px; font-size:.9rem}
+.answer-content .why b{color:var(--prior)}
+
+/* MathJax 警告 */
+#mathjax-warning{display:none; background:#fff8ec; border:1px solid #f3d79a; color:#92560a; border-radius:10px; padding:.6rem .9rem; margin:1rem auto; max-width:var(--maxw); font-size:.9rem}
+
+/* 回到顶部 */
+.totop{position:fixed; right:1.1rem; bottom:1.1rem; z-index:40; width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:var(--surface); color:var(--brand); font-size:1.2rem; cursor:pointer; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; transition:.15s}
+.totop:hover{background:var(--brand); color:#fff; border-color:var(--brand)}
+
+footer{max-width:var(--maxw); margin:2.5rem auto 0; padding:1.2rem 1.1rem; border-top:1px solid var(--line); color:var(--ink-faint); font-size:.85rem; text-align:center}
+
+mjx-container{overflow-x:auto; overflow-y:hidden; max-width:100%}
+mjx-container[display="true"]{margin:.6em 0 !important}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:720px){
+  body{font-size:16px}
+  .hero{grid-template-columns:1fr; padding:1.5rem 1.2rem; gap:.8rem}
+  .hero-art{order:-1}
+  .hero-art svg{max-width:240px}
+  .hero h1{font-size:1.7rem}
+  .nav-actions{width:100%; margin-left:0}
+  .nav-actions .btn{flex:1}
+  .sec-head .en{display:none}
+  .kp dl{grid-template-columns:1fr}
+  .kp dt{margin-top:.3rem}
+  .progress-card{position:static}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition:none !important}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== 导航 ===================== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <span class="nav-brand"><span class="dot"></span>贝叶斯线性回归</span>
+    <div class="nav-links">
+      <a href="#part1">① 课程讲解</a>
+      <a href="#part2">② 考点梳理</a>
+      <a href="#part3">③ 复习题目</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn" data-action="expand-all">展开全部答案</button>
+      <button class="btn" data-action="collapse-all">收起全部</button>
+    </div>
+  </div>
+</nav>
+
+<div id="mathjax-warning">
+  ⚠️ 数学公式渲染组件（MathJax）似乎未能加载（可能是网络受限）。页面文字与解析仍可正常阅读，公式将以 LaTeX 源码形式显示，例如 <code>\sigma^2</code> 表示 σ²、<code>\beta</code> 表示 β。
+</div>
+
+<div class="wrap">
+
+<!-- ===================== Hero ===================== -->
+<header class="hero" id="top">
+  <div class="hero-text">
+    <div class="hero-eyebrow">Lecture 12 · 期末复习梳理</div>
+    <h1>Bayesian Linear Regression
+      <span class="cn">后验推断、假设检验与预测分布</span>
+    </h1>
+    <p class="sub">把"先验信念"和"数据证据"合并成"更新后的信念"，再用它来做区间估计、检验斜率、预测新观测——并诚实地量化每一份不确定性。</p>
+    <div class="hero-eq">
+      <span class="lab">核心一句话</span>
+      <span class="tau post">τ<sub>后验</sub></span><span class="op">=</span>
+      <span class="tau prior">τ<sub>先验</sub></span><span class="op">+</span>
+      <span class="tau data">τ<sub>数据</sub></span>
+      <span style="color:var(--ink-faint);font-size:.85rem;margin-left:.3rem">精度可加</span>
+    </div>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <!-- 信号：贝尔曲线随信息增多而"变尖"（先验→数据→后验） -->
+    <svg viewBox="0 0 320 140" xmlns="http://www.w3.org/2000/svg">
+      <line x1="14" y1="120" x2="306" y2="120" stroke="#cfd6e4" stroke-width="1.4"/>
+      <line x1="160" y1="26" x2="160" y2="120" stroke="#cfd6e4" stroke-width="1" stroke-dasharray="3 4"/>
+      <!-- 先验：宽（琥珀） -->
+      <path d="M20 120 C 84 120 110 76 160 76 C 210 76 236 120 300 120 Z" fill="#b45309" fill-opacity="0.10"/>
+      <path d="M20 120 C 84 120 110 76 160 76 C 210 76 236 120 300 120" fill="none" stroke="#b45309" stroke-width="2"/>
+      <!-- 数据：中（蓝） -->
+      <path d="M58 120 C 102 120 126 56 160 56 C 194 56 218 120 262 120 Z" fill="#1d4ed8" fill-opacity="0.10"/>
+      <path d="M58 120 C 102 120 126 56 160 56 C 194 56 218 120 262 120" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+      <!-- 后验：窄（青绿） -->
+      <path d="M98 120 C 126 120 146 32 160 32 C 174 32 194 120 222 120 Z" fill="#0f766e" fill-opacity="0.16"/>
+      <path d="M98 120 C 126 120 146 32 160 32 C 174 32 194 120 222 120" fill="none" stroke="#0f766e" stroke-width="2.4"/>
+      <text x="36" y="112" font-size="9" fill="#b45309" font-family="Inter, sans-serif" font-weight="600">先验</text>
+      <text x="232" y="86" font-size="9" fill="#1d4ed8" font-family="Inter, sans-serif" font-weight="600">数据</text>
+      <text x="166" y="44" font-size="9" fill="#0f766e" font-family="Inter, sans-serif" font-weight="700">后验</text>
+    </svg>
+  </div>
+</header>
+
+<!-- 记号约定 -->
+<div class="box note" style="margin-top:1.1rem">
+  <div class="box-t">📐 记号约定（全文统一）</div>
+  <ul class="tight" style="margin-bottom:0">
+    <li>为简洁，下文常用 \(\alpha\) 代表截距 \(\alpha_{\bar x}\)（即直线在 \(x=\bar x\) 处的高度，最小二乘下等于 \(\bar y\)）；\(\beta\) 为斜率。</li>
+    <li><b>撇号 \('\)</b> 表示"<b>后验</b> (posterior)"；无撇号表示"<b>先验</b> (prior)"。如 \(m_\beta\)=先验均值，\(m'_\beta\)=后验均值。</li>
+    <li>\(B,\;A_{\bar x}=\bar y\)：最小二乘估计；\(\tau\)：精度 \(=1/\text{方差}\)；\(SS_x=\sum_i (x_i-\bar x)^2\)。</li>
+  </ul>
+</div>
+
+<!-- ===================================================================== -->
+<!-- ====================== 第一部分：课程讲解 =========================== -->
+<!-- ===================================================================== -->
+<section class="section" id="part1">
+  <div class="sec-head">
+    <span class="sec-num">01</span>
+    <h2>课程内容讲解</h2>
+    <span class="en">What this lecture is doing</span>
+  </div>
+
+  <h3><span class="bar"></span>整体脉络：这节课在解决什么问题？</h3>
+  <p>前一讲（Lecture 11）我们用<b>最小二乘</b>拟合了一条直线 \(y=A_{\bar x}+B(x-\bar x)\)，但那只是<b>一个数字</b>（点估计），无法表达"我们有多确定"，也无法把专家的经验放进模型。本讲把同一个回归问题用<b>贝叶斯方法</b>重做一遍，核心目标是：</p>
+  <div class="box insight">
+    <div class="box-t">🎯 一句话目标</div>
+    <p style="margin:0">在模型 \(y_i\mid x_i\sim N\!\big(\alpha_{\bar x}+\beta(x_i-\bar x),\ \sigma^2\big)\)（\(\sigma^2\) 已知）下，把<span class="chip prior">先验信念</span>与<span class="chip data">数据证据</span>合并成<span class="chip post">后验分布</span>，再用后验来 ① 做<b>可信区间</b>、② 做<b>假设检验</b>、③ <b>预测</b>新观测，并量化全部不确定性。</p>
+  </div>
+
+  <p>整条逻辑链如下，后面每个模块就是链条上的一环：</p>
+  <div class="flow">
+    <div class="step"><b>① 模型</b><br>两个未知量：截距 \(\alpha_{\bar x}\)、斜率 \(\beta\)</div>
+    <span class="arrow">→</span>
+    <div class="step"><b>② 似然</b><br>写出 \(L\)，配方后<b>因式分解</b></div>
+    <span class="arrow">→</span>
+    <div class="step"><b>③ 先验</b><br>取正态<b>共轭</b>先验</div>
+    <span class="arrow">→</span>
+    <div class="step"><b>④ 后验</b><br><b>精度相加</b>，正态后验</div>
+  </div>
+  <div class="flow" style="margin-top:.4rem">
+    <div class="step"><b>⑤ 推断</b><br>对 \(\beta\) 做可信区间 + 检验</div>
+    <span class="arrow">→</span>
+    <div class="step"><b>⑥ 预测</b><br>预测分布 = 参数不确定 + 噪声</div>
+    <span class="arrow">→</span>
+    <div class="step"><b>⑦ 为什么</b><br>小样本 / 领域知识 / 量化不确定性</div>
+  </div>
+
+  <!-- 模块 A -->
+  <h3><span class="bar"></span>模块 A：模型与贝叶斯框架</h3>
+  <p>数据模型说：给定自变量 \(x_i\)，因变量 \(y_i\) 服从一个正态分布，均值落在直线上，方差是已知常数 \(\sigma^2\)：</p>
+  <div class="box formula"><div class="box-t">公式 · 数据模型</div>
+  \[ y_i\mid x_i \;\sim\; N\!\big(\underbrace{\alpha_{\bar x}+\beta(x_i-\bar x)}_{\text{直线（均值）}},\ \sigma^2\big) \]
+  </div>
+  <p>这里把直线写成"以 \(\bar x\) 为中心"的形式是<b>刻意为之</b>的技巧（后面会看到它让代数变得干净）。\(\alpha_{\bar x}\) 是直线在 \(x=\bar x\) 处的高度（<b>不是</b> \(x=0\) 处的截距），\(\beta\) 是斜率。贝叶斯推断的总纲是那条著名恒等式：</p>
+  <div class="box formula"><div class="box-t">公式 · 贝叶斯恒等式</div>
+  \[ \text{后验} \;\propto\; \text{先验}\times\text{似然},\qquad p(\theta\mid \text{data})\propto p(\theta)\,L(\theta) \]
+  </div>
+  <div class="box insight"><div class="box-t">💡 类比</div><p style="margin:0"><b>先验</b>=看数据前你的"预感"；<b>似然</b>=数据"说了什么"；<b>后验</b>=两者结合后"更新过的信念"。我们要为 \(\alpha_{\bar x}\) 和 \(\beta\) 各算一个后验。</p></div>
+
+  <!-- 模块 B -->
+  <h3><span class="bar"></span>模块 B：似然函数与"因式分解"</h3>
+  <p>单个观测的似然是一条正态密度；\(n\) 个观测相互独立，似然就是它们的<b>乘积</b>：</p>
+  <div class="box formula"><div class="box-t">公式 · 样本似然</div>
+  \[ L_{\text{sample}}(\alpha_{\bar x},\beta)\;\propto\; \exp\!\Big[-\tfrac{1}{2\sigma^2}\underbrace{\textstyle\sum_{i=1}^n\big(y_i-\alpha_{\bar x}-\beta(x_i-\bar x)\big)^2}_{=\,Q}\Big] \]
+  </div>
+  <p>把指数里的 \(Q\) 展开、<b>配方</b>（completing the square），并利用 \(\sum(x_i-\bar x)=0\)，可整理成：</p>
+  <div class="box formula"><div class="box-t">公式 · 配方结果</div>
+  \[ Q \;=\; \underbrace{SS_x(\beta-B)^2}_{\text{只含 }\beta}\;+\;\underbrace{n(\alpha_{\bar x}-\bar y)^2}_{\text{只含 }\alpha_{\bar x}}\;+\;\underbrace{\Big(SS_{yy}-\tfrac{SS_{xy}^2}{SS_x}\Big)}_{\text{与参数无关的常数}} \]
+  </div>
+  <p>关键在于：<b>\(\alpha_{\bar x}\) 与 \(\beta\) 的交叉项消失了</b>！于是似然能拆成两个独立的因子：</p>
+  <div class="box formula"><div class="box-t">公式 · 似然因式分解</div>
+  \[ L_{\text{sample}}\;\propto\; \underbrace{e^{-\frac{n}{2\sigma^2}(\alpha_{\bar x}-\bar y)^2}}_{L(\alpha_{\bar x})\,\sim\,N(\bar y,\;\sigma^2/n)}\;\times\;\underbrace{e^{-\frac{SS_x}{2\sigma^2}(\beta-B)^2}}_{L(\beta)\,\sim\,N(B,\;\sigma^2/SS_x)} \]
+  </div>
+  <div class="box insight"><div class="box-t">💡 为什么交叉项会消失？为什么重要？</div>
+  <p>交叉项里带有因子 \(\sum(x_i-\bar x)\)，而"以 \(\bar x\) 为中心"使这个和恰好 \(=0\)。<b>因式分解</b>意味着：我们可以对 \(\alpha_{\bar x}\) 和 \(\beta\) <b>分别、独立地</b>做贝叶斯更新，互不干扰。类比：把坐标轴对齐后，两个测量变得彼此独立，处理起来就简单了。</p></div>
+
+  <!-- 模块 C -->
+  <h3><span class="bar"></span>模块 C：精度 (Precision)——全章的"主角"</h3>
+  <div class="box def"><div class="box-t">定义 · 精度</div>
+  <p style="margin:0">正态分布 \(N(\mu,\sigma^2)\) 的<b>精度</b>是方差的倒数：\(\displaystyle \tau=\frac{1}{\sigma^2}\)。精度大 = 分布窄 = 不确定性小；精度小 = 分布宽 = 不确定性大。</p></div>
+  <p>本章最该背下来的一条规律是：<b>后验精度 = 先验精度 + 数据精度</b>。精度是<b>相加</b>的——每来一批新数据，后验精度就增加一点，分布就更尖一点：</p>
+  <div class="box formula"><div class="box-t">公式 · 精度相加（以斜率 β 为例）</div>
+  \[ \underbrace{\frac{1}{{s'}^{2}_{\beta}}}_{\tau_{\text{post}}\ \text{后验精度}}\;=\;\underbrace{\frac{1}{s^{2}_{\beta}}}_{\tau_{\text{prior}}\ \text{先验精度}}\;+\;\underbrace{\frac{SS_x}{\sigma^2}}_{\tau_{\text{data}}\ \text{数据精度}} \]
+  </div>
+  <p>由此后验<b>均值</b>是先验均值与数据估计的<b>精度加权平均</b>：</p>
+  <div class="box formula"><div class="box-t">公式 · 后验均值（精度加权）</div>
+  \[ m'_{\beta}\;=\;\frac{\dfrac{SS_x}{\sigma^2}\,B\;+\;\dfrac{1}{s^{2}_{\beta}}\,m_{\beta}}{\dfrac{1}{s^{2}_{\beta}}+\dfrac{SS_x}{\sigma^2}} \]
+  </div>
+  <ul class="tight">
+    <li><b>弥散先验</b>（\(s^2_\beta\) 很大，\(\tau_{\text{prior}}\to 0\)）：后验几乎完全由<b>数据</b>决定——"让数据说话"。</li>
+    <li><b>很紧的先验</b>（\(s^2_\beta\) 很小，\(\tau_{\text{prior}}\) 很大）：在数据足够多之前，<b>先验占主导</b>。</li>
+  </ul>
+  <div class="box insight"><div class="box-t">💡 类比</div><p style="margin:0">就像综合两个人的意见取平均，给"更有把握（精度更高）"的那一方更大权重。后验均值一定落在数据估计 \(B\) 与先验均值 \(m_\beta\) 之间。</p></div>
+
+  <!-- 模块 D -->
+  <h3><span class="bar"></span>模块 D：共轭先验与后验公式</h3>
+  <p>因为似然已经因式分解，我们给两个参数各取<b>独立的正态先验</b>。正态先验对正态似然是<b>共轭</b>的（conjugate）——意思是后验仍是正态，更新非常干净。完整公式如下（注意截距用 \(n/\sigma^2\)，斜率用 \(SS_x/\sigma^2\)，别混）：</p>
+  <div class="box formula"><div class="box-t">公式 · 斜率 β 的后验</div>
+  \[ m'_{\beta}=\frac{\frac{SS_x}{\sigma^2}B+\frac{1}{s^{2}_{\beta}}m_{\beta}}{\frac{1}{s^{2}_{\beta}}+\frac{SS_x}{\sigma^2}},\qquad {s'}^{2}_{\beta}=\frac{1}{\frac{1}{s^{2}_{\beta}}+\frac{SS_x}{\sigma^2}} \]
+  </div>
+  <div class="box formula"><div class="box-t">公式 · 截距 α 的后验</div>
+  \[ m'_{\alpha_{\bar x}}=\frac{\frac{n}{\sigma^2}A_{\bar x}+\frac{1}{s^{2}_{\alpha_{\bar x}}}m_{\alpha_{\bar x}}}{\frac{1}{s^{2}_{\alpha_{\bar x}}}+\frac{n}{\sigma^2}},\qquad {s'}^{2}_{\alpha_{\bar x}}=\frac{1}{\frac{1}{s^{2}_{\alpha_{\bar x}}}+\frac{n}{\sigma^2}} \]
+  </div>
+  <p>我们之所以主要盯着 \(\beta\)，是因为"\(y\) 随 \(x\) 如何变化"这件事完全由斜率决定。</p>
+
+  <!-- 模块 E -->
+  <h3><span class="bar"></span>模块 E：对斜率 β 的贝叶斯推断</h3>
+  <h4>① 可信区间 (Credible Interval)</h4>
+  <div class="box formula"><div class="box-t">公式 · s% 可信区间</div>
+  \[ m'_{\beta}\ \pm\ z_{\frac{1-s}{2}}\sqrt{{s'}^{2}_{\beta}}\qquad(\text{95\% 时 } z_{0.025}=1.96) \]
+  </div>
+  <p><b>解读</b>（贝叶斯式）：在给定数据下，\(\beta\) 落在该区间的概率为 \(s\%\)。这是对参数<b>直接</b>的概率陈述，与频率派"区间"的解释不同。</p>
+  <h4>② 单侧检验：斜率是否超过某阈值 \(\beta_0\)？</h4>
+  <div class="box formula"><div class="box-t">公式 · 单侧检验</div>
+  \[ H_0:\beta\le\beta_0\ \text{vs}\ H_1:\beta>\beta_0:\qquad P(\beta\le\beta_0\mid\text{data})=P\!\left(Z\le\frac{\beta_0-m'_{\beta}}{s'_{\beta}}\right) \]
+  </div>
+  <p>若该后验概率 \(<\alpha\) 则拒绝 \(H_0\)（反方向 \(H_0:\beta\ge\beta_0\) 同理，把不等号方向对调）。</p>
+  <h4>③ 双侧检验：到底有没有线性关系？</h4>
+  <p>若 \(\beta=0\)，直线是平的，\(y\) 根本不依赖 \(x\)。检验 \(H_0:\beta=0\) vs \(H_1:\beta\ne0\) 的做法：算出 \((1-\alpha)\) 可信区间 \([a,b]\)，</p>
+  <ul class="tight">
+    <li>\(0\notin[a,b]\) → <b>拒绝</b> \(H_0\)，有线性关系的证据；</li>
+    <li>\(0\in[a,b]\) → 不能拒绝 \(H_0\)，线性模型也许并不合适。</li>
+  </ul>
+  <div class="box pitfall"><div class="box-t">⚠️ 易错</div><p style="margin:0">用回归做预测<b>之前</b>务必先做这个双侧检验。另外，"不能拒绝 \(H_0\)"<b>不等于</b>"证明了 \(\beta=0\)"。</p></div>
+
+  <!-- 模块 F -->
+  <h3><span class="bar"></span>模块 F：预测分布 (Predictive Distribution)</h3>
+  <p>对一个新的 \(x_{n+1}\)，最朴素的点估计 \(\hat y_{n+1}=A_{\bar x}+B(x_{n+1}-\bar x)\) 忽略了<b>两类</b>不确定性：(1) \(\alpha_{\bar x},\beta\) 本身未知；(2) 新观测自带随机误差 \(e_{n+1}\sim N(0,\sigma^2)\)。把两者都算进来，先得到均值 \(\mu_{n+1}\) 的后验，再加上观测噪声：</p>
+  <div class="box formula"><div class="box-t">公式 · 均值 μ 的后验</div>
+  \[ m'_{\mu}=m'_{\alpha_{\bar x}}+m'_{\beta}(x_{n+1}-\bar x),\qquad {s'}^{2}_{\mu}={s'}^{2}_{\alpha_{\bar x}}+{s'}^{2}_{\beta}\,(x_{n+1}-\bar x)^2 \]
+  </div>
+  <div class="box formula"><div class="box-t">公式 · 预测分布（最终结果）</div>
+  \[ f(y_{n+1}\mid x_{n+1},\text{data})\;\sim\;N\!\Big(m'_{\mu},\ \underbrace{{s'}^{2}_{\mu}}_{\text{参数不确定}}+\underbrace{\sigma^2}_{\text{观测噪声}}\Big) \]
+  </div>
+  <div class="box insight"><div class="box-t">💡 为什么预测方差比均值的后验方差大？</div>
+  <p style="margin:0">\({s'}^{2}_{\mu}\) 描述"线在哪里"的不确定；\(\sigma^2\) 描述"即使知道了线，新点仍会围绕它随机散布"。预测一个<b>个体新观测</b>必须把这份<b>不可消除的噪声</b> \(\sigma^2\) 也加进来，所以预测永远比估计均值更难。更多数据能缩小 \({s'}^{2}_{\mu}\)，却<b>缩小不了</b> \(\sigma^2\)。</p></div>
+
+  <!-- 模块 G -->
+  <h3><span class="bar"></span>模块 G：为什么要用贝叶斯回归？</h3>
+  <ul class="tight">
+    <li><b>小样本更稳</b>：频率派的 \(B\) 在样本少时不稳定，单个异常点就能大幅改变它；先验起到"正则化"作用，让后验保持合理。</li>
+    <li><b>领域知识正式入模</b>：例如 Fenton &amp; Neil 的"气温 vs 致命车祸率"例子——仅 12 个月的数据给出了反直觉的<b>正</b>斜率；交通安全工程师可用一个物理上合理的<b>负斜率先验</b>（如 \(\beta\sim N(-0.08,\,0.03^2)\)）把它纠正回来。</li>
+    <li><b>不确定性被量化</b>：后验方差告诉你"该有多确信"，而不只给一个点。</li>
+    <li><b>预测传播全部不确定性</b>：预测分布同时携带参数不确定与观测噪声。</li>
+  </ul>
+
+  <h3><span class="bar"></span>贯穿全章的工作样例：湿度数据（Moisture）速览</h3>
+  <p>5 个批次，\(B=3.1536,\ \bar y=14.21,\ \sigma^2=0.03998,\ n=5,\ SS_x=0.03028\)；先验 \(\alpha\sim N(15,1^2),\ \beta\sim N(1,0.3^2)\)。结论一览：</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>量</th><th class="num">先验精度</th><th class="num">数据精度</th><th>后验</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td>截距 \(\alpha\)</td><td class="num">1.00</td><td class="num">125.06</td><td>\(N(14.216,\,0.00793)\)</td><td>数据精度远大于先验，后验贴近 \(\bar y\)</td></tr>
+      <tr><td>斜率 \(\beta\)</td><td class="num">11.11</td><td class="num">0.757</td><td>\(N(1.137,\,0.0843)\)</td><td>先验精度占主导，斜率主要被先验拉着</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>斜率 95% 可信区间 \([0.569,1.706]\)：\(0\notin\) 区间 → 存在正向线性关系；但单侧检验 \(H_0:\beta\le1\) 得 \(P\approx0.318>0.05\) → 不能断言 \(\beta>1\)。批次 6（\(x=14.50\)）的 95% <b>预测</b>区间 \([13.85,14.70]\)，其中约 <b>83%</b> 的方差来自不可消除的观测噪声 \(\sigma^2\)。</p>
+</section>
+
+<!-- ===================================================================== -->
+<!-- ====================== 第二部分：考点梳理 =========================== -->
+<!-- ===================================================================== -->
+<section class="section" id="part2">
+  <div class="sec-head">
+    <span class="sec-num">02</span>
+    <h2>考点梳理</h2>
+    <span class="en">All exam points, rated</span>
+  </div>
+  <div class="box note">
+    <div class="box-t">图例</div>
+    <p style="margin:0">重要程度：<span class="stars s3">★★★</span> 高频　<span class="stars s2">★★</span> 中等　<span class="stars s1">★</span> 低频（依课件强调程度判断）。学习方式标签：<span class="tag memo">记忆</span> 需背 / <span class="tag under">理解</span> 需懂 / <span class="tag calc">计算</span> 需会算。</p>
+  </div>
+
+  <h3><span class="bar"></span>A. 模型与框架</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 1 · 回归的数据模型</span><span class="kp-meta"><span class="stars s2">★★</span><span class="tag under">理解</span></span></div>
+    <dl>
+      <dt>定义</dt><dd>\(y_i\mid x_i\sim N(\alpha_{\bar x}+\beta(x_i-\bar x),\,\sigma^2)\)；\(\alpha_{\bar x}\)=直线在 \(x=\bar x\) 处的高度（最小二乘下 \(=\bar y\)），\(\beta\)=斜率，\(\sigma^2\) 已知。</dd>
+      <dt>易错</dt><dd>\(\alpha_{\bar x}\) <b>不是</b> \(x=0\) 处的截距；"以 \(\bar x\) 为中心"是后续因式分解成立的前提。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 2 · 贝叶斯恒等式</span><span class="kp-meta"><span class="stars s2">★★</span><span class="tag memo">记忆</span><span class="tag under">理解</span></span></div>
+    <dl>
+      <dt>公式</dt><dd>后验 \(\propto\) 先验 \(\times\) 似然。要做推断需指定<b>似然</b> \(L(\alpha_{\bar x},\beta)\) 与<b>先验</b> \(p(\alpha_{\bar x}),p(\beta)\)。</dd>
+    </dl>
+  </div>
+
+  <h3><span class="bar"></span>B. 似然与因式分解</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 3 · 似然的因式分解（核心结论）</span><span class="kp-meta"><span class="stars s3">★★★</span><span class="tag under">理解</span></span></div>
+    <dl>
+      <dt>结论</dt><dd>\(Q=\sum(y_i-\alpha_{\bar x}-\beta(x_i-\bar x))^2=SS_x(\beta-B)^2+n(\alpha_{\bar x}-\bar y)^2+\text{const}\)，故似然 \(=\) [只含 \(\alpha_{\bar x}\) 的因子] \(\times\) [只含 \(\beta\) 的因子]。</dd>
+      <dt>两个核</dt><dd>\(L(\alpha_{\bar x})\sim N(\bar y,\sigma^2/n)\)，\(L(\beta)\sim N(B,\sigma^2/SS_x)\)。</dd>
+      <dt>为什么</dt><dd>交叉项含 \(\sum(x_i-\bar x)=0\) 而消失 → 两参数可<b>独立更新</b>。</dd>
+      <dt>易错</dt><dd>"因式分解"的<b>原因</b>（中心化）与<b>后果</b>（独立更新）常一起考；完整配方推导本身重要度 <span class="stars s1">★</span>。</dd>
+    </dl>
+  </div>
+
+  <h3><span class="bar"></span>C. 精度（最重要的一组考点）</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 4 · 精度的定义</span><span class="kp-meta"><span class="stars s3">★★★</span><span class="tag memo">记忆</span></span></div>
+    <dl>
+      <dt>定义</dt><dd>\(\tau=1/\sigma^2\)。精度大↔分布窄↔确定性高。</dd>
+      <dt>易错</dt><dd>精度是方差倒数，<b>不是</b>标准差倒数。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 5 · 精度相加 + 三个精度</span><span class="kp-meta"><span class="stars s3">★★★</span><span class="tag memo">记忆</span><span class="tag under">理解</span></span></div>
+    <dl>
+      <dt>公式</dt><dd>\(\dfrac{1}{{s'}^{2}_{\beta}}=\dfrac{1}{s^{2}_{\beta}}+\dfrac{SS_x}{\sigma^2}\)，即 \(\tau_{\text{post}}=\tau_{\text{prior}}+\tau_{\text{data}}\)。</dd>
+      <dt>三个精度</dt><dd><span class="chip prior">先验 \(1/s^2_\beta\)</span>　<span class="chip data">数据 \(SS_x/\sigma^2\)</span>　<span class="chip post">后验 \(1/{s'}^2_\beta\)</span></dd>
+      <dt>易错</dt><dd>相加的是<b>精度</b>，不是方差或标准差；<b>斜率</b>的数据精度用 \(SS_x/\sigma^2\)，<b>截距</b>用 \(n/\sigma^2\)，切勿混用。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 6 · 后验均值 = 精度加权平均</span><span class="kp-meta"><span class="stars s3">★★★</span><span class="tag under">理解</span></span></div>
+    <dl>
+      <dt>公式</dt><dd>\(m'_\beta=\dfrac{\tau_{\text{data}}B+\tau_{\text{prior}}m_\beta}{\tau_{\text{data}}+\tau_{\text{prior}}}\)；弥散先验→偏向 \(B\)，紧先验→偏向 \(m_\beta\)。</dd>
+      <dt>易错</dt><dd>权重是<b>精度</b>而非样本量；后验均值必在 \(B\) 与 \(m_\beta\) 之间。</dd>
+    </dl>
+  </div>
+
+  <h3><span class="bar"></span>D. 共轭先验与后验公式</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 7 · 共轭正态先验</span><span class="kp-meta"><span class="stars s2">★★</span><span class="tag memo">记忆</span></span></div>
+    <dl>
+      <dt>结论</dt><dd>正态先验 × 正态似然 → 正态后验（共轭）；对 \(\alpha_{\bar x},\beta\) 取<b>独立</b>正态先验。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 8 · 斜率与截距的后验公式</span><span class="kp-meta"><span class="stars s3">★★★</span>(斜率) / <span class="stars s2">★★</span>(截距)<span class="tag memo">记忆</span><span class="tag calc">计算</span></span></div>
+    <dl>
+      <dt>斜率</dt><dd>\(m'_\beta,\ {s'}^2_\beta\)（数据精度 \(SS_x/\sigma^2\)）。</dd>
+      <dt>截距</dt><dd>\(m'_{\alpha_{\bar x}},\ {s'}^2_{\alpha_{\bar x}}\)（数据精度 \(n/\sigma^2\)）。</dd>
+      <dt>易错</dt><dd>两者数据精度的"分子"不同（\(SS_x\) vs \(n\)）。</dd>
+    </dl>
+  </div>
+
+  <h3><span class="bar"></span>E. 对斜率的推断</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 9 · 可信区间</span><span class="kp-meta"><span class="stars s3">★★★</span><span class="tag memo">记忆</span><span class="tag under">理解</span></span></div>
+    <dl>
+      <dt>公式</dt><dd>\(m'_\beta\pm z_{\frac{1-s}{2}}\,s'_\beta\)；95% 用 \(z=1.96\)。</dd>
+      <dt>解读</dt><dd>给定数据，\(\beta\) 落入区间的概率为 \(s\%\)（对参数的直接概率陈述）。</dd>
+      <dt>易错</dt><dd>用<b>后验</b>标准差 \(s'_\beta\)（非先验）；贝叶斯解读 ≠ 频率派区间解读。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 10 · 单侧假设检验</span><span class="kp-meta"><span class="stars s3">★★★</span><span class="tag under">理解</span><span class="tag calc">计算</span></span></div>
+    <dl>
+      <dt>方法</dt><dd>\(H_0:\beta\le\beta_0\) → 算 \(P(\beta\le\beta_0\mid\text{data})=\Phi\!\big(\tfrac{\beta_0-m'_\beta}{s'_\beta}\big)\)，\(<\alpha\) 则拒绝；反向 \(H_0:\beta\ge\beta_0\) 把不等号对调。</dd>
+      <dt>易错</dt><dd>方向/符号要对；算的是 \(H_0\) 一侧的后验尾概率，再与 \(\alpha\) 比。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 11 · 双侧检验：是否存在线性关系</span><span class="kp-meta"><span class="stars s3">★★★</span><span class="tag under">理解</span></span></div>
+    <dl>
+      <dt>方法</dt><dd>\(H_0:\beta=0\)。看 95% 可信区间：\(0\notin\) → 拒绝（有关系）；\(0\in\) → 不能拒绝。</dd>
+      <dt>易错</dt><dd>预测前必须先查；"不能拒绝"≠"证明 \(\beta=0\)"。</dd>
+    </dl>
+  </div>
+
+  <h3><span class="bar"></span>F. 预测</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 12 · 预测分布</span><span class="kp-meta"><span class="stars s3">★★★</span><span class="tag memo">记忆</span><span class="tag calc">计算</span></span></div>
+    <dl>
+      <dt>结构</dt><dd>\(m'_\mu=m'_{\alpha_{\bar x}}+m'_\beta(x_{n+1}-\bar x)\)；\({s'}^2_\mu={s'}^2_{\alpha_{\bar x}}+{s'}^2_\beta(x_{n+1}-\bar x)^2\)；预测分布 \(N(m'_\mu,\,{s'}^2_\mu+\sigma^2)\)。</dd>
+      <dt>易错</dt><dd>预测方差要<b>加上 \(\sigma^2\)</b>；预测区间比均值的可信区间更宽。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 13 · 预测方差的分解</span><span class="kp-meta"><span class="stars s2">★★</span><span class="tag under">理解</span><span class="tag calc">计算</span></span></div>
+    <dl>
+      <dt>分解</dt><dd>总方差 \(={s'}^2_\mu\)(参数不确定) \(+\ \sigma^2\)(观测噪声)；分别算占比。</dd>
+      <dt>含义</dt><dd>\(\sigma^2\) 不可消除；参数部分随数据增多而缩小。</dd>
+    </dl>
+  </div>
+
+  <h3><span class="bar"></span>G. 极限与动机</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 14 · 大样本极限 \(n\to\infty\)</span><span class="kp-meta"><span class="stars s2">★★</span><span class="tag under">理解</span></span></div>
+    <dl>
+      <dt>结论</dt><dd>\(SS_x\to\infty\Rightarrow\) 数据精度 \(\to\infty\Rightarrow {s'}^2_\beta\to0,\ m'_\beta\to B\)；先验被"冲掉"，后验收敛到 \(B\) 处的点质量（贝叶斯一致性）。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 15 · 为什么用贝叶斯回归</span><span class="kp-meta"><span class="stars s2">★★</span><span class="tag under">理解</span></span></div>
+    <dl>
+      <dt>要点</dt><dd>小样本更稳、领域知识正式入模（车祸率例）、不确定性被量化、预测传播全部不确定性。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-title">考点 16 · 必记常数与公式</span><span class="kp-meta"><span class="stars s2">★★</span><span class="tag memo">记忆</span></span></div>
+    <dl>
+      <dt>记忆</dt><dd>\(z_{0.025}=1.96\)（95%）；\(A_{\bar x}=\bar y,\ B=SS_{xy}/SS_x\)；\(SS_x=\sum(x_i-\bar x)^2\)。</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<!-- ====================== 第三部分：复习题目 =========================== -->
+<!-- ===================================================================== -->
+<section class="section" id="part3">
+  <div class="sec-head">
+    <span class="sec-num">03</span>
+    <h2>复习题目</h2>
+    <span class="en">Practice &amp; full solutions</span>
+  </div>
+
+  <div class="progress-card">
+    <span class="progress-stats">已答 <b id="stat-answered">0</b> / <span id="stat-total">0</span> 题（可点击题）　正确 <b class="c-ok" id="stat-correct">0</b></span>
+    <div class="progress-track"><div class="progress-fill" id="progress-bar-fill"></div></div>
+    <span style="font-size:.82rem;color:var(--ink-faint)">选择/判断题可点选项；所有题点"显示答案与解析"展开</span>
+  </div>
+
+  <div class="box note">
+    <div class="box-t">📌 关于 \(\sigma^2\) 记号的说明（务必先读）</div>
+    <p style="margin:0">原题排版中 \(\sigma^2\) 的写法存在歧义。本复习按可核对的证据采用：<b>Q1（心率）\(\sigma^2=0.132\)</b>（由 Q4 反推：\({s'}^2_{\alpha}=\sigma^2/n=0.132/11=0.0120\) 正好吻合）；<b>Q3（纤维）\(\sigma=7.7,\ \sigma^2=59.29\)</b>（该数据的残差方差 \(\approx58.8\approx7.7^2\)）；<b>Q2（油耗）\(\sigma^2=0.572\)</b>。若你的版本对 \(\sigma\) 的设定不同，方法完全一致，只需代入你的 \(\sigma^2\)；上述各题的<b>定性结论不变</b>。</p>
+  </div>
+
+  <!-- ============= 基础 ============= -->
+  <div class="q-group-title">基础 · Basic（概念与公式）</div>
+
+  <!-- B1 选择 -->
+  <div class="question" data-qid="B1" data-correct="B">
+    <div class="q-meta"><span class="q-badge type">选择</span><span class="q-badge diff-1">基础</span><span class="q-badge kpt">考点 4 精度</span></div>
+    <div class="q-text"><span class="qn">B1.</span>关于<b>精度 (precision)</b>，下列哪项正确？</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="mk">A</span><span>精度等于方差本身</span></li>
+      <li class="option" data-opt="B"><span class="mk">B</span><span>精度 \(=1/\text{方差}\)；精度越大，分布越窄、越确定</span></li>
+      <li class="option" data-opt="C"><span class="mk">C</span><span>精度越大，分布越宽、越不确定</span></li>
+      <li class="option" data-opt="D"><span class="mk">D</span><span>精度只能用于先验分布，不能用于后验</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：B</span>
+        <p>精度定义 \(\tau=1/\sigma^2\)。方差越小 → 精度越大 → 分布越尖 → 不确定性越小。先验、数据、后验都可谈精度，并且"<b>精度相加</b>"。</p>
+        <div class="why"><b>考查点</b>：精度定义与直觉。<b>易错</b>：误把精度当成标准差倒数，或当方差本身。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- B2 填空 -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">填空</span><span class="q-badge diff-1">基础</span><span class="q-badge kpt">考点 5 精度相加</span></div>
+    <div class="q-text"><span class="qn">B2.</span>后验精度（posterior precision）= ________ + ________。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案</span>
+        <p>后验精度 = <b>先验精度</b> \(\big(1/s^2_\beta\big)\) + <b>数据精度</b> \(\big(SS_x/\sigma^2\big)\)，即 \(\dfrac{1}{{s'}^2_\beta}=\dfrac{1}{s^2_\beta}+\dfrac{SS_x}{\sigma^2}\)。</p>
+        <div class="why"><b>易错</b>：相加的是<b>精度</b>，不是方差/标准差。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- B3 填空 -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">填空</span><span class="q-badge diff-1">基础</span><span class="q-badge kpt">考点 5/8</span></div>
+    <div class="q-text"><span class="qn">B3.</span>对<b>斜率 \(\beta\)</b> 而言，"数据精度 (data precision)" 的公式是 ________；对<b>截距 \(\alpha_{\bar x}\)</b> 而言则是 ________。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案</span>
+        <p>斜率：\(\tau_{\text{data}}=\dfrac{SS_x}{\sigma^2}\)；截距：\(\tau_{\text{data}}=\dfrac{n}{\sigma^2}\)。</p>
+        <div class="why"><b>易错</b>：分子一个是 \(SS_x\)、一个是 \(n\)，最容易记混。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- B4 判断 -->
+  <div class="question" data-qid="B4" data-correct="T">
+    <div class="q-meta"><span class="q-badge type">判断</span><span class="q-badge diff-1">基础</span><span class="q-badge kpt">考点 3 因式分解</span></div>
+    <div class="q-text"><span class="qn">B4.</span>把回归线以 \(\bar x\) 为中心书写后，似然中 \(\alpha_{\bar x}\) 与 \(\beta\) 的交叉项消失，原因是 \(\sum(x_i-\bar x)=0\)。</div>
+    <ul class="options">
+      <li class="option" data-opt="T"><span class="mk">○</span><span>正确</span></li>
+      <li class="option" data-opt="F"><span class="mk">○</span><span>错误</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：正确</span>
+        <p>展开 \(Q\) 时交叉项带因子 \(\sum(x_i-\bar x)\)，中心化使该和为 \(0\)，交叉项消失，似然因式分解为"只含 \(\alpha_{\bar x}\)"与"只含 \(\beta\)"两部分，于是两参数可<b>独立更新</b>。</p>
+        <div class="why"><b>考查点</b>：因式分解的根本原因（中心化）与后果（独立更新）。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- B5 选择 -->
+  <div class="question" data-qid="B5" data-correct="B">
+    <div class="q-meta"><span class="q-badge type">选择</span><span class="q-badge diff-1">基础</span><span class="q-badge kpt">考点 7 共轭</span></div>
+    <div class="q-text"><span class="qn">B5.</span>对正态似然而言，斜率 \(\beta\) 的<b>共轭先验 (conjugate prior)</b> 是哪种分布？</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="mk">A</span><span>均匀分布 (Uniform)</span></li>
+      <li class="option" data-opt="B"><span class="mk">B</span><span>正态分布 (Normal)</span></li>
+      <li class="option" data-opt="C"><span class="mk">C</span><span>伽马分布 (Gamma)</span></li>
+      <li class="option" data-opt="D"><span class="mk">D</span><span>贝塔分布 (Beta)</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：B</span>
+        <p>正态先验 × 正态似然 → 正态后验（共轭），这正是本讲对 \(\alpha_{\bar x}\) 与 \(\beta\) 都用正态先验、且后验公式如此简洁的原因。</p>
+        <div class="why"><b>考查点</b>：共轭性的概念与"为什么后验也是正态"。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- B6 选择 -->
+  <div class="question" data-qid="B6" data-correct="C">
+    <div class="q-meta"><span class="q-badge type">选择</span><span class="q-badge diff-1">基础</span><span class="q-badge kpt">考点 5/6</span></div>
+    <div class="q-text"><span class="qn">B6.</span>保持 \(x\) 取值分布不变、把观测数翻倍（于是 \(SS_x\) 翻倍），斜率的"数据精度"会怎样？</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="mk">A</span><span>减半</span></li>
+      <li class="option" data-opt="B"><span class="mk">B</span><span>不变</span></li>
+      <li class="option" data-opt="C"><span class="mk">C</span><span>翻倍</span></li>
+      <li class="option" data-opt="D"><span class="mk">D</span><span>变为 4 倍</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：C</span>
+        <p>数据精度 \(=SS_x/\sigma^2\)，\(\sigma^2\) 不变、\(SS_x\) 翻倍 → 数据精度<b>翻倍</b>。于是后验均值里数据的权重增大，更偏向数据估计 \(B\)、远离先验均值。</p>
+        <div class="why"><b>考查点</b>：数据精度的构成、以及它如何改变先验/数据在后验中的平衡。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- B7 判断 -->
+  <div class="question" data-qid="B7" data-correct="F">
+    <div class="q-meta"><span class="q-badge type">判断</span><span class="q-badge diff-1">基础</span><span class="q-badge kpt">考点 12 预测</span></div>
+    <div class="q-text"><span class="qn">B7.</span>点估计 \(\hat y_{n+1}=A_{\bar x}+B(x_{n+1}-\bar x)\) 已经包含了预测一个新观测所需的全部不确定性。</div>
+    <ul class="options">
+      <li class="option" data-opt="T"><span class="mk">○</span><span>正确</span></li>
+      <li class="option" data-opt="F"><span class="mk">○</span><span>错误</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：错误</span>
+        <p>点估计忽略了两类不确定性：① 参数 \(\alpha_{\bar x},\beta\) 未知（参数不确定性 \({s'}^2_\mu\)）；② 新观测自带随机噪声 \(e\sim N(0,\sigma^2)\)。完整预测方差为 \({s'}^2_\mu+\sigma^2\)，<b>恒大于</b>仅含参数不确定性的 \({s'}^2_\mu\)。</p>
+        <div class="why"><b>考查点</b>：预测分布两大方差来源；预测比估计均值更难。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ============= 进阶 ============= -->
+  <div class="q-group-title">进阶 · Intermediate（推断与预测计算）</div>
+
+  <!-- I1 计算 Q1a -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">计算</span><span class="q-badge diff-2">进阶</span><span class="q-badge kpt">考点 5/8 后验</span></div>
+    <div class="q-text"><span class="qn">I1.</span>（心率 vs 摄氧量，原题 Q1a）求斜率 \(\beta\) 的后验分布 \(p(\beta\mid\text{data})\)，显式写出各精度。</div>
+    <div class="q-given">已知 \(n=11,\ B=0.04265,\ \bar y=1.3073,\ \bar x=107.0,\ SS_x=1486.0,\ \sigma^2=0.132\)；先验 \(\beta\sim N(0,1^2)\)。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：\(\;p(\beta\mid\text{data})\sim N(0.04265,\ 8.88\times10^{-5})\)</span>
+        <p class="step"><b>步骤 1（精度）：</b> 先验精度 \(\tau_{\text{prior}}=1/1^2=1\)；数据精度 \(\tau_{\text{data}}=SS_x/\sigma^2=1486.0/0.132=11257.6\)。</p>
+        <p class="step"><b>步骤 2（后验精度与方差）：</b> \(\tau_{\text{post}}=1+11257.6=11258.6\)，故 \({s'}^2_\beta=1/11258.6=8.88\times10^{-5}\)，\(s'_\beta=0.00942\)。</p>
+        <p class="step"><b>步骤 3（后验均值）：</b> \(m'_\beta=\dfrac{11257.6\times0.04265+1\times0}{11258.6}=0.042646\approx0.04265\)。</p>
+        <div class="why"><b>解题思路</b>：照"精度相加→求方差→求精度加权均值"三步走。<b>易错</b>：数据极强（\(\tau_{\text{data}}\gg\tau_{\text{prior}}\)），后验均值几乎不动于 \(B\)，但方差被大幅压缩。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- I2 计算 Q1b -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">计算</span><span class="q-badge diff-2">进阶</span><span class="q-badge kpt">考点 9 可信区间</span></div>
+    <div class="q-text"><span class="qn">I2.</span>（续 I1，原题 Q1b）求 \(\beta\) 的 95% 可信区间。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：\([0.0242,\ 0.0611]\)</span>
+        <p class="step">\(m'_\beta\pm1.96\,s'_\beta=0.042646\pm1.96\times0.00942=0.042646\pm0.01847\)。</p>
+        <p class="step">\(\Rightarrow [0.0242,\ 0.0611]\)。</p>
+        <div class="why"><b>易错</b>：用<b>后验</b>标准差 \(s'_\beta\)，95% 对应 \(z=1.96\)。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- I3 简答 Q1c -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">简答</span><span class="q-badge diff-2">进阶</span><span class="q-badge kpt">考点 11 双侧检验</span></div>
+    <div class="q-text"><span class="qn">I3.</span>（续 I2，原题 Q1c）在 5% 水平检验 \(H_0:\beta=0\) vs \(H_1:\beta\ne0\)，并结合实际下结论。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：拒绝 \(H_0\)</span>
+        <p class="step">95% 可信区间 \([0.0242,0.0611]\) <b>不含 0</b> → 在 5% 水平<b>拒绝 \(H_0\)</b>。</p>
+        <p class="step">（等价地，\(P(\beta\le0\mid\text{data})=\Phi\!\big(\tfrac{0-0.042646}{0.00942}\big)=\Phi(-4.53)\approx3\times10^{-6}\)，双侧 \(p\) 极小。）</p>
+        <p class="step"><b>实际结论</b>：心率与摄氧量之间存在<b>正向线性关系</b>——心率越高，摄氧量越高；用回归做预测是合适的。</p>
+        <div class="why"><b>易错</b>："拒绝 \(H_0\)"说明<b>有</b>线性关系，方向由 \(m'_\beta>0\) 判断。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- I4 选择 -->
+  <div class="question" data-qid="I4" data-correct="B">
+    <div class="q-meta"><span class="q-badge type">选择</span><span class="q-badge diff-2">进阶</span><span class="q-badge kpt">考点 11 双侧检验</span></div>
+    <div class="q-text"><span class="qn">I4.</span>已知某斜率 \(\beta\) 的 95% 可信区间为 \([0.91,\,2.05]\)。在 5% 水平检验 \(H_0:\beta=0\) vs \(H_1:\beta\ne0\)，结论是？</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="mk">A</span><span>不能拒绝 \(H_0\)，可能不存在线性关系</span></li>
+      <li class="option" data-opt="B"><span class="mk">B</span><span>拒绝 \(H_0\)，有证据表明存在（正向）线性关系</span></li>
+      <li class="option" data-opt="C"><span class="mk">C</span><span>数据不足，无法判断</span></li>
+      <li class="option" data-opt="D"><span class="mk">D</span><span>必须改做单侧检验才能判断</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：B</span>
+        <p>双侧检验用可信区间判断：\(0\notin[0.91,2.05]\) → 拒绝 \(H_0\)，存在线性关系（斜率为正）。若 0 落在区间内才不能拒绝。</p>
+        <div class="why"><b>易错</b>："不能拒绝"≠"证明 \(\beta=0\)"；此处 0 在区间外，结论明确。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- I5 计算 Q2 -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">计算</span><span class="q-badge diff-2">进阶</span><span class="q-badge kpt">考点 8/10 单侧</span></div>
+    <div class="q-text"><span class="qn">I5.</span>（车速 vs 油耗，原题 Q2）求 \(\beta\) 的后验（显式写出精度）与 95% 区间；并在 5% 水平检验 \(H_0:\beta\ge0\) vs \(H_1:\beta<0\)：高车速是否降低油耗？</div>
+    <div class="q-given">已知 \(n=6,\ B=-0.136,\ \bar y=52.567,\ SS_x=1750.0,\ \sigma^2=0.572\)；先验 \(\beta\sim N(0,1^2)\)。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：\(p(\beta\mid\text{data})\sim N(-0.1360,\ 3.27\times10^{-4})\)；区间 \([-0.1714,-0.1005]\)；拒绝 \(H_0\)（\(\beta<0\)）</span>
+        <p class="step"><b>精度：</b> \(\tau_{\text{prior}}=1\)；\(\tau_{\text{data}}=1750/0.572=3059.4\)；\(\tau_{\text{post}}=3060.4\)。</p>
+        <p class="step"><b>方差/均值：</b> \({s'}^2_\beta=1/3060.4=3.27\times10^{-4}\)（\(s'_\beta=0.01808\)）；\(m'_\beta=\dfrac{3059.4\times(-0.136)}{3060.4}=-0.1360\)。</p>
+        <p class="step"><b>95% 区间：</b> \(-0.1360\pm1.96\times0.01808=[-0.1714,\ -0.1005]\)。</p>
+        <p class="step"><b>单侧检验：</b> \(P(\beta\ge0\mid\text{data})=P\!\big(Z\ge\tfrac{0-(-0.1360)}{0.01808}\big)=P(Z\ge7.52)\approx0<0.05\) → <b>拒绝 \(H_0\)</b>。</p>
+        <p class="step"><b>结论</b>：有强证据表明<b>车速越高、油耗表现越差（油耗经济性下降）</b>（区间整体小于 0 也印证）。</p>
+        <div class="why"><b>易错</b>：单侧要算 \(H_0\) 一侧（\(\beta\ge0\)）的后验尾概率；符号方向不要搞反。<br>（注：若按 \(\sigma=0.57,\ \sigma^2=0.3249\)，区间变为 \([-0.1627,-0.1093]\)，结论一致。）</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- I6 选择 -->
+  <div class="question" data-qid="I6" data-correct="B">
+    <div class="q-meta"><span class="q-badge type">选择</span><span class="q-badge diff-2">进阶</span><span class="q-badge kpt">考点 12 预测</span></div>
+    <div class="q-text"><span class="qn">I6.</span>预测分布 \(f(y_{n+1}\mid x_{n+1},\text{data})\) 的方差由哪两部分相加构成？</div>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="mk">A</span><span>先验方差 + 数据方差</span></li>
+      <li class="option" data-opt="B"><span class="mk">B</span><span>参数不确定性 \({s'}^2_\mu\) + 观测噪声 \(\sigma^2\)</span></li>
+      <li class="option" data-opt="C"><span class="mk">C</span><span>仅观测噪声 \(\sigma^2\)</span></li>
+      <li class="option" data-opt="D"><span class="mk">D</span><span>仅参数不确定性 \({s'}^2_\mu\)</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：B</span>
+        <p>预测方差 \(={s'}^2_\mu+\sigma^2\)。\({s'}^2_\mu\) 来自"线在哪里"的不确定（随数据增多而缩小）；\(\sigma^2\) 是围绕线的固有散布（不可消除）。因此预测区间总比均值 \(\mu\) 的可信区间更宽。</p>
+        <div class="why"><b>易错</b>：千万别漏掉 \(\sigma^2\)。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- I7 计算 Q4a,b -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">计算</span><span class="q-badge diff-2">进阶</span><span class="q-badge kpt">考点 12 预测</span></div>
+    <div class="q-text"><span class="qn">I7.</span>（续 I1，原题 Q4a,b）新个体心率 \(x_{\text{new}}=110\)。求预测均值 \(m'_\mu\)、均值的后验方差 \({s'}^2_\mu\)，并写出 \(y_{\text{new}}\) 的预测分布。</div>
+    <div class="q-given">用 I1 的 \(\beta\) 后验 \(N(0.042646,\ 8.88\times10^{-5})\)；截距后验 \(p(\alpha\mid\text{data})\sim N(1.3073,\ 0.0120)\)；\(\bar x=107.0,\ \sigma^2=0.132\)。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：\(m'_\mu=1.4352\)，\({s'}^2_\mu=0.01280\)，\(f(y_{\text{new}})\sim N(1.4352,\ 0.1448)\)</span>
+        <p class="step"><b>步骤 1：</b> \(x_{\text{new}}-\bar x=110-107=3\)。</p>
+        <p class="step"><b>步骤 2（预测均值）：</b> \(m'_\mu=m'_{\alpha}+m'_\beta(x_{\text{new}}-\bar x)=1.3073+0.042646\times3=1.3073+0.1279=1.4352\)。</p>
+        <p class="step"><b>步骤 3（均值后验方差）：</b> \({s'}^2_\mu={s'}^2_{\alpha}+{s'}^2_\beta(x_{\text{new}}-\bar x)^2=0.0120+8.88\times10^{-5}\times9=0.0120+0.00080=0.01280\)。</p>
+        <p class="step"><b>步骤 4（预测分布）：</b> 预测方差 \(={s'}^2_\mu+\sigma^2=0.01280+0.132=0.1448\)（\(s=0.3805\)），故 \(f(y_{\text{new}}\mid x_{\text{new}}=110,\text{data})\sim N(1.4352,\ 0.1448)\)。</p>
+        <div class="why"><b>易错</b>：\({s'}^2_\beta\) 要乘 \((x_{\text{new}}-\bar x)^2\)（不是一次方）；最后<b>务必加 \(\sigma^2\)</b>。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- I8 计算 Q4c -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">计算</span><span class="q-badge diff-2">进阶</span><span class="q-badge kpt">考点 12 预测区间</span></div>
+    <div class="q-text"><span class="qn">I8.</span>（续 I7，原题 Q4c）求 \(y_{\text{new}}\) 的 95% 预测区间。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：\([0.689,\ 2.181]\)</span>
+        <p class="step">\(m'_\mu\pm1.96\sqrt{{s'}^2_\mu+\sigma^2}=1.4352\pm1.96\times0.3805=1.4352\pm0.7458\)。</p>
+        <p class="step">\(\Rightarrow [0.689,\ 2.181]\)。</p>
+        <div class="why"><b>对比</b>：这是<b>预测</b>区间（针对个体新观测）；若只要均值 \(\mu\) 的可信区间，用 \(\sqrt{{s'}^2_\mu}=0.1131\)，会窄得多——差别正是 \(\sigma^2\)。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- I9 简答 -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">简答</span><span class="q-badge diff-2">进阶</span><span class="q-badge kpt">考点 12 概念</span></div>
+    <div class="q-text"><span class="qn">I9.</span>为什么"预测分布的方差"总是大于"均值 \(\mu\) 的后验方差"？</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">要点</span>
+        <p>预测一个<b>个体新观测</b> \(y_{n+1}\) 含两份不确定：① 我们不确定线在哪里（\({s'}^2_\mu\)）；② 即便线已知，新点仍会以 \(\sigma^2\) 的方差围绕线散布。而均值 \(\mu\) 只有第①份。所以预测方差 \(={s'}^2_\mu+\sigma^2>{s'}^2_\mu\)。\(\sigma^2\) 是<b>不可消除</b>的固有噪声，多收数据也消不掉。</p>
+        <div class="why"><b>考查点</b>："估计均值"与"预测个体"的本质区别。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- I10 简答 -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">简答</span><span class="q-badge diff-2">进阶</span><span class="q-badge kpt">考点 6 加权平均</span></div>
+    <div class="q-text"><span class="qn">I10.</span>用"精度加权平均"解释：<b>弥散先验</b>与<b>很紧的先验</b>分别如何影响后验均值 \(m'_\beta\)？</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">要点</span>
+        <p>\(m'_\beta=\dfrac{\tau_{\text{data}}B+\tau_{\text{prior}}m_\beta}{\tau_{\text{data}}+\tau_{\text{prior}}}\) 是 \(B\) 与 \(m_\beta\) 的精度加权平均。</p>
+        <ul class="tight" style="margin:0">
+          <li><b>弥散先验</b>（\(s^2_\beta\) 大，\(\tau_{\text{prior}}\to0\)）：先验权重 ≈ 0，\(m'_\beta\approx B\)——数据主导。</li>
+          <li><b>很紧的先验</b>（\(s^2_\beta\) 小，\(\tau_{\text{prior}}\) 大）：先验权重大，\(m'_\beta\) 贴近 \(m_\beta\)，直到数据精度 \(SS_x/\sigma^2\) 累积到足够大才被拉走。</li>
+        </ul>
+        <div class="why"><b>考查点</b>：先验"松紧"决定"要多少数据才能改变信念"。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ============= 综合 ============= -->
+  <div class="q-group-title">综合 · Comprehensive（完整流程与论述）</div>
+
+  <!-- C1 计算 Q3 -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">计算</span><span class="q-badge diff-3">综合</span><span class="q-badge kpt">考点 5/9/10 全流程</span></div>
+    <div class="q-text"><span class="qn">C1.</span>（纤维长度 vs 纱线强度，原题 Q3）求 \(\beta\) 的后验（显式精度）、95% 可信区间，并在 5% 水平检验 \(H_0:\beta\le0\) vs \(H_1:\beta>0\)：纤维长度是否影响纱线强度？</div>
+    <div class="q-given">已知 \(n=10,\ B=1.4775,\ \bar y=101.2,\ \bar x=79.6,\ SS_x=702.4,\ \sigma=7.7\ (\sigma^2=59.29)\)；先验 \(\beta\sim N(0,10^2)\)。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：\(p(\beta\mid\text{data})\sim N(1.4763,\ 0.0843)\)；区间 \([0.907,\ 2.045]\)；拒绝 \(H_0\)（\(\beta>0\)）</span>
+        <p class="step"><b>(a) 后验：</b> 先验精度 \(\tau_{\text{prior}}=1/10^2=0.01\)；数据精度 \(\tau_{\text{data}}=702.4/59.29=11.847\)；\(\tau_{\text{post}}=11.857\)。<br>\({s'}^2_\beta=1/11.857=0.0843\)（\(s'_\beta=0.2904\)）；\(m'_\beta=\dfrac{11.847\times1.4775+0.01\times0}{11.857}=\dfrac{17.504}{11.857}=1.4763\)。</p>
+        <p class="step"><b>(b) 95% 区间：</b> \(1.4763\pm1.96\times0.2904=1.4763\pm0.5692=[0.907,\ 2.045]\)。</p>
+        <p class="step"><b>(c) 单侧检验：</b> \(P(\beta\le0\mid\text{data})=P\!\big(Z\le\tfrac{0-1.4763}{0.2904}\big)=P(Z\le-5.08)\approx0<0.05\) → <b>拒绝 \(H_0\)</b>。</p>
+        <p class="step"><b>结论</b>：有强证据表明<b>纤维越长、纱线强度越大</b>（区间整体大于 0 亦印证）。</p>
+        <div class="why"><b>易错</b>：先验 \(N(0,10^2)\) 很弥散（\(\tau_{\text{prior}}=0.01\) 极小），后验几乎完全由数据决定，\(m'_\beta\) 贴近 \(B=1.4775\)。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- C2 论述 Q4d -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">论述</span><span class="q-badge diff-3">综合</span><span class="q-badge kpt">考点 13 方差分解</span></div>
+    <div class="q-text"><span class="qn">C2.</span>（续 I7，原题 Q4d）把预测方差分解为"参数不确定"与"观测噪声"两部分，分别算出占总预测方差的百分比，并解释二者相对大小的含义。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案：参数不确定 ≈ 8.8%，观测噪声 ≈ 91.2%</span>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>来源</th><th class="num">方差</th><th class="num">占比</th></tr></thead>
+          <tbody>
+            <tr><td>参数不确定性 \({s'}^2_\mu\)</td><td class="num">0.01280</td><td class="num">8.8%</td></tr>
+            <tr><td>观测噪声 \(\sigma^2\)</td><td class="num">0.132</td><td class="num">91.2%</td></tr>
+            <tr><td><b>预测总方差</b></td><td class="num">0.1448</td><td class="num">100%</td></tr>
+          </tbody>
+        </table></div>
+        <p class="step">占比 \(=0.01280/0.1448\approx8.8\%\) 与 \(0.132/0.1448\approx91.2\%\)。</p>
+        <p><b>含义</b>：约 <b>91%</b> 的预测不确定性来自<b>不可消除</b>的观测噪声 \(\sigma^2\)（个体间天然散布）；仅约 <b>9%</b> 来自对回归线（\(\alpha,\beta\)）的不确定。这说明我们对线的估计已相当精确，限制预测精度的<b>主要瓶颈是固有噪声</b>——再多收数据能缩小那 9%，却几乎动不了那 91%。</p>
+        <div class="why"><b>考查点</b>：理解"可减少"vs"不可减少"的不确定性，及其对"是否值得收更多数据"的指导意义。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- C3 综合 Q5 -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">计算+论述</span><span class="q-badge diff-3">综合</span><span class="q-badge kpt">考点 5/6/14</span></div>
+    <div class="q-text"><span class="qn">C3.</span>（概念题，原题 Q5）先验 \(\beta\sim N(2,\,0.5^2)\)。</div>
+    <div class="q-sub">(a) 写出 \(\beta\) 后验精度的公式，指出 \(SS_x\) 与 \(\sigma^2\) 的作用。</div>
+    <div class="q-sub">(b) 若把观测数翻倍（\(SS_x\) 翻倍），数据精度如何变？先验与数据在后验均值中的平衡如何改变？</div>
+    <div class="q-sub">(c) 若 \(\sigma^2=1,\ SS_x=3\)，求后验方差 \({s'}^2_\beta\)，与先验方差 \(s^2_\beta=0.25\) 比较，评论数据使我们对 \(\beta\) 的了解锐化了多少。</div>
+    <div class="q-sub">(d) 当 \(n\to\infty\)（\(SS_x\to\infty\)），\(\beta\) 的后验收敛到什么？用精度解释。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">答案要点</span>
+        <p class="step"><b>(a)</b> \(\dfrac{1}{{s'}^2_\beta}=\dfrac{1}{s^2_\beta}+\dfrac{SS_x}{\sigma^2}\)（后验精度 = 先验精度 + 数据精度）。其中数据精度 \(=SS_x/\sigma^2\)：\(SS_x\)（\(x\) 的离散程度/"杠杆"）越大、信息越多 → 数据精度越高；\(\sigma^2\)（观测噪声）越大、信息越少 → 数据精度越低。即数据精度 \(\propto SS_x\) 且 \(\propto1/\sigma^2\)。</p>
+        <p class="step"><b>(b)</b> \(\sigma^2\) 不变、\(SS_x\) 翻倍 → 数据精度<b>翻倍</b>。后验均值 \(=\dfrac{\tau_{\text{data}}B+\tau_{\text{prior}}m_\beta}{\tau_{\text{data}}+\tau_{\text{prior}}}\) 中数据权重相对上升，后验均值更<b>偏向数据估计 \(B\)、远离先验均值 \(2\)</b>。</p>
+        <p class="step"><b>(c)</b> 数据精度 \(=3/1=3\)；先验精度 \(=1/0.25=4\)；后验精度 \(=7\)。\({s'}^2_\beta=1/7\approx0.1429\)。与先验方差 \(0.25\) 比，后验方差约为其 <b>57%</b>（标准差 \(0.5\to0.378\)）：数据带来了<b>适度</b>锐化——因为数据精度 \(3\) 与先验精度 \(4\) 相当，并未压倒性地大。</p>
+        <p class="step"><b>(d)</b> \(SS_x\to\infty\Rightarrow\) 数据精度 \(\to\infty\Rightarrow\) 后验精度 \(\to\infty,\ {s'}^2_\beta\to0\)；后验均值 \(\to B\)，先验被"冲掉"。后验收敛到 \(B\)（极限即真值 \(\beta\)）处的<b>点质量（尖峰）</b>。这是贝叶斯版的<b>一致性</b>：数据足够多时先验无关紧要，后验锁定真值。</p>
+        <div class="why"><b>考查点</b>：精度的可加性与"数据 vs 先验"的此消彼长，是本章贯穿始终的主线。</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- C4 论述 -->
+  <div class="question">
+    <div class="q-meta"><span class="q-badge type">论述</span><span class="q-badge diff-3">综合</span><span class="q-badge kpt">考点 15 动机</span></div>
+    <div class="q-text"><span class="qn">C4.</span>在"小样本、高风险"场景下，相较频率派最小二乘，贝叶斯回归有哪些优势？结合气温–车祸率的例子说明。</div>
+    <details class="answer-block"><summary>显示答案与解析</summary>
+      <div class="answer-content">
+        <span class="ans-key">要点（任答其中 2–3 点并展开）</span>
+        <ul class="tight" style="margin:0">
+          <li><b>小样本更稳</b>：频率派的 \(B\) 在样本少时不稳，单个异常点即可大幅改变它；先验起正则化作用，使后验保持合理而不"乱跳"。</li>
+          <li><b>领域知识正式入模</b>：专家经验进入<b>模型本身</b>而非事后评论。车祸率例：仅 12 个月数据给出反直觉的<b>正</b>斜率（升温→更多致命车祸/英里）；工程师可设<b>负斜率先验</b>（如 \(\beta\sim N(-0.08,0.03^2)\)），把"冬季路况更危险"的物理知识纳入，后验据此被纠正。</li>
+          <li><b>不确定性被量化</b>：后验方差告诉你"该多确信 \(\beta\)"，不只给点估计。</li>
+          <li><b>预测传播全部不确定性</b>：预测分布同时携带参数不确定 \({s'}^2_\mu\) 与观测噪声 \(\sigma^2\) 向前传递。</li>
+        </ul>
+        <div class="why"><b>考查点</b>：理解贝叶斯框架"为何"优于点估计，尤其在数据稀少而代价高昂时。</div>
+      </div>
+    </details>
+  </div>
+
+</section>
+
+<footer>
+  基于所给 Lecture 12 课件与配套习题（习题源自 Bolstad &amp; Curran, <i>Introduction to Bayesian Statistics</i>, 3rd ed., Ch. 12）整理。<br>
+  数值经独立复核；\(\sigma^2\) 记号歧义已按可核对证据在题区顶部说明。复习愉快，祝考试顺利。
+</footer>
+
+</div><!-- /wrap -->
+
+<button class="totop" data-action="to-top" aria-label="回到顶部" title="回到顶部">↑</button>
+
+<!-- ===================== 脚本：仅做增强，全部封装于此，不挂载到 window ===================== -->
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- 进度状态（仅内存，不使用任何浏览器存储） ---------- */
+  var answered = {};
+  var totalInteractive = document.querySelectorAll('.question[data-correct]').length;
+  var correctCount = 0;
+
+  function updateProgress() {
+    var ansCount = 0, k;
+    for (k in answered) { if (Object.prototype.hasOwnProperty.call(answered, k)) ansCount++; }
+    var a = document.getElementById('stat-answered');
+    var c = document.getElementById('stat-correct');
+    var t = document.getElementById('stat-total');
+    var bar = document.getElementById('progress-bar-fill');
+    if (a) a.textContent = ansCount;
+    if (c) c.textContent = correctCount;
+    if (t) t.textContent = totalInteractive;
+    if (bar) bar.style.width = (totalInteractive ? (ansCount / totalInteractive * 100) : 0) + '%';
+  }
+
+  /* ---------- 处理选择/判断题点击 ---------- */
+  function handleOptionClick(option) {
+    var q = option.closest('.question');
+    if (!q) return;
+    var qid = q.getAttribute('data-qid');
+    var correct = q.getAttribute('data-correct');
+    if (!qid || !correct) return;          // 仅对带 data-correct 的题生效
+    if (answered[qid]) return;             // 作答后锁定，阻止重复点击改结果
+
+    var chosen = option.getAttribute('data-opt');
+    var opts = q.querySelectorAll('.option');
+    for (var i = 0; i < opts.length; i++) {
+      var o = opts[i];
+      var v = o.getAttribute('data-opt');
+      if (v === correct) o.classList.add('correct');
+      else if (v === chosen) o.classList.add('incorrect');
+      o.classList.add('locked');
+    }
+
+    answered[qid] = true;
+    if (chosen === correct) correctCount++;
+
+    var det = q.querySelector('details.answer-block');   // 自动展开解析
+    if (det) det.open = true;
+
+    updateProgress();
+  }
+
+  /* ---------- 统一事件委托：唯一的 click 监听器 ---------- */
+  document.addEventListener('click', function (e) {
+    var target = e.target;
+    if (!target || !target.closest) return;
+
+    var option = target.closest('.option');
+    if (option) { handleOptionClick(option); return; }
+
+    var actionEl = target.closest('[data-action]');
+    if (actionEl) {
+      var action = actionEl.getAttribute('data-action');
+      var ds, j;
+      if (action === 'expand-all') {
+        ds = document.querySelectorAll('details.answer-block');
+        for (j = 0; j < ds.length; j++) ds[j].open = true;
+      } else if (action === 'collapse-all') {
+        ds = document.querySelectorAll('details.answer-block');
+        for (j = 0; j < ds.length; j++) ds[j].open = false;
+      } else if (action === 'to-top') {
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      }
+      return;
+    }
+  });
+
+  /* ---------- MathJax 加载失败的友好提示（不影响其余内容） ---------- */
+  setTimeout(function () {
+    var ok = window.MathJax && window.MathJax.startup && window.MathJax.startup.document;
+    if (!ok) {
+      var w = document.getElementById('mathjax-warning');
+      if (w) w.style.display = 'block';
+    }
+  }, 8000);
+
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 14 复习｜Gibbs 采样 & 轨迹图</title>
+
+<!-- MathJax 配置 -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true
+    },
+    options: {
+      skipHtmlTags: ['script','noscript','style','textarea','pre','code']
+    },
+    startup: {
+      ready: function() {
+        MathJax.startup.defaultReady();
+        window.__mathjax_ready = true;
+      }
+    }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+<style>
+  :root {
+    --bg: #fafaf7;
+    --card-bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --accent: #d97706;
+    --green: #059669;
+    --green-bg: #d1fae5;
+    --red: #dc2626;
+    --red-bg: #fee2e2;
+    --yellow-bg: #fef3c7;
+    --blue-bg: #dbeafe;
+    --purple-bg: #ede9fe;
+    --gray-bg: #f3f4f6;
+    --border: #e5e7eb;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+  }
+
+  /* 顶部导航 */
+  .topbar {
+    position: sticky;
+    top: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    padding: 12px 20px;
+  }
+  .topbar-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar h1 {
+    margin: 0;
+    font-size: 17px;
+    color: var(--primary-dark);
+    font-weight: 600;
+  }
+  .nav-links {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    padding: 6px 12px;
+    text-decoration: none;
+    color: var(--text);
+    background: var(--gray-bg);
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+  .nav-links a:hover {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  /* 主体容器 */
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+  }
+
+  header.intro {
+    text-align: center;
+    padding: 30px 16px;
+    background: linear-gradient(135deg, #eff6ff 0%, #faf5ff 100%);
+    border-radius: var(--radius);
+    margin-bottom: 32px;
+  }
+  header.intro h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    color: var(--primary-dark);
+  }
+  header.intro p {
+    margin: 6px 0;
+    color: var(--muted);
+  }
+
+  /* 章节 */
+  section.major {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  section.major > h2 {
+    color: var(--primary-dark);
+    border-bottom: 3px solid var(--primary);
+    padding-bottom: 10px;
+    margin-top: 0;
+    font-size: 24px;
+  }
+
+  h3 {
+    color: var(--primary);
+    margin-top: 28px;
+    margin-bottom: 12px;
+    font-size: 19px;
+    border-left: 4px solid var(--primary);
+    padding-left: 10px;
+  }
+
+  h4 {
+    color: var(--accent);
+    margin-top: 20px;
+    margin-bottom: 8px;
+    font-size: 16.5px;
+  }
+
+  p { margin: 10px 0; }
+
+  /* 重点框 */
+  .box {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 14px 0;
+    border-left: 4px solid;
+  }
+  .box-def {
+    background: var(--blue-bg);
+    border-color: var(--primary);
+  }
+  .box-formula {
+    background: var(--purple-bg);
+    border-color: #7c3aed;
+    overflow-x: auto;
+  }
+  .box-warn {
+    background: var(--yellow-bg);
+    border-color: var(--accent);
+  }
+  .box-error {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .box-good {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .box-tip {
+    background: var(--gray-bg);
+    border-color: var(--muted);
+  }
+  .box-title {
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: inline-block;
+  }
+
+  /* 公式行 */
+  .formula-display {
+    text-align: center;
+    margin: 12px 0;
+    overflow-x: auto;
+  }
+
+  /* 重要度星标 */
+  .stars {
+    display: inline-block;
+    color: var(--accent);
+    font-weight: 600;
+    margin-left: 4px;
+    letter-spacing: 1px;
+  }
+  .stars-3 { color: #dc2626; }
+  .stars-2 { color: #d97706; }
+  .stars-1 { color: #6b7280; }
+
+  /* 知识点条目 */
+  .kp-item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    background: #fafbfc;
+  }
+  .kp-item .kp-header {
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .kp-tag {
+    font-size: 12px;
+    padding: 2px 8px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 10px;
+  }
+  .kp-tag.memory { background: #ec4899; }
+  .kp-tag.understand { background: var(--green); }
+
+  /* 表格 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    background: #fff;
+    overflow-x: auto;
+    display: block;
+  }
+  table thead { background: var(--blue-bg); }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: center;
+  }
+  th {
+    font-weight: 600;
+    color: var(--primary-dark);
+  }
+
+  /* 题目相关 */
+  .question {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    margin: 18px 0;
+    background: #fff;
+    transition: all 0.2s;
+  }
+  .q-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+  .q-meta span {
+    padding: 2px 10px;
+    border-radius: 12px;
+    background: var(--gray-bg);
+    color: var(--muted);
+  }
+  .q-meta .q-type { background: #dbeafe; color: var(--primary-dark); }
+  .q-meta .q-difficulty { background: #fef3c7; color: #92400e; }
+  .q-meta .q-point { background: #ede9fe; color: #6b21a8; }
+
+  .q-stem {
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .q-stem .q-num {
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  /* 选项 */
+  .options { list-style: none; padding: 0; margin: 0; }
+  .option {
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 8px 0;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    background: #fff;
+  }
+  .option:hover { border-color: var(--primary); background: #f8fafc; }
+  .question.answered .option { cursor: default; }
+  .question.answered .option:hover { background: #fff; }
+  .option.correct {
+    background: var(--green-bg) !important;
+    border-color: var(--green) !important;
+    color: #064e3b;
+  }
+  .option.incorrect {
+    background: var(--red-bg) !important;
+    border-color: var(--red) !important;
+    color: #7f1d1d;
+  }
+  .option .opt-letter {
+    display: inline-block;
+    font-weight: 700;
+    margin-right: 8px;
+    width: 22px;
+    text-align: center;
+  }
+
+  /* 答案折叠 */
+  details.answer-block {
+    margin-top: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fafbfc;
+  }
+  details.answer-block > summary {
+    cursor: pointer;
+    padding: 10px 14px;
+    font-weight: 600;
+    color: var(--primary);
+    user-select: none;
+    list-style: none;
+    border-radius: 8px;
+    background: #f1f5f9;
+  }
+  details.answer-block > summary::-webkit-details-marker { display: none; }
+  details.answer-block > summary::before {
+    content: "▶ ";
+    display: inline-block;
+    margin-right: 4px;
+    transition: transform 0.2s;
+  }
+  details.answer-block[open] > summary::before {
+    transform: rotate(90deg);
+  }
+  details.answer-block > summary:hover { background: #e0e7ff; }
+  .answer-content {
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+  }
+  .answer-content .a-tag {
+    display: inline-block;
+    background: var(--green);
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* 控制按钮 */
+  .controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 18px 0 6px;
+    align-items: center;
+  }
+  .controls button {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s;
+  }
+  .controls button:hover { background: var(--primary-dark); }
+  .controls button.secondary {
+    background: var(--muted);
+  }
+  .controls button.secondary:hover { background: #4b5563; }
+
+  /* 进度条 */
+  .progress-panel {
+    background: var(--blue-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 12px 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    font-size: 15px;
+  }
+  .progress-panel strong { color: var(--primary-dark); }
+
+  /* 回到顶部 */
+  #backToTop {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 99;
+  }
+  #backToTop.show { opacity: 1; pointer-events: auto; }
+  #backToTop:hover { background: var(--primary-dark); }
+
+  /* MathJax 失败提示 */
+  #mathjax-warning {
+    display: none;
+    background: var(--yellow-bg);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-size: 14px;
+    color: #92400e;
+  }
+
+  /* 列表样式微调 */
+  ul, ol { padding-left: 22px; }
+  ul li, ol li { margin: 4px 0; }
+
+  /* 代码 / 算法块 */
+  .algo {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13.5px;
+    line-height: 1.7;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+  .algo .kw { color: #60a5fa; font-weight: 600; }
+  .algo .cmt { color: #94a3b8; font-style: italic; }
+
+  /* 响应式 */
+  @media (max-width: 640px) {
+    body { font-size: 15px; }
+    main { padding: 16px 12px 60px; }
+    section.major { padding: 18px 14px; }
+    header.intro h2 { font-size: 22px; }
+    .topbar h1 { font-size: 15px; }
+    h3 { font-size: 17px; }
+    table { font-size: 13px; }
+    th, td { padding: 6px 8px; }
+    #backToTop { bottom: 16px; right: 16px; }
+  }
+
+  /* 高亮关键词 */
+  .hl { background: linear-gradient(transparent 60%, #fde68a 60%); font-weight: 600; padding: 0 2px; }
+  .hl-red { color: var(--red); font-weight: 600; }
+  .hl-green { color: var(--green); font-weight: 600; }
+  .hl-blue { color: var(--primary); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <h1>Lecture 14｜Gibbs 采样 &amp; 轨迹图 复习</h1>
+    <nav class="nav-links">
+      <a href="#part1">课程讲解</a>
+      <a href="#part2">考点梳理</a>
+      <a href="#part3">复习题目</a>
+    </nav>
+  </div>
+</div>
+
+<main>
+
+<header class="intro">
+  <h2>期末复习｜MCMC：Gibbs 采样与轨迹图</h2>
+  <p>基于 Lecture 14 课件 &amp; Problem Sheet，系统梳理 + 复习题</p>
+  <p style="font-size:13px; color:var(--muted);">课程：贝叶斯统计 / MCMC 方法｜讲师：Dr. Nivedita Viswanathan</p>
+  <div id="mathjax-warning">
+    ⚠ MathJax 公式渲染脚本加载失败（可能是网络问题）。文中的公式以 LaTeX 源码形式显示，但所有文字内容、考点和解析仍可正常阅读。
+  </div>
+</header>
+
+<!-- ================= Part 1 ================= -->
+<section class="major" id="part1">
+<h2>📘 第一部分：课程内容讲解</h2>
+
+<h3>一、整体知识脉络</h3>
+
+<p>本节课要解决一个核心问题：<span class="hl">当后验分布涉及多个未知参数时，如何高效地从后验中抽样？</span>同时还要回答另一个问题：抽完样之后，<span class="hl">如何判断我们的 Markov Chain 真的收敛到了正确的分布？</span></p>
+
+<div class="box box-def">
+  <span class="box-title">📍 课程逻辑链</span>
+  <ol>
+    <li><b>问题背景</b>：上节课的 Metropolis-Hastings (M-H) 算法只能处理<b>单个</b>未知参数 $\theta$。现实中往往有多个未知参数 $\theta, \phi$。</li>
+    <li><b>新工具</b>：引入 <span class="hl-blue">Gibbs 采样器 (Gibbs Sampler)</span> —— "一次只更新一个参数" 的策略。</li>
+    <li><b>核心数学工具</b>：<span class="hl-blue">全条件分布 (full conditionals)</span>，即固定其他参数时某个参数的条件分布。</li>
+    <li><b>诊断工具</b>：用 <span class="hl-blue">轨迹图 (trace plot)</span> 判断链是否收敛、混合是否良好。</li>
+  </ol>
+</div>
+
+<p>简而言之，本课在做的事就是：<b>把"难抽的高维联合后验"拆成"好抽的一维条件后验"，循环更新；然后用图形诊断手段确认抽样质量。</b></p>
+
+<h3>二、模块一：为什么需要 Gibbs 采样？</h3>
+
+<p>假设我们有两个未知参数 $\theta, \phi$，分别给它们指定先验后，得到联合后验：</p>
+<div class="formula-display">$$ p(\theta, \phi \mid Y) \propto g(\theta, \phi) $$</div>
+<p>我们通常只知道它<b>正比于</b>某个函数 $g(\theta, \phi)$，<span class="hl">归一化常数算不出来</span>（这就是贝叶斯计算的核心难题）。</p>
+
+<div class="box box-tip">
+  <span class="box-title">🌰 类比</span>
+  想象你在一个三维地形上分布有一个复杂的"概率山脉"。你只能看到山的<b>形状</b>（正比关系），但不知道整座山有多高（归一化常数）。我们需要在山上"采样"，让停留次数正比于高度。
+</div>
+
+<p><b>有两种处理思路：</b></p>
+<ul>
+  <li><b>方法 A</b>：用 M-H 对 $(\theta, \phi)$ <b>整体</b>提议一个候选 $(\theta^*, \phi^*)$，整体接受 / 整体拒绝。</li>
+  <li><b>方法 B（Gibbs 思路）</b>：<span class="hl">一次只动一个参数</span>。先固定 $\phi$ 用 M-H 更新 $\theta$，得到 $\theta^*$；再固定 $\theta^*$ 用 M-H 更新 $\phi$；如此循环。</li>
+</ul>
+
+<div class="box box-good">
+  <span class="box-title">✅ 为什么 Gibbs 这样做有效？</span>
+  因为只要每一步都按对应参数的<b>条件后验</b>抽样（或用 M-H 渐进收敛于条件后验），整个链最终就会收敛到联合后验 $g(\theta, \phi)$。这就把高维抽样降维成一系列一维抽样。
+</div>
+
+<h3>三、模块二：全条件分布的关键技巧</h3>
+
+<p>要做 Gibbs 采样，我们必须知道 <span class="hl-blue">$p(\theta \mid \phi, Y)$</span> 和 <span class="hl-blue">$p(\phi \mid \theta, Y)$</span>。乍看之下，这些条件分布我们也不知道完整形式。但有一个<b>非常漂亮的观察</b>：</p>
+
+<div class="box box-formula">
+  <span class="box-title">🔑 核心结论</span>
+  根据条件概率定义：
+  $$ p(\theta \mid \phi, Y) = \frac{p(\theta, \phi \mid Y)}{p(\phi \mid Y)} $$
+  把 $\phi$ 当作<b>已知常量</b>时，分母 $p(\phi \mid Y)$ 是"和 $\theta$ 无关的常数"。所以：
+  $$ \boxed{\, p(\theta \mid \phi, Y) \propto p(\theta, \phi \mid Y) \propto g(\theta, \phi) \,} $$
+  也就是说：<span class="hl">把联合后验中所有"不含 $\theta$"的因子全部当成常数扔掉，剩下的就是 $\theta$ 的全条件分布（正比形式）</span>。
+</div>
+
+<p>这个技巧极其重要——它告诉我们：<b>不需要算归一化常数</b>，只要从联合后验的表达式里"按变量分离"，往往就能直接看出每个参数的条件分布属于什么标准分布（例如 Gamma、Normal）。</p>
+
+<h3>四、模块三：经典例子——Poisson-Gamma 计数模型</h3>
+
+<p>设观测到 $n$ 个计数 $Y_1, \dots, Y_n$（例如每年地震次数、足球队进球数）。模型设定：</p>
+<div class="formula-display">
+$$ Y_i \mid \lambda \stackrel{i.i.d.}{\sim} \text{Poisson}(\lambda), \quad i = 1, \dots, n $$
+$$ \lambda \mid \beta \sim \text{Gamma}(\alpha, \beta) $$
+$$ \beta \sim \text{Gamma}(a, b) $$
+</div>
+<p>其中 $\alpha, a, b$ 已知，未知参数为 $\lambda, \beta$。这是一个<b>两层贝叶斯层次模型</b>。</p>
+
+<h4>① 写出联合后验（不要算常数）</h4>
+<div class="formula-display">
+$$ p(\lambda, \beta \mid Y) \propto p(Y \mid \lambda)\, p(\lambda \mid \beta)\, p(\beta) $$
+$$ \propto \lambda^{\sum y_i + \alpha - 1} e^{-n\lambda} \cdot \beta^{\alpha} e^{-\beta \lambda} \cdot \beta^{a-1} e^{-b\beta} $$
+</div>
+
+<h4>② 推导 $\lambda$ 的全条件（把 $\beta$ 当常数）</h4>
+<p>挑出所有含 $\lambda$ 的因子：</p>
+<div class="formula-display">
+$$ p(\lambda \mid \beta, Y) \propto \lambda^{\sum y_i + \alpha - 1} e^{-(n + \beta)\lambda} $$
+</div>
+<p>这正是 Gamma 分布的核！识别参数：</p>
+<div class="box box-formula">
+$$ \boxed{\, \lambda \mid \beta, Y \;\sim\; \text{Gamma}\!\left(\sum_{i=1}^n y_i + \alpha,\; n + \beta\right) \,} $$
+</div>
+
+<h4>③ 推导 $\beta$ 的全条件（把 $\lambda$ 当常数）</h4>
+<p>挑出所有含 $\beta$ 的因子：</p>
+<div class="formula-display">
+$$ p(\beta \mid \lambda, Y) \propto \beta^{\alpha + a - 1} e^{-(\lambda + b)\beta} $$
+</div>
+<div class="box box-formula">
+$$ \boxed{\, \beta \mid \lambda, Y \;\sim\; \text{Gamma}(\alpha + a,\; \lambda + b) \,} $$
+</div>
+
+<p>因为两个全条件都是<b>标准的 Gamma 分布</b>，我们可以直接从中精确抽样，<span class="hl-green">连 M-H 步骤都不需要</span>！这是 Gibbs 最理想的情形。</p>
+
+<h4>④ Gibbs 算法流程</h4>
+<div class="algo">
+<span class="cmt"># 初始化</span>
+<span class="kw">choose</span> 初值 λ⁽⁰⁾, β⁽⁰⁾
+<span class="kw">for</span> t = 1, 2, ..., M:
+    <span class="cmt"># 一次更新一个参数</span>
+    λ⁽ᵗ⁾ ~ Gamma(Σyᵢ + α, n + β⁽ᵗ⁻¹⁾)        <span class="cmt"># 用上一步的 β</span>
+    β⁽ᵗ⁾ ~ Gamma(α + a, λ⁽ᵗ⁾ + b)              <span class="cmt"># 用刚抽的 λ</span>
+丢弃前 m₀ 个样本作为 burn-in
+用剩下的样本做后验分析
+</div>
+
+<h3>五、模块四：轨迹图 (Trace Plot) ——收敛诊断</h3>
+
+<p>抽完样之后，我们要回答：</p>
+<ul>
+  <li>链真的<b>到达稳定分布</b>了吗？</li>
+  <li>样本是否<b>充分探索</b>了整个后验？</li>
+  <li>相邻样本间的<b>相关性</b>会不会太强？</li>
+</ul>
+
+<div class="box box-def">
+  <span class="box-title">📍 轨迹图的定义</span>
+  对一条 Markov Chain $\theta_0, \theta_1, \dots, \theta_m$，轨迹图就是：横轴为迭代次数 $i$，纵轴为抽样值 $\theta_i$ 的散点 / 折线图。
+</div>
+
+<h4>四种典型轨迹图</h4>
+
+<div class="box box-good">
+  <span class="box-title">✅ 好：Hairy Caterpillar（毛毛虫）</span>
+  围绕某个稳定中心快速振荡，分布带紧密均匀，无趋势。<br>
+  <b>特征</b>：no drift（无漂移）+ rapid mixing（混合快）+ consistent spread（散布一致）。已收敛！
+</div>
+
+<div class="box box-warn">
+  <span class="box-title">⚠ 坏 1：Poor Mixing（混合慢，提议方差太小）</span>
+  接受率高，但每步都迈得很小，链像"散步"一样慢慢飘。需要更多迭代才能充分探索后验。<br>
+  <b>对策</b>：增大提议方差，或运行更长。
+</div>
+
+<div class="box box-error">
+  <span class="box-title">❌ 坏 2：Not Converged / Drift（还没收敛）</span>
+  曲线明显在持续往一个方向漂（比如从 20 慢慢下降到 1），还没进入稳定带。<br>
+  <b>对策</b>：增大 burn-in，或运行更久。<span class="hl-red">这段区间的样本绝对不能用！</span>
+</div>
+
+<div class="box box-error">
+  <span class="box-title">❌ 坏 3：Stuck Chain（卡住，提议方差太大）</span>
+  大部分提议被拒绝，链在同一个值上停留很久，轨迹图呈"水平段 + 偶尔跳跃"的台阶状。<br>
+  <b>对策</b>：减小提议方差。
+</div>
+
+<h3>六、其他收敛诊断方法（仅了解，本课不细讲）</h3>
+<ul>
+  <li>接受率 (Acceptance rate)</li>
+  <li>自相关图 (Autocorrelation plots)</li>
+  <li>多条链（不同初值）的对比</li>
+  <li>Gelman-Rubin 统计量 $\hat{R}$</li>
+</ul>
+
+</section>
+
+<!-- ================= Part 2 ================= -->
+<section class="major" id="part2">
+<h2>📋 第二部分：考点梳理</h2>
+
+<p style="color:var(--muted); font-size:14px;">
+  重要度：<span class="stars stars-3">★★★</span> 高频核心 ｜
+  <span class="stars stars-2">★★</span> 中等 ｜
+  <span class="stars stars-1">★</span> 低频
+  &nbsp;&nbsp;｜&nbsp;&nbsp;
+  <span class="kp-tag memory">需记忆</span>
+  <span class="kp-tag understand">需理解/计算</span>
+</p>
+
+<h3>章节 A：Gibbs 采样的动机与原理</h3>
+
+<div class="kp-item">
+  <div class="kp-header">
+    A1｜多参数后验问题的设置
+    <span class="stars stars-2">★★</span>
+    <span class="kp-tag understand">需理解</span>
+  </div>
+  <p><b>定义</b>：当后验涉及多个未知参数 $\theta, \phi$，其联合后验只知道正比形式 $p(\theta, \phi \mid Y) \propto g(\theta, \phi)$，归一化常数未知。</p>
+  <p><b>易混点</b>：注意是<b>联合</b>后验，不是边缘后验；"正比"意味着<b>形状已知、缩放未知</b>。</p>
+</div>
+
+<div class="kp-item">
+  <div class="kp-header">
+    A2｜Gibbs 采样器的核心思想
+    <span class="stars stars-3">★★★</span>
+    <span class="kp-tag understand">需理解</span>
+  </div>
+  <p><b>定义</b>：每次只更新一个参数，<b>其余参数固定在最新值</b>。循环遍历所有参数。</p>
+  <p><b>关键</b>：在更新某个参数时，使用该参数的<span class="hl-blue">全条件分布</span>作为目标分布。</p>
+  <p><b>易错</b>：更新 $\phi$ 时，要用<b>刚刚更新得到的</b> $\theta^{(t)}$，而不是上一轮的 $\theta^{(t-1)}$。</p>
+</div>
+
+<h3>章节 B：全条件分布 (Full Conditionals)</h3>
+
+<div class="kp-item">
+  <div class="kp-header">
+    B1｜联合 = 条件 × 边缘（乘积法则）
+    <span class="stars stars-3">★★★</span>
+    <span class="kp-tag memory">需记忆</span>
+  </div>
+  <p><b>公式</b>：
+    $$ p(\theta, \phi \mid Y) = p(\theta \mid \phi, Y) \cdot p(\phi \mid Y) = p(\phi \mid \theta, Y) \cdot p(\theta \mid Y) $$
+  </p>
+  <p><b>含义</b>：联合后验可以拆成全条件 × 边缘的形式。</p>
+</div>
+
+<div class="kp-item">
+  <div class="kp-header">
+    B2｜全条件 ∝ 联合后验（核心定理！）
+    <span class="stars stars-3">★★★</span>
+    <span class="kp-tag memory">需记忆</span>
+  </div>
+  <div class="box box-formula" style="margin:8px 0;">
+    $$ p(\theta \mid \phi, Y) \;\propto\; p(\theta, \phi \mid Y) \;\propto\; g(\theta, \phi) $$
+    $$ p(\phi \mid \theta, Y) \;\propto\; p(\theta, \phi \mid Y) \;\propto\; g(\theta, \phi) $$
+  </div>
+  <p><b>推导关键</b>：在求 $p(\theta \mid \phi, Y)$ 时，<b>把 $\phi$ 视为已知常量</b>。分母 $p(\phi \mid Y)$ 是与 $\theta$ 无关的常数，所以可丢入比例符号。</p>
+  <p><b>实操技巧</b>：从联合后验表达式中，<span class="hl">挑出所有含目标参数的因子</span>，把不含的因子全部当成常数扔掉。</p>
+  <p><b>易错</b>：误把"$\theta$ 无关"理解为"常数"——其实是相对于该参数为常数；换一个参数视角时，原来当常数的因子可能就不再是常数了。</p>
+</div>
+
+<div class="kp-item">
+  <div class="kp-header">
+    B3｜全条件 vs 联合 vs 边缘——三者区别
+    <span class="stars stars-2">★★</span>
+    <span class="kp-tag understand">需理解</span>
+  </div>
+  <ul>
+    <li><b>联合后验</b> $p(\theta, \phi \mid Y)$：多元分布。</li>
+    <li><b>边缘后验</b> $p(\theta \mid Y)$：对 $\phi$ 积分（一般非常难算）。</li>
+    <li><b>全条件分布</b> $p(\theta \mid \phi, Y)$：把 $\phi$ 当已知常数。</li>
+  </ul>
+  <p><b>结论</b>：Gibbs 用的是<b>全条件</b>（最容易），不是边缘（最难）。</p>
+</div>
+
+<h3>章节 C：Poisson-Gamma 计数模型（最经典的应用例子）</h3>
+
+<div class="kp-item">
+  <div class="kp-header">
+    C1｜模型设定与分布回忆
+    <span class="stars stars-3">★★★</span>
+    <span class="kp-tag memory">需记忆</span>
+  </div>
+  <p><b>层次模型</b>：</p>
+  $$ Y_i \mid \lambda \stackrel{iid}{\sim} \text{Poisson}(\lambda),\quad \lambda \mid \beta \sim \text{Gamma}(\alpha, \beta),\quad \beta \sim \text{Gamma}(a, b) $$
+  <p><b>密度函数</b>：</p>
+  <ul>
+    <li>Poisson: $p(y \mid \lambda) = \dfrac{\lambda^y e^{-\lambda}}{y!}$</li>
+    <li>Gamma（速率参数化）: $p(x \mid \alpha, \beta) = \dfrac{\beta^\alpha}{\Gamma(\alpha)} x^{\alpha-1} e^{-\beta x},\ x>0$</li>
+  </ul>
+  <div class="box box-warn">
+    <b>易错</b>：Gamma 分布有两种参数化：速率 (rate, $\beta$) 与尺度 (scale, $1/\beta$)。本课用<b>速率</b>参数化，确保对应的指数因子是 $e^{-\beta x}$。
+  </div>
+</div>
+
+<div class="kp-item">
+  <div class="kp-header">
+    C2｜联合后验的写法
+    <span class="stars stars-2">★★</span>
+    <span class="kp-tag understand">需理解</span>
+  </div>
+  $$ p(\lambda, \beta \mid Y) \propto \lambda^{\sum y_i + \alpha - 1} e^{-n\lambda} \cdot \beta^{\alpha} e^{-\beta\lambda} \cdot \beta^{a-1} e^{-b\beta} $$
+  <p><b>记忆方法</b>：似然给出 $\lambda$ 的幂次和指数 $e^{-n\lambda}$；先验 $p(\lambda\mid\beta)$ 引入 $\beta^\alpha$、$\lambda^{\alpha-1}$ 与 $e^{-\beta\lambda}$；最外层先验 $p(\beta)$ 给出 $\beta^{a-1}$ 和 $e^{-b\beta}$。</p>
+</div>
+
+<div class="kp-item">
+  <div class="kp-header">
+    C3｜$\lambda$ 的全条件分布（重要结论）
+    <span class="stars stars-3">★★★</span>
+    <span class="kp-tag memory">需记忆</span>
+  </div>
+  <div class="box box-formula">
+    $$ \lambda \mid \beta, Y \sim \text{Gamma}\!\left(\sum y_i + \alpha,\; n + \beta\right) $$
+  </div>
+  <p><b>推导要点</b>：固定 $\beta$，挑出含 $\lambda$ 的项：$\lambda^{\sum y_i + \alpha - 1} e^{-(n+\beta)\lambda}$。</p>
+</div>
+
+<div class="kp-item">
+  <div class="kp-header">
+    C4｜$\beta$ 的全条件分布（重要结论）
+    <span class="stars stars-3">★★★</span>
+    <span class="kp-tag memory">需记忆</span>
+  </div>
+  <div class="box box-formula">
+    $$ \beta \mid \lambda, Y \sim \text{Gamma}(\alpha + a,\; \lambda + b) $$
+  </div>
+  <p><b>推导要点</b>：固定 $\lambda$，挑出含 $\beta$ 的项：$\beta^{\alpha+a-1} e^{-(\lambda+b)\beta}$。</p>
+  <div class="box box-warn">
+    <b>易错</b>：第二个参数（速率）是 $\lambda + b$，<b>不是</b> $\beta + b$（这里 $\beta$ 不出现在右侧！）。学生常常分不清"哪个参数被当条件、哪个还在被算"。
+  </div>
+</div>
+
+<h3>章节 D：Gibbs 算法流程</h3>
+
+<div class="kp-item">
+  <div class="kp-header">
+    D1｜Gibbs 算法步骤
+    <span class="stars stars-3">★★★</span>
+    <span class="kp-tag memory">需记忆</span>
+  </div>
+  <ol>
+    <li>选择初值 $\theta^{(0)}, \phi^{(0)}$。</li>
+    <li>对 $t = 1, 2, \dots, M$ 循环：
+      <ul>
+        <li>抽 $\theta^{(t)} \sim p(\theta \mid \phi^{(t-1)}, Y)$；</li>
+        <li>抽 $\phi^{(t)} \sim p(\phi \mid \theta^{(t)}, Y)$。</li>
+      </ul>
+    </li>
+    <li>丢弃前 $m_0$ 个样本作为 burn-in。</li>
+  </ol>
+  <p><b>易错</b>：交叉更新顺序——第二步要用<b>本轮刚抽到的</b> $\theta^{(t)}$，不是上轮 $\theta^{(t-1)}$。</p>
+</div>
+
+<div class="kp-item">
+  <div class="kp-header">
+    D2｜什么时候用 Gibbs，什么时候用 M-H within Gibbs？
+    <span class="stars stars-2">★★</span>
+    <span class="kp-tag understand">需理解</span>
+  </div>
+  <ul>
+    <li><b>纯 Gibbs</b>：全条件是标准分布时，直接抽样（如 Poisson-Gamma 例子全条件都是 Gamma）。</li>
+    <li><b>M-H within Gibbs</b>：全条件不是标准分布时，对单个参数用 M-H 步骤代替直接抽样。</li>
+  </ul>
+</div>
+
+<h3>章节 E：Burn-in 与收敛诊断</h3>
+
+<div class="kp-item">
+  <div class="kp-header">
+    E1｜Burn-in 的目的
+    <span class="stars stars-2">★★</span>
+    <span class="kp-tag memory">需记忆</span>
+  </div>
+  <p><b>目的</b>：链刚开始时可能在低概率区域，未到达稳定分布；丢弃前 $m_0$ 个样本，使得后续样本更准确地代表后验。</p>
+</div>
+
+<div class="kp-item">
+  <div class="kp-header">
+    E2｜轨迹图 (Trace Plot) 定义
+    <span class="stars stars-3">★★★</span>
+    <span class="kp-tag memory">需记忆</span>
+  </div>
+  <p><b>定义</b>：对 Markov Chain $\theta_0, \theta_1, \dots, \theta_m$，横轴 = 迭代次数 $i$，纵轴 = 抽样值 $\theta_i$ 的散点 / 折线图。</p>
+</div>
+
+<div class="kp-item">
+  <div class="kp-header">
+    E3｜"好" 轨迹图三大特征
+    <span class="stars stars-3">★★★</span>
+    <span class="kp-tag memory">需记忆</span>
+  </div>
+  <ul>
+    <li>形如 <b>hairy caterpillar（毛毛虫）</b>——围绕中心快速振荡。</li>
+    <li>无长期趋势（已收敛）。</li>
+    <li>混合良好——访问了后验区域的不同部分。</li>
+  </ul>
+</div>
+
+<div class="kp-item">
+  <div class="kp-header">
+    E4｜三种"坏" 轨迹图的诊断与对策
+    <span class="stars stars-3">★★★</span>
+    <span class="kp-tag understand">需理解</span>
+  </div>
+  <table>
+    <thead>
+      <tr><th>异常类型</th><th>视觉特征</th><th>根本原因</th><th>对策</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Poor Mixing<br>混合慢</td>
+        <td>长波缓慢起伏</td>
+        <td>提议方差<b>太小</b>，接受率高但移动慢</td>
+        <td>增大提议方差，或运行更长</td>
+      </tr>
+      <tr>
+        <td>Not Converged<br>未收敛</td>
+        <td>明显单向趋势</td>
+        <td>burn-in 不够</td>
+        <td>增大 burn-in / 运行更久；<b>该区间样本绝不能用</b></td>
+      </tr>
+      <tr>
+        <td>Stuck Chain<br>卡住</td>
+        <td>平台 + 偶发跳跃</td>
+        <td>提议方差<b>太大</b>，多数提议被拒</td>
+        <td>减小提议方差</td>
+      </tr>
+    </tbody>
+  </table>
+  <p><b>易混点</b>：Poor Mixing 与 Stuck Chain 看似都"动得慢"，但本质相反——前者动小但都接受，后者动大但都拒绝。</p>
+</div>
+
+<div class="kp-item">
+  <div class="kp-header">
+    E5｜其他收敛诊断方法（了解即可）
+    <span class="stars stars-1">★</span>
+    <span class="kp-tag understand">需了解</span>
+  </div>
+  <ul>
+    <li>接受率 (Acceptance rate)</li>
+    <li>自相关图 (Autocorrelation plots)</li>
+    <li>多链对比 (不同初值)</li>
+    <li>Gelman-Rubin 统计量 $\hat{R}$</li>
+  </ul>
+  <p style="color:var(--muted);">课件明确说明本课<b>不要求掌握</b>，但应了解名称。</p>
+</div>
+
+<h3>章节 F：离散场景下的 Gibbs 采样（来自习题）</h3>
+
+<div class="kp-item">
+  <div class="kp-header">
+    F1｜离散联合分布的边缘 & 条件分布
+    <span class="stars stars-2">★★</span>
+    <span class="kp-tag understand">需计算</span>
+  </div>
+  <p><b>边缘</b>：$p(X = x) = \sum_y p(X = x, Y = y)$（按行 / 列求和）。</p>
+  <p><b>条件</b>：$p(X = x \mid Y = y) = \dfrac{p(X = x, Y = y)}{p(Y = y)}$（单元格 ÷ 列和）。</p>
+  <p><b>易错</b>：分母用<b>边缘</b>，不要用联合的总和（联合总和恒为 1）。</p>
+</div>
+
+<div class="kp-item">
+  <div class="kp-header">
+    F2｜离散 Gibbs 采样的迭代追踪
+    <span class="stars stars-2">★★</span>
+    <span class="kp-tag understand">需计算</span>
+  </div>
+  <p>给定初值 $(X^{(0)}, Y^{(0)})$，按规则交替抽 $X^{(t+1)} \sim p(X \mid Y^{(t)})$，$Y^{(t+1)} \sim p(Y \mid X^{(t+1)})$。</p>
+  <p><b>关键提醒</b>：若按 "mode (众数)" 抽，要注意是否存在<b>并列众数</b>（多个值概率相同），此时需要约定打破并列的规则。</p>
+</div>
+
+</section>
+
+<!-- ================= Part 3 ================= -->
+<section class="major" id="part3">
+<h2>📝 第三部分：复习题目</h2>
+
+<div class="progress-panel">
+  <div>📊 选择题进度：<strong><span id="progress-answered">0</span></strong> 已答 ｜ <strong><span id="progress-correct" style="color:var(--green);">0</span></strong> 正确</div>
+</div>
+
+<div class="controls">
+  <button id="expandAll">📂 展开全部答案</button>
+  <button id="collapseAll" class="secondary">📁 收起全部答案</button>
+</div>
+
+<!-- ----------- 选择题 ----------- -->
+<h3>一、选择题</h3>
+
+<div class="question" data-q="1">
+  <div class="q-meta">
+    <span class="q-type">单选</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">考点 A2 Gibbs 思想</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q1</span>关于 Gibbs Sampler，下列描述<b>错误</b>的是：</div>
+  <ul class="options">
+    <li class="option" data-correct="false"><span class="opt-letter">A.</span>它处理的是多参数后验抽样问题。</li>
+    <li class="option" data-correct="false"><span class="opt-letter">B.</span>每一步只更新一个参数，其它参数固定为最新值。</li>
+    <li class="option" data-correct="true"><span class="opt-letter">C.</span>需要先算出联合后验的归一化常数，再进行抽样。</li>
+    <li class="option" data-correct="false"><span class="opt-letter">D.</span>当全条件分布是标准分布时，可直接精确抽样。</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">正确答案：C</div>
+      <p><b>解析</b>：Gibbs 采样的优势恰恰在于<b>不需要</b>归一化常数。我们只需要联合后验正比于 $g(\theta, \phi)$，挑出含目标参数的因子，识别出它是哪种标准分布即可。这是 MCMC 类方法的核心吸引力。</p>
+      <p><b>易错提醒</b>：题目中选项 B 是 Gibbs 的核心定义，A 是其适用场景，D 是 Poisson-Gamma 例子的情况，都正确。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="2">
+  <div class="q-meta">
+    <span class="q-type">单选</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">考点 B2 全条件 ∝ 联合</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q2</span>已知 $p(\theta, \phi \mid Y) \propto g(\theta, \phi)$，则 $p(\theta \mid \phi, Y)$ 等于：</div>
+  <ul class="options">
+    <li class="option" data-correct="false"><span class="opt-letter">A.</span>$g(\theta, \phi) \cdot p(\phi \mid Y)$</li>
+    <li class="option" data-correct="true"><span class="opt-letter">B.</span>$\propto g(\theta, \phi)$（把 $\phi$ 视为常数后挑出含 $\theta$ 的因子）</li>
+    <li class="option" data-correct="false"><span class="opt-letter">C.</span>$g(\theta) / g(\phi)$</li>
+    <li class="option" data-correct="false"><span class="opt-letter">D.</span>必须先算边缘 $p(\theta \mid Y)$ 才能得到</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">正确答案：B</div>
+      <p><b>解析</b>：由条件概率定义，$p(\theta \mid \phi, Y) = \dfrac{p(\theta, \phi \mid Y)}{p(\phi \mid Y)}$。在固定 $\phi$ 的视角下，分母不依赖 $\theta$，所以是常数。因此：</p>
+      $$ p(\theta \mid \phi, Y) \propto p(\theta, \phi \mid Y) \propto g(\theta, \phi) $$
+      <p>这是本课最核心的技巧。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="3">
+  <div class="q-meta">
+    <span class="q-type">单选</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">考点 E4 轨迹图诊断</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q3</span>你画出某条 Markov Chain 的轨迹图：链值在前 200 步从初值 20 单调下降到 5，之后才进入稳定振荡。这表明：</div>
+  <ul class="options">
+    <li class="option" data-correct="false"><span class="opt-letter">A.</span>链混合太慢，需减小提议方差。</li>
+    <li class="option" data-correct="true"><span class="opt-letter">B.</span>链尚未收敛到稳定分布；前 200 步应作为 burn-in 丢弃。</li>
+    <li class="option" data-correct="false"><span class="opt-letter">C.</span>链卡住了，需要换初值。</li>
+    <li class="option" data-correct="false"><span class="opt-letter">D.</span>这是理想的 hairy caterpillar，可直接使用所有样本。</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">正确答案：B</div>
+      <p><b>解析</b>：明显的单向趋势（drift）说明链还没收敛到稳定分布。课件明确指出："Never use samples from this region!" 解决办法是增大 burn-in，或运行更久。</p>
+      <p><b>易错</b>：选项 A 描述的是"poor mixing"（缓慢振荡，无单向趋势）；选项 C "stuck chain" 应该是平台 + 偶发跳跃的台阶图。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="4">
+  <div class="q-meta">
+    <span class="q-type">单选</span>
+    <span class="q-difficulty">进阶</span>
+    <span class="q-point">考点 C3 λ 的全条件</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q4</span>在 Poisson-Gamma 计数模型 $Y_i \mid \lambda \sim \text{Poisson}(\lambda),\, \lambda \mid \beta \sim \text{Gamma}(\alpha, \beta),\, \beta \sim \text{Gamma}(a, b)$ 中，$\lambda$ 的全条件分布是：</div>
+  <ul class="options">
+    <li class="option" data-correct="false"><span class="opt-letter">A.</span>$\text{Gamma}(\alpha, n + \beta)$</li>
+    <li class="option" data-correct="true"><span class="opt-letter">B.</span>$\text{Gamma}\!\left(\sum y_i + \alpha,\; n + \beta\right)$</li>
+    <li class="option" data-correct="false"><span class="opt-letter">C.</span>$\text{Gamma}\!\left(\sum y_i + \alpha + a,\; n + \beta + b\right)$</li>
+    <li class="option" data-correct="false"><span class="opt-letter">D.</span>$\text{Poisson}\!\left(\sum y_i + \alpha\right)$</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">正确答案：B</div>
+      <p><b>解析</b>：固定 $\beta$，从联合后验中挑出含 $\lambda$ 的项：</p>
+      $$ p(\lambda \mid \beta, Y) \propto \lambda^{\sum y_i + \alpha - 1} e^{-n\lambda} \cdot e^{-\beta\lambda} = \lambda^{\sum y_i + \alpha - 1} e^{-(n+\beta)\lambda} $$
+      <p>识别为 $\text{Gamma}(\sum y_i + \alpha,\, n + \beta)$。</p>
+      <p><b>易错</b>：选项 C 错误地把 $\beta$ 的先验参数 $a, b$ 也加进来——但更新 $\lambda$ 时，$\beta$ 是常数，<b>不会改变 $\beta$ 本身的参数</b>。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="5">
+  <div class="q-meta">
+    <span class="q-type">单选</span>
+    <span class="q-difficulty">进阶</span>
+    <span class="q-point">考点 E4 提议方差 vs 接受率</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q5</span>在 M-H within Gibbs 中，如果发现轨迹图呈现"长段水平 + 偶尔阶梯跳跃"的形状，最合理的调整是：</div>
+  <ul class="options">
+    <li class="option" data-correct="false"><span class="opt-letter">A.</span>增大提议方差，让链跳得更远。</li>
+    <li class="option" data-correct="true"><span class="opt-letter">B.</span>减小提议方差，让提议更容易被接受。</li>
+    <li class="option" data-correct="false"><span class="opt-letter">C.</span>增大 burn-in 长度。</li>
+    <li class="option" data-correct="false"><span class="opt-letter">D.</span>换一组先验。</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">正确答案：B</div>
+      <p><b>解析</b>：阶梯状是"stuck chain"的典型特征——大多数提议被拒绝。原因是提议方差过大，让候选值落在低概率区，从而 M-H 接受概率极低。<b>减小</b>提议方差可让提议更接近当前值，提高接受率。</p>
+      <p><b>对比</b>：若图是缓慢漂移的长波（poor mixing），才需要<b>增大</b>提议方差。两者是<b>反向</b>的诊断。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="6">
+  <div class="q-meta">
+    <span class="q-type">单选</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">考点 D1 算法步骤</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q6</span>在 Gibbs 算法的第 $t$ 步，先抽 $\theta^{(t)} \sim p(\theta \mid \phi^{(t-1)}, Y)$，再抽 $\phi^{(t)}$。下列关于 $\phi^{(t)}$ 的<b>正确</b>抽样规则是：</div>
+  <ul class="options">
+    <li class="option" data-correct="false"><span class="opt-letter">A.</span>$\phi^{(t)} \sim p(\phi \mid \theta^{(t-1)}, Y)$</li>
+    <li class="option" data-correct="true"><span class="opt-letter">B.</span>$\phi^{(t)} \sim p(\phi \mid \theta^{(t)}, Y)$</li>
+    <li class="option" data-correct="false"><span class="opt-letter">C.</span>$\phi^{(t)} \sim p(\phi \mid Y)$（与 $\theta$ 无关）</li>
+    <li class="option" data-correct="false"><span class="opt-letter">D.</span>$\phi^{(t)} \sim p(\theta, \phi \mid Y)$</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">正确答案：B</div>
+      <p><b>解析</b>：Gibbs 的精髓在于<b>交替更新</b>。更新 $\phi$ 时，要用<b>本轮刚刚更新得到的</b> $\theta^{(t)}$ 作为条件，而不是上一轮的 $\theta^{(t-1)}$。这一点非常重要，决定了链的正确性。</p>
+    </div>
+  </details>
+</div>
+
+<!-- ----------- 判断题 ----------- -->
+<h3>二、判断题</h3>
+
+<div class="question" data-q="7">
+  <div class="q-meta">
+    <span class="q-type">判断</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">考点 A1 / B2</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q7</span>"使用 Gibbs Sampler 之前必须先求出联合后验的归一化常数。"</div>
+  <ul class="options">
+    <li class="option" data-correct="false"><span class="opt-letter">✓</span>对</li>
+    <li class="option" data-correct="true"><span class="opt-letter">✗</span>错</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">正确答案：错</div>
+      <p>Gibbs Sampler 的关键优势就是<b>不需要</b>归一化常数。只需联合后验正比形式 $g(\theta, \phi)$，挑出含目标参数的因子并识别标准分布即可。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="8">
+  <div class="q-meta">
+    <span class="q-type">判断</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">考点 E4 stuck chain</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q8</span>"轨迹图中长段水平的'平台'段，对应于 M-H 提议被拒绝、链停留在原值。"</div>
+  <ul class="options">
+    <li class="option" data-correct="true"><span class="opt-letter">✓</span>对</li>
+    <li class="option" data-correct="false"><span class="opt-letter">✗</span>错</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">正确答案：对</div>
+      <p>课件原话："Flat segments = rejected proposals."（平台段 = 提议被拒绝）。提议方差过大常导致此现象。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="9">
+  <div class="q-meta">
+    <span class="q-type">判断</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">考点 E1 burn-in</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q9</span>"为了节约样本量，burn-in 期间的样本也可以用于后验均值的估计。"</div>
+  <ul class="options">
+    <li class="option" data-correct="false"><span class="opt-letter">✓</span>对</li>
+    <li class="option" data-correct="true"><span class="opt-letter">✗</span>错</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">正确答案：错</div>
+      <p>Burn-in 区间样本来自未收敛的链，<b>不能</b>代表目标后验。课件明确强调："Never use samples from this region!"</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="10">
+  <div class="q-meta">
+    <span class="q-type">判断</span>
+    <span class="q-difficulty">进阶</span>
+    <span class="q-point">考点 B2 推导细节</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q10</span>"若 $p(\theta, \phi \mid Y) \propto g(\theta, \phi)$，则<b>同时</b>有 $p(\theta \mid \phi, Y) \propto g(\theta, \phi)$ 和 $p(\phi \mid \theta, Y) \propto g(\theta, \phi)$，两个比例符号中的常数是同一个。"</div>
+  <ul class="options">
+    <li class="option" data-correct="false"><span class="opt-letter">✓</span>对</li>
+    <li class="option" data-correct="true"><span class="opt-letter">✗</span>错</li>
+  </ul>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">正确答案：错</div>
+      <p>两个正比关系都成立，但<b>比例常数不同</b>。理由：</p>
+      <ul>
+        <li>$p(\theta \mid \phi, Y) = g(\theta, \phi) / p(\phi \mid Y)$，常数是 $1/p(\phi \mid Y)$（依赖 $\phi$）。</li>
+        <li>$p(\phi \mid \theta, Y) = g(\theta, \phi) / p(\theta \mid Y)$，常数是 $1/p(\theta \mid Y)$（依赖 $\theta$）。</li>
+      </ul>
+      <p>正比号只在"该参数视角下"成立，两次的"常数"含义不同。</p>
+    </div>
+  </details>
+</div>
+
+<!-- ----------- 填空题 ----------- -->
+<h3>三、填空题</h3>
+
+<div class="question" data-q="11">
+  <div class="q-meta">
+    <span class="q-type">填空</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">考点 C3 / C4</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q11</span>在 Poisson-Gamma 模型中：</div>
+  <p>(a) $\lambda$ 的全条件分布为 $\text{Gamma}(\underline{\quad ? \quad},\; \underline{\quad ? \quad})$；</p>
+  <p>(b) $\beta$ 的全条件分布为 $\text{Gamma}(\underline{\quad ? \quad},\; \underline{\quad ? \quad})$。</p>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">参考答案</div>
+      <p>(a) $\lambda \mid \beta, Y \sim \text{Gamma}\!\left(\sum_{i=1}^n y_i + \alpha,\; n + \beta\right)$</p>
+      <p>(b) $\beta \mid \lambda, Y \sim \text{Gamma}(\alpha + a,\; \lambda + b)$</p>
+      <p><b>记忆口诀</b>：</p>
+      <ul>
+        <li>$\lambda$ 的形状参数 = 似然里的 $\sum y_i$ + 先验形状 $\alpha$；速率参数 = 样本量 $n$ + 上一个 $\beta$。</li>
+        <li>$\beta$ 的形状参数 = $\alpha + a$（先验之和）；速率参数 = $\lambda + b$（上一个 $\lambda$ 与超先验速率之和）。</li>
+      </ul>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="12">
+  <div class="q-meta">
+    <span class="q-type">填空</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">考点 E3</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q12</span>课件用一个形象的比喻描述理想的轨迹图，称之为 "________"；它的三大视觉特征是 ____________、____________、____________。</div>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">参考答案</div>
+      <p>比喻：<b>hairy caterpillar（毛毛虫）</b></p>
+      <p>三大特征：</p>
+      <ol>
+        <li><b>no drift</b>（无漂移 / 无长期趋势）</li>
+        <li><b>rapid mixing</b>（混合快，值快速振荡）</li>
+        <li><b>consistent spread</b>（散布一致，分布带稳定）</li>
+      </ol>
+    </div>
+  </details>
+</div>
+
+<!-- ----------- 简答题 ----------- -->
+<h3>四、简答题</h3>
+
+<div class="question" data-q="13">
+  <div class="q-meta">
+    <span class="q-type">简答</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">考点 A2 + B2</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q13</span>用自己的话解释 Gibbs Sampler 的核心思想，并说明它与标准 Metropolis-Hastings 的区别。</div>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">参考答案要点</div>
+      <p><b>核心思想</b>：当后验涉及多个参数 $\theta, \phi, \dots$ 且联合分布难以直接抽样时，Gibbs Sampler 采用"<b>一次只动一个参数</b>"的策略——抽 $\theta^{(t)}$ 时把其它参数固定在最新值，按其<b>全条件分布</b> $p(\theta \mid \phi, Y)$ 抽样；接着抽 $\phi^{(t)}$ 时再把刚得到的 $\theta^{(t)}$ 当作条件。如此循环遍历，最终链的稳定分布就是联合后验 $p(\theta, \phi \mid Y)$。</p>
+      <p><b>与 M-H 的区别</b>：</p>
+      <ul>
+        <li>标准 M-H：对全部参数<b>整体</b>提议、整体接受 / 拒绝。</li>
+        <li>Gibbs：拆成多个一维问题<b>逐个</b>更新。如果全条件是标准分布，可直接精确抽样（不需要接受 / 拒绝步骤）；不是时可用 M-H within Gibbs。</li>
+        <li>Gibbs 是 M-H 的一个<b>特例</b>，接受概率恒为 1。</li>
+      </ul>
+      <p><b>易错</b>：不要说"Gibbs 不是 MCMC"——它是一种特殊的 MCMC。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="14">
+  <div class="q-meta">
+    <span class="q-type">简答</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">考点 E4</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q14</span>列举三种"坏"轨迹图的形态，分别说明可能的原因和改进策略。</div>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">参考答案要点</div>
+      <ol>
+        <li><b>Poor Mixing（混合慢）</b><br>
+          形态：轨迹值缓慢起伏、长波偏移。<br>
+          原因：M-H 提议方差<b>太小</b>，接受率很高，但每一步迈得很小，链需要很久才能遍历整个后验。<br>
+          策略：<span class="hl-green">增大提议方差</span>，或大幅增加迭代数。</li>
+        <li><b>Not Converged / Drift（未收敛）</b><br>
+          形态：明显的单向上升或下降趋势。<br>
+          原因：burn-in 不够，链还没到达稳定分布。<br>
+          策略：<span class="hl-green">增大 burn-in 长度，或运行更长</span>。该段样本绝不能用。</li>
+        <li><b>Stuck Chain（卡住）</b><br>
+          形态：长段水平 + 偶发跳跃，呈台阶状。<br>
+          原因：提议方差<b>太大</b>，多数候选落在低概率区，被 M-H 拒绝。<br>
+          策略：<span class="hl-green">减小提议方差</span>。</li>
+      </ol>
+      <p><b>易混点提醒</b>：Poor Mixing（接受率高但移动慢）与 Stuck Chain（接受率低）外观可能都"慢"，但调整方向<b>相反</b>。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="15">
+  <div class="q-meta">
+    <span class="q-type">简答</span>
+    <span class="q-difficulty">进阶</span>
+    <span class="q-point">考点 B2 推导逻辑</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q15</span>解释为什么 $p(\theta \mid \phi, Y) \propto p(\theta, \phi \mid Y)$，并说明这一结论在 Gibbs 算法中的应用价值。</div>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">参考答案要点</div>
+      <p><b>推导</b>：由条件概率定义</p>
+      $$ p(\theta \mid \phi, Y) = \frac{p(\theta, \phi \mid Y)}{p(\phi \mid Y)} $$
+      <p>在"求 $\theta$ 的全条件"的视角下，$\phi$ 是给定的，因此分母 $p(\phi \mid Y)$ 是<b>与 $\theta$ 无关的常数</b>，可以丢入正比符号中。所以</p>
+      $$ p(\theta \mid \phi, Y) \propto p(\theta, \phi \mid Y) \propto g(\theta, \phi). $$
+      <p><b>应用价值</b>：</p>
+      <ol>
+        <li>免去归一化常数计算：从联合后验的乘积形式中，只需挑出含 $\theta$ 的因子。</li>
+        <li>常能识别标准分布：当先验是<b>共轭</b>时，得到的全条件是常见分布（Gamma / Normal / Beta 等），可直接精确抽样。</li>
+        <li>把高维抽样降维成一维抽样，大幅简化算法。</li>
+      </ol>
+    </div>
+  </details>
+</div>
+
+<!-- ----------- 计算题 ----------- -->
+<h3>五、计算题（来自 Problem Sheet）</h3>
+
+<div class="question" data-q="16">
+  <div class="q-meta">
+    <span class="q-type">计算</span>
+    <span class="q-difficulty">综合</span>
+    <span class="q-point">Problem 1(a)：连续两参数全条件</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q16</span>设 $\alpha, \beta \in \mathbb{R}$ 的联合后验为
+  $$ p(\alpha, \beta \mid Y) \propto \exp\!\left(-\tfrac{1}{2}\!\left[\alpha^2 + \beta^2 + \tfrac{(\bar{y} - \alpha - \beta)^2}{\sigma^2}\right]\right), $$
+  其中 $\bar{y}, \sigma^2$ 已知。<b>推导全条件 $p(\alpha \mid \beta, Y)$，并指出其分布形式</b>。</div>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">完整解题步骤</div>
+      <p><b>第 1 步：把 $\beta$ 视为常量，挑出指数中含 $\alpha$ 的部分。</b></p>
+      <p>指数中的三项：$\alpha^2$，$\beta^2$（与 $\alpha$ 无关，扔），$\dfrac{(\bar{y}-\alpha-\beta)^2}{\sigma^2}$（含 $\alpha$）。所以</p>
+      $$ p(\alpha \mid \beta, Y) \propto \exp\!\left(-\tfrac{1}{2}\!\left[\alpha^2 + \tfrac{(\bar{y}-\alpha-\beta)^2}{\sigma^2}\right]\right). $$
+      <p><b>第 2 步：展开 $(\bar{y} - \alpha - \beta)^2$。</b></p>
+      $$ (\bar{y} - \alpha - \beta)^2 = \alpha^2 - 2\alpha(\bar{y} - \beta) + (\bar{y} - \beta)^2. $$
+      <p><b>第 3 步：合并所有含 $\alpha$ 的项。</b></p>
+      $$ \alpha^2 + \tfrac{1}{\sigma^2}\!\left[\alpha^2 - 2\alpha(\bar{y}-\beta) + (\bar{y}-\beta)^2\right] = \left(1 + \tfrac{1}{\sigma^2}\right)\alpha^2 - \tfrac{2(\bar{y}-\beta)}{\sigma^2}\alpha + \text{常数}. $$
+      <p><b>第 4 步：配方（视为关于 $\alpha$ 的二次型）。</b></p>
+      <p>形式为 $A\alpha^2 - 2B\alpha + \text{const}$，其中：</p>
+      <ul>
+        <li>$A = 1 + \tfrac{1}{\sigma^2} = \tfrac{\sigma^2 + 1}{\sigma^2}$（精度）</li>
+        <li>$B = \tfrac{\bar{y} - \beta}{\sigma^2}$</li>
+      </ul>
+      <p>对应正态分布形式 $\exp\!\left(-\tfrac{1}{2}\!\left[A\alpha^2 - 2B\alpha\right]\right)$，即 $N\!\left(\dfrac{B}{A}, \dfrac{1}{A}\right)$。</p>
+      <p><b>第 5 步：求出均值与方差。</b></p>
+      $$ \mu_\alpha = \frac{B}{A} = \frac{(\bar{y}-\beta)/\sigma^2}{(\sigma^2+1)/\sigma^2} = \frac{\bar{y} - \beta}{\sigma^2 + 1} $$
+      $$ \text{Var}(\alpha \mid \beta, Y) = \frac{1}{A} = \frac{\sigma^2}{\sigma^2 + 1} $$
+      <div class="box box-formula">
+        $$ \boxed{\, \alpha \mid \beta, Y \;\sim\; \mathcal{N}\!\left(\dfrac{\bar{y} - \beta}{\sigma^2 + 1},\; \dfrac{\sigma^2}{\sigma^2 + 1}\right) \,} $$
+      </div>
+      <p><b>易错提醒</b>：
+        <ul>
+          <li>不要忘掉 $\alpha^2$ 这一项——它和 $(\bar{y}-\alpha-\beta)^2/\sigma^2$ 中的 $\alpha^2$ 项合并后才得到精度 $1+1/\sigma^2$。</li>
+          <li>正态分布的"精度"是方差的倒数；从二次型读出系数后要做倒数。</li>
+        </ul>
+      </p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="17">
+  <div class="q-meta">
+    <span class="q-type">计算</span>
+    <span class="q-difficulty">综合</span>
+    <span class="q-point">Problem 1(b)：对称推导</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q17</span>承上题，推导 $p(\beta \mid \alpha, Y)$。</div>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">参考解答</div>
+      <p>由 $\alpha$ 与 $\beta$ 在联合后验中的<b>完全对称</b>结构（互换 $\alpha \leftrightarrow \beta$ 后表达式不变），可直接得：</p>
+      <div class="box box-formula">
+        $$ \boxed{\, \beta \mid \alpha, Y \;\sim\; \mathcal{N}\!\left(\dfrac{\bar{y} - \alpha}{\sigma^2 + 1},\; \dfrac{\sigma^2}{\sigma^2 + 1}\right) \,} $$
+      </div>
+      <p><b>验证</b>：把 $\beta$ 当变量，按 Q16 步骤重新展开 $(\bar{y} - \alpha - \beta)^2$，结果完全平行。</p>
+      <p><b>注</b>：方差和精度系数 $\sigma^2 / (\sigma^2 + 1)$ <b>不依赖于</b> 条件参数；均值则依赖。这是该模型的对称特征。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="18">
+  <div class="q-meta">
+    <span class="q-type">计算</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">Problem 2(a)：边缘分布</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q18</span>设离散随机变量 $X, Y$ 的联合分布如下表（单元格为 $p(X = x, Y = y)$）：</div>
+  <table>
+    <thead><tr><th></th><th>Y = 1</th><th>Y = 2</th><th>Y = 3</th></tr></thead>
+    <tbody>
+      <tr><th>X = 1</th><td>0.10</td><td>0.05</td><td>0.05</td></tr>
+      <tr><th>X = 2</th><td>0.10</td><td>0.20</td><td>0.10</td></tr>
+      <tr><th>X = 3</th><td>0.05</td><td>0.10</td><td>0.25</td></tr>
+    </tbody>
+  </table>
+  <p>计算边缘分布 $p(X = x)$ 与 $p(Y = y)$，$x, y \in \{1, 2, 3\}$。</p>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">参考解答</div>
+      <p><b>边缘 $p(X)$：按行求和</b></p>
+      <ul>
+        <li>$p(X = 1) = 0.10 + 0.05 + 0.05 = \mathbf{0.20}$</li>
+        <li>$p(X = 2) = 0.10 + 0.20 + 0.10 = \mathbf{0.40}$</li>
+        <li>$p(X = 3) = 0.05 + 0.10 + 0.25 = \mathbf{0.40}$</li>
+      </ul>
+      <p><b>边缘 $p(Y)$：按列求和</b></p>
+      <ul>
+        <li>$p(Y = 1) = 0.10 + 0.10 + 0.05 = \mathbf{0.25}$</li>
+        <li>$p(Y = 2) = 0.05 + 0.20 + 0.10 = \mathbf{0.35}$</li>
+        <li>$p(Y = 3) = 0.05 + 0.10 + 0.25 = \mathbf{0.40}$</li>
+      </ul>
+      <p><b>验证</b>：两组边缘概率之和都应为 1。$0.20 + 0.40 + 0.40 = 1$ ✓，$0.25 + 0.35 + 0.40 = 1$ ✓。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="19">
+  <div class="q-meta">
+    <span class="q-type">计算</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">Problem 2(b)：p(X|Y)</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q19</span>承上题，求 $p(X \mid Y = y)$，对 $y \in \{1, 2, 3\}$ 分别给出概率表。</div>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">参考解答</div>
+      <p>用 $p(X = x \mid Y = y) = \dfrac{p(X = x, Y = y)}{p(Y = y)}$，分母是边缘 $p(Y)$。</p>
+
+      <p><b>$p(X \mid Y = 1)$（除以 $0.25$）：</b></p>
+      <table>
+        <thead><tr><th>X</th><th>1</th><th>2</th><th>3</th></tr></thead>
+        <tbody><tr><td>p</td><td>0.10/0.25 = <b>0.40</b></td><td>0.10/0.25 = <b>0.40</b></td><td>0.05/0.25 = <b>0.20</b></td></tr></tbody>
+      </table>
+
+      <p><b>$p(X \mid Y = 2)$（除以 $0.35$）：</b></p>
+      <table>
+        <thead><tr><th>X</th><th>1</th><th>2</th><th>3</th></tr></thead>
+        <tbody><tr><td>p</td><td>0.05/0.35 = <b>1/7 ≈ 0.143</b></td><td>0.20/0.35 = <b>4/7 ≈ 0.571</b></td><td>0.10/0.35 = <b>2/7 ≈ 0.286</b></td></tr></tbody>
+      </table>
+
+      <p><b>$p(X \mid Y = 3)$（除以 $0.40$）：</b></p>
+      <table>
+        <thead><tr><th>X</th><th>1</th><th>2</th><th>3</th></tr></thead>
+        <tbody><tr><td>p</td><td>0.05/0.40 = <b>0.125</b></td><td>0.10/0.40 = <b>0.25</b></td><td>0.25/0.40 = <b>0.625</b></td></tr></tbody>
+      </table>
+
+      <p><b>验证</b>：每个条件分布的概率之和应为 1：$0.4 + 0.4 + 0.2 = 1$ ✓；$1/7 + 4/7 + 2/7 = 1$ ✓；$0.125 + 0.25 + 0.625 = 1$ ✓。</p>
+      <p><b>易错提醒</b>：分母务必是边缘 $p(Y = y)$，<b>不是</b>联合的全部之和（联合恒为 1）。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="20">
+  <div class="q-meta">
+    <span class="q-type">计算</span>
+    <span class="q-difficulty">基础</span>
+    <span class="q-point">Problem 2(c)：p(Y|X)</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q20</span>承 Q18，求 $p(Y \mid X = x)$，对 $x \in \{1, 2, 3\}$ 分别给出概率表。</div>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">参考解答</div>
+      <p>用 $p(Y = y \mid X = x) = \dfrac{p(X = x, Y = y)}{p(X = x)}$。</p>
+
+      <p><b>$p(Y \mid X = 1)$（除以 $0.20$）：</b></p>
+      <table>
+        <thead><tr><th>Y</th><th>1</th><th>2</th><th>3</th></tr></thead>
+        <tbody><tr><td>p</td><td>0.10/0.20 = <b>0.50</b></td><td>0.05/0.20 = <b>0.25</b></td><td>0.05/0.20 = <b>0.25</b></td></tr></tbody>
+      </table>
+
+      <p><b>$p(Y \mid X = 2)$（除以 $0.40$）：</b></p>
+      <table>
+        <thead><tr><th>Y</th><th>1</th><th>2</th><th>3</th></tr></thead>
+        <tbody><tr><td>p</td><td>0.10/0.40 = <b>0.25</b></td><td>0.20/0.40 = <b>0.50</b></td><td>0.10/0.40 = <b>0.25</b></td></tr></tbody>
+      </table>
+
+      <p><b>$p(Y \mid X = 3)$（除以 $0.40$）：</b></p>
+      <table>
+        <thead><tr><th>Y</th><th>1</th><th>2</th><th>3</th></tr></thead>
+        <tbody><tr><td>p</td><td>0.05/0.40 = <b>0.125</b></td><td>0.10/0.40 = <b>0.25</b></td><td>0.25/0.40 = <b>0.625</b></td></tr></tbody>
+      </table>
+
+      <p><b>验证</b>：每行加起来都应为 1 ✓。</p>
+    </div>
+  </details>
+</div>
+
+<div class="question" data-q="21">
+  <div class="q-meta">
+    <span class="q-type">计算 + 论述</span>
+    <span class="q-difficulty">综合</span>
+    <span class="q-point">Problem 2(d)：Gibbs 追踪</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q21</span>Gibbs Sampler 初始化为 $(X^{(0)}, Y^{(0)}) = (1, 1)$，每步取相关全条件的<b>众数 (mode)</b> 作为抽样值，更新顺序为先抽 $X^{(t+1)} \sim p(X \mid Y^{(t)})$，再抽 $Y^{(t+1)} \sim p(Y \mid X^{(t+1)})$。列出 $t = 0, 1, 2$ 时链经过的状态，并讨论该序列说明了什么。</div>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">完整解答</div>
+      <p><b>第 1 步：$t = 0$ 初值已给出</b>：$(X^{(0)}, Y^{(0)}) = (1, 1)$。</p>
+
+      <p><b>第 2 步：求 $X^{(1)}$。</b>需查 $p(X \mid Y = 1)$（由 Q19）：</p>
+      <ul><li>$X = 1: 0.4$，$X = 2: 0.4$，$X = 3: 0.2$。</li></ul>
+      <div class="box box-warn">
+        <b>⚠ 注意</b>：$X = 1$ 与 $X = 2$ 概率<b>并列最大</b>（同为 0.4），众数不唯一！这里需要打破并列的规则。
+      </div>
+      <p>下面分两种约定讨论：</p>
+
+      <p><b>方案 A — 打破并列时选较大值（取 $X = 2$）：</b></p>
+      <ul>
+        <li>$X^{(1)} = 2$；接着抽 $Y^{(1)} \sim p(Y \mid X = 2)$，分布为 $\{0.25, 0.50, 0.25\}$，众数 $Y = 2$。所以 $(X^{(1)}, Y^{(1)}) = (2, 2)$。</li>
+        <li>$t = 2$：$X^{(2)} \sim p(X \mid Y = 2)$，分布为 $\{1/7, 4/7, 2/7\}$，唯一众数 $X = 2$。$Y^{(2)} \sim p(Y \mid X = 2)$，众数 $Y = 2$。所以 $(X^{(2)}, Y^{(2)}) = (2, 2)$。</li>
+      </ul>
+
+      <p><b>方案 B — 打破并列时保留原值（仍取 $X = 1$）：</b></p>
+      <ul>
+        <li>$X^{(1)} = 1$；接着 $Y^{(1)} \sim p(Y \mid X = 1) = \{0.5, 0.25, 0.25\}$，众数 $Y = 1$。所以 $(X^{(1)}, Y^{(1)}) = (1, 1)$。</li>
+        <li>$t = 2$：同样的并列再次发生，链停留在 $(1, 1)$。</li>
+      </ul>
+
+      <p><b>典型答案（方案 A）状态序列</b>：</p>
+      $$ (1, 1) \;\longrightarrow\; (2, 2) \;\longrightarrow\; (2, 2) $$
+
+      <p><b>讨论</b>：</p>
+      <ul>
+        <li>无论哪种约定，链都迅速被"吸引"到联合分布的<b>高概率区域</b>。表中 $(2, 2)$ 概率 $0.20$，$(3, 3)$ 概率 $0.25$，这些是联合分布的"主峰"。</li>
+        <li>用众数策略意味着链<b>缺乏随机性</b>——很快就停在局部最高点。它探索的是"分布峰附近的小邻域"，<b>不能</b>充分代表整个后验分布。</li>
+        <li>方案 A 的轨迹 $(1,1) \to (2,2) \to (2,2)$ 后续会一直停在 $(2, 2)$，<b>类似 stuck chain（卡住）</b>。</li>
+        <li><b>启示</b>：实际 Gibbs 采样应当<b>按全条件分布随机抽样</b>（按权重抽样），而不是仅取众数；否则将丧失 MCMC 探索后验的能力。</li>
+      </ul>
+      <p><b>易错提醒</b>：很多同学没注意到 $X = 1$ 和 $X = 2$ 在 $p(X \mid Y = 1)$ 下并列为众数，直接默认选 $X = 2$ 或 $X = 1$ 而不交代。考试中需<b>明确指出</b>并列存在并说明所用约定。</p>
+    </div>
+  </details>
+</div>
+
+<!-- ----------- 综合论述题 ----------- -->
+<h3>六、综合论述题</h3>
+
+<div class="question" data-q="22">
+  <div class="q-meta">
+    <span class="q-type">论述</span>
+    <span class="q-difficulty">综合</span>
+    <span class="q-point">综合多个考点</span>
+  </div>
+  <div class="q-stem"><span class="q-num">Q22</span>请综合阐述：从给定模型出发，到最终得到可信后验估计的<b>完整流程</b>，需要哪些步骤？并指出每一步可能出现的问题与诊断方法。</div>
+  <details class="answer-block">
+    <summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <div class="a-tag">参考答案要点</div>
+      <ol>
+        <li><b>建立层次模型</b>：写出似然 + 先验 + 超先验。
+          <ul><li>潜在问题：先验是否合理；模型是否过参数化。</li></ul>
+        </li>
+        <li><b>写出联合后验（正比形式）</b>：$p(\theta, \phi \mid Y) \propto \text{似然} \times \text{先验}$。
+          <ul><li>不需要归一化常数。</li></ul>
+        </li>
+        <li><b>推导每个参数的全条件分布</b>：把目标参数以外的当作常数，挑出含目标参数的因子。
+          <ul><li>若是标准分布 → 直接抽样；否则用 M-H within Gibbs。</li></ul>
+        </li>
+        <li><b>选择初值并运行 Gibbs 算法</b>：循环更新所有参数。
+          <ul><li>初值不能落在零概率点；多个初值可帮助诊断。</li></ul>
+        </li>
+        <li><b>丢弃 burn-in 样本</b>：前 $m_0$ 个样本不可用。</li>
+        <li><b>用轨迹图诊断收敛</b>：
+          <ul>
+            <li>看是否像 hairy caterpillar；</li>
+            <li>诊断 drift、poor mixing、stuck chain 等异常；</li>
+            <li>根据具体情况调整：增加 burn-in、调整提议方差、增加迭代数。</li>
+          </ul>
+        </li>
+        <li><b>（可选）其他诊断</b>：接受率、自相关图、多链、Gelman-Rubin $\hat{R}$。</li>
+        <li><b>用收敛后的样本做后验推断</b>：均值、分位数、可信区间等。</li>
+      </ol>
+      <p><b>关键提醒</b>：MCMC 是一个<b>"建模 → 抽样 → 诊断 → 推断"</b>的迭代过程；任何一步出错都会导致后验估计失真。轨迹图是最便宜也最常用的第一道防线。</p>
+    </div>
+  </details>
+</div>
+
+</section>
+
+<button id="backToTop" aria-label="回到顶部">↑</button>
+
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  // ====== 状态 ======
+  var answered = 0;
+  var correct = 0;
+  var totalChoiceQuestions = document.querySelectorAll('.question[data-q] .options').length;
+
+  // ====== 进度更新 ======
+  function updateProgress() {
+    var ansEl = document.getElementById('progress-answered');
+    var corEl = document.getElementById('progress-correct');
+    if (ansEl) ansEl.textContent = answered;
+    if (corEl) corEl.textContent = correct;
+  }
+
+  // ====== 处理选项点击 ======
+  function handleOptionClick(optionEl) {
+    var question = optionEl.closest('.question');
+    if (!question) return;
+    if (question.classList.contains('answered')) return; // 已答锁定
+
+    var isCorrect = optionEl.dataset.correct === 'true';
+
+    // 标记所有选项：正确显示绿色；用户错误选的显示红色
+    var options = question.querySelectorAll('.option');
+    options.forEach(function(opt) {
+      if (opt.dataset.correct === 'true') {
+        opt.classList.add('correct');
+      } else if (opt === optionEl) {
+        opt.classList.add('incorrect');
+      }
+    });
+
+    // 自动展开答案
+    var details = question.querySelector('details.answer-block');
+    if (details) details.open = true;
+
+    // 锁定题目
+    question.classList.add('answered');
+
+    // 更新进度
+    answered += 1;
+    if (isCorrect) correct += 1;
+    updateProgress();
+  }
+
+  // ====== 全局点击事件委托 ======
+  document.addEventListener('click', function(event) {
+    var target = event.target;
+
+    // 1. 选项点击
+    var option = target.closest('.option');
+    if (option) {
+      handleOptionClick(option);
+      return;
+    }
+
+    // 2. 展开全部
+    if (target.id === 'expandAll') {
+      var allDetails = document.querySelectorAll('details.answer-block');
+      allDetails.forEach(function(d) { d.open = true; });
+      return;
+    }
+
+    // 3. 收起全部
+    if (target.id === 'collapseAll') {
+      var allDetails2 = document.querySelectorAll('details.answer-block');
+      allDetails2.forEach(function(d) { d.open = false; });
+      return;
+    }
+
+    // 4. 回到顶部
+    if (target.id === 'backToTop' || target.closest('#backToTop')) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+  });
+
+  // ====== 回到顶部按钮显示 ======
+  var backTopBtn = document.getElementById('backToTop');
+  window.addEventListener('scroll', function() {
+    if (!backTopBtn) return;
+    if (window.scrollY > 400) {
+      backTopBtn.classList.add('show');
+    } else {
+      backTopBtn.classList.remove('show');
+    }
+  });
+
+  // ====== MathJax 加载失败检测 ======
+  setTimeout(function() {
+    if (!window.__mathjax_ready && !window.MathJax?.startup?.document) {
+      var w = document.getElementById('mathjax-warning');
+      if (w) w.style.display = 'block';
+    }
+  }, 5000);
+
+  // 初始化进度显示
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>

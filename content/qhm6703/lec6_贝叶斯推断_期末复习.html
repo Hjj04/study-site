@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 6 期末复习 — 正态数据的贝叶斯推断</title>
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --card: #ffffff;
+    --text: #2c2c2c;
+    --text-light: #5a5a5a;
+    --accent: #3a5bc7;
+    --accent-light: #e8edfa;
+    --accent-dark: #283fa0;
+    --green: #1a8a4a;
+    --green-bg: #e6f7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --orange: #e67e22;
+    --orange-bg: #fef5e7;
+    --purple: #7c3aed;
+    --purple-bg: #f3eefe;
+    --border: #e0ddd8;
+    --shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --radius: 10px;
+    --star-high: #e74c3c;
+    --star-mid: #e67e22;
+    --star-low: #95a5a6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 16px;
+    padding-bottom: 80px;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #3a5bc7 0%, #6366f1 100%);
+    color: white;
+    padding: 40px 20px 30px;
+    text-align: center;
+  }
+  header h1 { font-size: 1.8em; font-weight: 700; margin-bottom: 8px; }
+  header p { opacity: 0.9; font-size: 1.05em; }
+
+  /* Nav */
+  nav {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  nav .container {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  nav a {
+    text-decoration: none;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9em;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1.5px solid var(--accent);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  nav a:hover, nav a:focus {
+    background: var(--accent);
+    color: white;
+  }
+
+  /* Progress Bar */
+  .progress-bar {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 24px auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    box-shadow: var(--shadow);
+  }
+  .progress-bar .label { font-weight: 600; font-size: 0.95em; }
+  .progress-track {
+    flex: 1;
+    min-width: 120px;
+    height: 10px;
+    background: #e8e6e1;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    border-radius: 5px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-stats { font-size: 0.9em; color: var(--text-light); }
+  .progress-stats strong { color: var(--green); }
+
+  /* Sections */
+  .section {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin: 24px auto;
+    padding: 32px 28px;
+    border: 1px solid var(--border);
+  }
+  .section h2 {
+    font-size: 1.5em;
+    color: var(--accent-dark);
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 10px;
+    margin-bottom: 24px;
+  }
+  .section h3 {
+    font-size: 1.2em;
+    color: var(--text);
+    margin: 24px 0 12px;
+    padding-left: 12px;
+    border-left: 4px solid var(--accent);
+  }
+  .section h4 {
+    font-size: 1.05em;
+    color: var(--accent-dark);
+    margin: 18px 0 8px;
+  }
+  .section p { margin-bottom: 12px; }
+
+  /* Highlight boxes */
+  .highlight-box {
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    border-left: 4px solid;
+  }
+  .highlight-box.blue { background: var(--accent-light); border-color: var(--accent); }
+  .highlight-box.green { background: var(--green-bg); border-color: var(--green); }
+  .highlight-box.orange { background: var(--orange-bg); border-color: var(--orange); }
+  .highlight-box.red { background: var(--red-bg); border-color: var(--red); }
+  .highlight-box.purple { background: var(--purple-bg); border-color: var(--purple); }
+  .highlight-box strong { display: block; margin-bottom: 4px; }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin: 16px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    text-align: center;
+  }
+  th { background: var(--accent-light); font-weight: 600; color: var(--accent-dark); }
+  tr:nth-child(even) { background: #fafaf8; }
+
+  /* Stars */
+  .stars { font-weight: 700; }
+  .stars.high { color: var(--star-high); }
+  .stars.mid { color: var(--star-mid); }
+  .stars.low { color: var(--star-low); }
+
+  /* Tags */
+  .tag {
+    display: inline-block;
+    font-size: 0.78em;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin: 2px 4px 2px 0;
+  }
+  .tag.memory { background: #dbeafe; color: #1e40af; }
+  .tag.understand { background: #fce7f3; color: #9d174d; }
+  .tag.calc { background: #d1fae5; color: #065f46; }
+
+  /* Question blocks */
+  .question-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: var(--shadow);
+  }
+  .question-block .q-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .q-tag {
+    font-size: 0.78em;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+  .q-tag.type { background: var(--accent-light); color: var(--accent-dark); }
+  .q-tag.diff-basic { background: var(--green-bg); color: var(--green); }
+  .q-tag.diff-mid { background: var(--orange-bg); color: var(--orange); }
+  .q-tag.diff-hard { background: var(--red-bg); color: var(--red); }
+  .q-tag.point { background: var(--purple-bg); color: var(--purple); }
+  .q-num { font-weight: 700; font-size: 1.1em; color: var(--accent-dark); }
+
+  /* Choice options */
+  .choices { list-style: none; margin: 12px 0; }
+  .choices li {
+    padding: 10px 16px;
+    margin: 6px 0;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.98em;
+  }
+  .choices li:hover { border-color: var(--accent); background: var(--accent-light); }
+  .choices li.correct { border-color: var(--green); background: var(--green-bg); cursor: default; }
+  .choices li.incorrect { border-color: var(--red); background: var(--red-bg); cursor: default; }
+  .choices li.locked { pointer-events: none; opacity: 0.7; }
+  .choices li.locked.correct { opacity: 1; }
+
+  /* Details / answer blocks */
+  details.answer-block {
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  details.answer-block summary {
+    padding: 10px 16px;
+    font-weight: 600;
+    color: var(--accent);
+    cursor: pointer;
+    background: #f5f4f1;
+    font-size: 0.95em;
+    list-style: none;
+    user-select: none;
+  }
+  details.answer-block summary::-webkit-details-marker { display: none; }
+  details.answer-block summary::before { content: "▶ "; font-size: 0.8em; }
+  details.answer-block[open] summary::before { content: "▼ "; }
+  details.answer-block .answer-content {
+    padding: 16px 20px;
+    background: #fcfcfb;
+    border-top: 1px solid var(--border);
+    font-size: 0.95em;
+    line-height: 1.8;
+  }
+  .answer-content .step {
+    margin: 8px 0;
+    padding: 8px 12px;
+    background: var(--accent-light);
+    border-radius: 6px;
+  }
+  .answer-content .warn {
+    color: var(--red);
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  /* Global buttons */
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+  .btn {
+    padding: 8px 20px;
+    border: 2px solid var(--accent);
+    border-radius: 20px;
+    background: white;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: var(--accent); color: white; }
+
+  /* Back to top */
+  .back-top {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-size: 1.3em;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    transition: transform 0.2s;
+  }
+  .back-top:hover { transform: scale(1.1); }
+  .back-top.show { display: flex; }
+
+  /* MathJax fallback */
+  .mathjax-fallback {
+    display: none;
+    background: var(--orange-bg);
+    border: 1px solid var(--orange);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 16px auto;
+    font-size: 0.9em;
+    text-align: center;
+  }
+  .mathjax-fallback.show { display: block; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.4em; }
+    .section { padding: 20px 16px; }
+    .question-block { padding: 16px; }
+    nav a { font-size: 0.8em; padding: 5px 12px; }
+    .progress-bar { flex-direction: column; align-items: stretch; text-align: center; }
+  }
+  .formula-box {
+    background: #f0f0f8;
+    border: 1px solid #d0d0e0;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 14px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .example-box {
+    background: #f9f9f2;
+    border: 1px dashed #c0b890;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 14px 0;
+  }
+  .example-box strong { color: var(--accent-dark); }
+</style>
+<!-- MathJax 3 via CDN -->
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+    startup: {
+      pageReady: function(){ return MathJax.startup.defaultPageReady().then(function(){ document.body.classList.add('mathjax-loaded'); }); }
+    }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>📘 Lecture 6 · 正态数据的贝叶斯推断</h1>
+  <p>Bayesian Inference on Normal Data — 期末复习全梳理</p>
+</header>
+
+<nav>
+  <div class="container">
+    <a href="#part1">📖 内容讲解</a>
+    <a href="#part2">🎯 考点梳理</a>
+    <a href="#part3">✏️ 复习题目</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="mathjax-fallback" id="mjFallback">
+    ⚠️ 数学公式渲染组件 (MathJax) 加载失败。公式以原始 LaTeX 代码显示，不影响阅读理解。请检查网络连接后刷新页面。
+  </div>
+
+  <!-- ==================== PART 1 ==================== -->
+  <div class="section" id="part1">
+    <h2>第一部分：课程内容讲解</h2>
+
+    <h3>整体知识脉络</h3>
+    <p>这节课的核心问题是：<strong>当我们观测到一组服从正态分布的数据，但不知道均值 $\mu$ 时，怎样用贝叶斯方法来推断 $\mu$？</strong></p>
+    <p>整体逻辑链条如下：</p>
+    <div class="highlight-box blue">
+      <strong>为什么用正态分布？（中心极限定理 CLT）</strong>
+      许多实际数据可以用正态分布来建模，因为 CLT 告诉我们：大量独立随机变量的和（或均值）近似服从正态分布。
+    </div>
+    <div class="highlight-box green">
+      <strong>贝叶斯推断的框架</strong>
+      先验 (Prior) → 数据/似然 (Likelihood) → 后验 (Posterior)。<br>
+      本节聚焦于：$\mu$ 取离散有限个值时的贝叶斯推断。
+    </div>
+    <div class="highlight-box purple">
+      <strong>从简到繁</strong>
+      先处理<em>单个观测值</em>的情况，再推广到<em>多个观测值（随机样本）</em>的情况。
+    </div>
+
+    <h3>1. 中心极限定理 (CLT)</h3>
+    <p>中心极限定理指出：不管原始随机变量服从什么分布，只要它们独立且具有有限方差，大量这样的随机变量之<strong>和</strong>（或<strong>均值</strong>）的分布就会趋向正态分布。</p>
+    <div class="example-box">
+      <strong>类比理解：</strong>想象你掷一个骰子，结果是均匀分布的（1~6）。但如果你同时掷 100 个骰子并求它们的平均值，这个平均值的分布就会非常接近正态分布——这就是 CLT 的威力。
+    </div>
+    <p>正因为如此，正态分布成为统计建模中<strong>最广泛使用</strong>的分布。</p>
+
+    <h3>2. 正态分布的基本性质</h3>
+    <p>随机变量 $X \sim N(\mu, \sigma^2)$ 的概率密度函数 (PDF) 为：</p>
+    <div class="formula-box">
+      $$p(x \mid \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2\right), \quad -\infty < x < \infty$$
+    </div>
+    <p>关键性质：</p>
+    <div class="highlight-box blue">
+      <strong>对称性：</strong>正态分布关于 $\mu$ 对称，$\mu$ 同时是均值、中位数和众数。
+    </div>
+    <div class="highlight-box green">
+      <strong>95% 区间：</strong>约 95% 的数据落在 $[\mu - 1.96\sigma,\ \mu + 1.96\sigma]$ 区间内。
+    </div>
+
+    <h3>3. 单个观测值的贝叶斯推断</h3>
+    <p>假设只有一个数据点 $Y_1 \sim N(\mu, \sigma_0^2)$，其中方差 $\sigma_0^2$ 已知，$\mu$ 未知。</p>
+
+    <h4>3.1 离散先验</h4>
+    <p>假设 $\mu$ 只可能取有限个值 $\mu_1, \mu_2, \ldots, \mu_m$。我们为每个值赋一个先验概率：</p>
+    <div class="formula-box">
+      $$p(\mu = \mu_i) = c_i, \quad \text{其中 } \sum_{i=1}^{m} c_i = 1$$
+    </div>
+    <p>如果对 $\mu$ 一无所知，可以选<strong>离散均匀先验</strong>，即 $c_i = 1/m$。</p>
+
+    <h4>3.2 似然函数</h4>
+    <p>似然函数是"在给定 $\mu$ 的条件下，观测到 $Y_1 = y_1$ 的概率"：</p>
+    <div class="formula-box">
+      $$L(\mu \mid Y_1) \propto \exp\left(-\frac{1}{2}\left(\frac{y_1 - \mu}{\sigma_0}\right)^2\right)$$
+    </div>
+    <div class="highlight-box orange">
+      <strong>注意：</strong>似然函数是关于 $\mu$ 的函数，$y_1$ 和 $\sigma_0$ 都是已知常数。我们把 $\mu$ 代入不同的取值来计算各自的似然。
+    </div>
+
+    <h4>3.3 后验分布</h4>
+    <p>根据贝叶斯定理，后验概率为：</p>
+    <div class="formula-box">
+      $$p(\mu_j \mid Y_1) = \frac{p(Y_1 \mid \mu_j)\, p(\mu_j)}{\sum_{i=1}^{m} p(Y_1 \mid \mu_i)\, p(\mu_i)} = \frac{\text{似然} \times \text{先验}}{\sum (\text{似然} \times \text{先验})}$$
+    </div>
+    <div class="example-box">
+      <strong>课件例题：</strong>$Y_1 = 3.2$，$\sigma_0^2 = 1$，$\mu \in \{2.0, 2.5, 3.0, 3.5, 4.0\}$，均匀先验（各 0.2）。<br><br>
+      计算步骤：对每个 $\mu_j$，计算 $e^{-\frac{1}{2}(3.2 - \mu_j)^2}$，乘以先验 0.2，再归一化。结果显示 $\mu = 3.0$ 获得最高后验概率 (0.2493)，因为 $3.0$ 最接近观测值 $3.2$。
+    </div>
+
+    <h3>4. 随机样本（多个观测值）的贝叶斯推断</h3>
+    <p>当有 $n$ 个独立同分布的观测 $Y_1, \ldots, Y_n \sim N(\mu, \sigma_0^2)$ 时，推断变得更强大。</p>
+
+    <h4>4.1 联合似然函数</h4>
+    <p>由于各观测独立，联合似然是各个似然的乘积：</p>
+    <div class="formula-box">
+      $$L(\mu \mid Y) = \prod_{i=1}^n L(\mu \mid Y_i) \propto \exp\left(-\frac{n}{2\sigma_0^2}(\bar{y} - \mu)^2\right)$$
+    </div>
+    <p>其中 $\bar{y} = \frac{1}{n}\sum_{i=1}^n y_i$ 是<strong>样本均值</strong>。</p>
+    <div class="highlight-box green">
+      <strong>关键简化：</strong>多个观测值的似然函数只依赖于<strong>样本均值 $\bar{y}$</strong> 和 <strong>样本量 $n$</strong>，无需逐个处理每个数据点！$\bar{y}$ 是 $\mu$ 的<strong>充分统计量</strong>。
+    </div>
+
+    <h4>4.2 后验分布</h4>
+    <div class="formula-box">
+      $$p(\mu_j \mid Y) = \frac{p(Y \mid \mu_j)\, p(\mu_j)}{\sum_{i=1}^{m} p(Y \mid \mu_i)\, p(\mu_i)}$$
+    </div>
+
+    <h4>4.3 两种等价方法</h4>
+    <div class="highlight-box purple">
+      <strong>方法 A（一次性处理）：</strong>直接用所有数据计算联合似然，然后乘以先验做归一化。<br>
+      <strong>方法 B（逐步更新）：</strong>先用 $Y_1$ 做一次贝叶斯更新得到后验；把这个后验作为新的先验，再用 $Y_2$ 更新……依次进行到 $Y_n$。两种方法结果完全一致。
+    </div>
+
+    <div class="example-box">
+      <strong>课件例题：</strong>$Y_1=3.2, Y_2=2.2, Y_3=3.6, Y_4=4.1$，$\sigma_0^2=1$，$\bar{y}=3.275$，$\mu \in \{2.0, 2.5, 3.0, 3.5, 4.0\}$。<br><br>
+      似然中指数部分为 $e^{-\frac{4}{2 \times 1}(3.275 - \mu)^2} = e^{-2(3.275 - \mu)^2}$。<br>
+      结果：$\mu = 3.5$ 获得最高后验 (0.3685)。与仅用单个 $Y_1=3.2$ 相比，4 个数据点让后验分布更"尖锐"（更集中），不确定性更小。
+    </div>
+
+    <h3>5. 更多数据 → 更精确的推断</h3>
+    <p>课件强调了一个重要现象：随着数据量增加，后验分布变得越来越集中在真正的 $\mu$ 附近。例如：</p>
+    <div class="highlight-box orange">
+      <strong>对比：</strong>仅用 $Y_1 = 3.2$ 时，$p(\mu=2 \mid Y_1) = 0.1238$（还有一定可能性）。<br>
+      使用全部 4 个数据后，$p(\mu=2 \mid Y) = 0.0157$（可能性大幅下降）。<br>
+      更多的数据让后验越来越由数据主导，先验的影响逐渐减弱。
+    </div>
+
+    <h3>6. 习题涉及的扩展内容（Problem Sheet）</h3>
+    <p>习题表不仅涉及正态分布，还涉及泊松分布和二项分布的贝叶斯推断，这些是之前课程的重要内容：</p>
+    <div class="highlight-box blue">
+      <strong>泊松-伽马共轭：</strong>泊松似然 + Gamma 先验 → Gamma 后验。<br>
+      <strong>二项-贝塔共轭：</strong>二项似然 + Beta 先验 → Beta 后验。<br>
+      <strong>离散先验 / 均匀先验：</strong>任何似然函数都可以搭配离散先验使用贝叶斯定理。
+    </div>
+  </div>
+
+  <!-- ==================== PART 2 ==================== -->
+  <div class="section" id="part2">
+    <h2>第二部分：考点梳理</h2>
+
+    <!-- KP 1 -->
+    <h3>考点 1：中心极限定理 (CLT)</h3>
+    <div class="highlight-box blue">
+      <strong>定义：</strong>大量独立随机变量的和（或均值）近似服从正态分布，无论原始分布是什么（只需有限方差）。<br>
+      <strong>意义：</strong>解释了正态分布为何是最常用的数据模型。<br>
+      <span class="tag understand">需要理解</span>
+      <span class="stars mid">★★</span>
+    </div>
+    <p><strong>易混淆点：</strong>CLT 描述的是<em>均值/和的分布</em>趋向正态，而不是说原始数据本身一定是正态的。</p>
+
+    <!-- KP 2 -->
+    <h3>考点 2：正态分布的 PDF 及基本性质</h3>
+    <div class="highlight-box blue">
+      <strong>PDF：</strong>$p(x \mid \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2\right)$<br>
+      <strong>关键性质：</strong>① 关于 $\mu$ 对称；② $\mu$ = 均值 = 中位数 = 众数；③ 95% 数据在 $\mu \pm 1.96\sigma$ 内。<br>
+      <span class="tag memory">需要记忆</span> <span class="tag understand">需要理解</span>
+      <span class="stars mid">★★</span>
+    </div>
+    <p><strong>常见错误：</strong>混淆标准差 $\sigma$ 和方差 $\sigma^2$，在似然计算中代错。</p>
+
+    <!-- KP 3 -->
+    <h3>考点 3：离散先验的设定</h3>
+    <div class="highlight-box green">
+      <strong>定义：</strong>$p(\mu = \mu_i) = c_i$，$\sum c_i = 1$。离散均匀先验：$c_i = 1/m$。<br>
+      <strong>适用场景：</strong>$\mu$ 只可能取有限个已知值时使用。<br>
+      <span class="tag memory">需要记忆</span>
+      <span class="stars high">★★★</span>
+    </div>
+    <p><strong>易混淆点：</strong>"均匀先验"指每个值概率相等，不等于"$\mu$ 可以取任何值"。</p>
+
+    <!-- KP 4 -->
+    <h3>考点 4：单个观测的似然函数 ★★★</h3>
+    <div class="highlight-box green">
+      <strong>公式：</strong>$L(\mu \mid Y_1) \propto \exp\left(-\frac{1}{2}\left(\frac{y_1 - \mu}{\sigma_0}\right)^2\right)$<br>
+      <strong>核心理解：</strong>似然是关于 $\mu$ 的函数（$y_1, \sigma_0$ 是常数），可忽略与 $\mu$ 无关的常数因子。<br>
+      <span class="tag calc">需要计算</span>
+      <span class="stars high">★★★</span>
+    </div>
+    <p><strong>常见错误：</strong>① 忘记似然是 $\mu$ 的函数（把 $y_1$ 当变量）；② 把 $\sigma_0^2$ 和 $\sigma_0$ 搞混（指数中分母是 $\sigma_0$）。</p>
+
+    <!-- KP 5 -->
+    <h3>考点 5：单个观测的后验分布计算 ★★★</h3>
+    <div class="highlight-box green">
+      <strong>公式：</strong>$p(\mu_j \mid Y_1) = \frac{p(Y_1 \mid \mu_j)\, p(\mu_j)}{\sum_{i=1}^{m} p(Y_1 \mid \mu_i)\, p(\mu_i)}$<br>
+      <strong>计算步骤：</strong>① 计算每个 $\mu_j$ 的似然值；② 乘以先验；③ 求和（分母）；④ 归一化。<br>
+      <span class="tag calc">需要计算</span>
+      <span class="stars high">★★★</span>
+    </div>
+    <p><strong>易错提醒：</strong>归一化步骤不能省略——分母是所有 (先验 × 似然) 的总和，不是某一项。</p>
+
+    <!-- KP 6 -->
+    <h3>考点 6：随机样本的似然函数（样本均值的作用） ★★★</h3>
+    <div class="highlight-box green">
+      <strong>公式：</strong>$L(\mu \mid Y) \propto \exp\left(-\frac{n}{2\sigma_0^2}(\bar{y} - \mu)^2\right)$，其中 $\bar{y} = \frac{1}{n}\sum y_i$<br>
+      <strong>核心要点：</strong>联合似然只通过 $\bar{y}$ 和 $n$ 来影响后验。$\bar{y}$ 是充分统计量。<br>
+      <span class="tag calc">需要计算</span> <span class="tag understand">需要理解</span>
+      <span class="stars high">★★★</span>
+    </div>
+    <p><strong>常见错误：</strong>指数中分母是 $\frac{2\sigma_0^2}{n}$（即 $\sigma_0^2/n$ 的 2 倍），不是 $2\sigma_0^2$。注意 $n$ 出现在分子而非分母。</p>
+
+    <!-- KP 7 -->
+    <h3>考点 7：随机样本的后验分布计算 ★★★</h3>
+    <div class="highlight-box green">
+      <strong>公式：</strong>同考点 5 的结构，但用联合似然代替单次似然。<br>
+      <strong>步骤总结：</strong>① 计算 $\bar{y}$；② 用联合似然公式计算每个 $\mu_j$ 的似然；③ 乘以先验；④ 归一化。<br>
+      <span class="tag calc">需要计算</span>
+      <span class="stars high">★★★</span>
+    </div>
+
+    <!-- KP 8 -->
+    <h3>考点 8：逐步更新 vs 一次性处理</h3>
+    <div class="highlight-box blue">
+      <strong>等价性：</strong>可以逐个观测更新（上一次的后验变下一次的先验），也可以一次性用全部数据更新，结果相同。<br>
+      <span class="tag understand">需要理解</span>
+      <span class="stars mid">★★</span>
+    </div>
+
+    <!-- KP 9 -->
+    <h3>考点 9：数据量对后验的影响</h3>
+    <div class="highlight-box blue">
+      <strong>核心结论：</strong>数据越多 → 后验越集中 → 先验影响越小 → 推断越精确。<br>
+      <span class="tag understand">需要理解</span>
+      <span class="stars mid">★★</span>
+    </div>
+
+    <!-- KP 10 -->
+    <h3>考点 10：泊松-伽马共轭（Problem Sheet 延伸）</h3>
+    <div class="highlight-box purple">
+      <strong>共轭关系：</strong>若 $Y_i \sim \text{Poisson}(\mu)$，先验 $\mu \sim \text{Gamma}(\alpha, \beta)$，则后验 $\mu \mid Y \sim \text{Gamma}(\alpha + \sum y_i,\ \beta + n)$。<br>
+      <span class="tag memory">需要记忆</span> <span class="tag calc">需要计算</span>
+      <span class="stars high">★★★</span>
+    </div>
+
+    <!-- KP 11 -->
+    <h3>考点 11：二项-贝塔共轭（Problem Sheet 延伸）</h3>
+    <div class="highlight-box purple">
+      <strong>共轭关系：</strong>若 $Y \sim \text{Binomial}(n, \theta)$，先验 $\theta \sim \text{Beta}(\alpha, \beta)$，则后验 $\theta \mid Y \sim \text{Beta}(\alpha + \sum y_i,\ \beta + n - \sum y_i)$。<br>
+      <span class="tag memory">需要记忆</span> <span class="tag calc">需要计算</span>
+      <span class="stars high">★★★</span>
+    </div>
+
+    <!-- KP 12 -->
+    <h3>考点 12：均匀先验与"后验 ∝ 似然"</h3>
+    <div class="highlight-box purple">
+      <strong>核心思想：</strong>当先验为均匀分布 $p(\mu) = \text{constant}$ 时，后验正比于似然：Posterior $\propto$ Likelihood。<br>
+      <strong>应用：</strong>对泊松数据用均匀先验，后验为 Gamma 分布。<br>
+      <span class="tag understand">需要理解</span> <span class="tag calc">需要计算</span>
+      <span class="stars mid">★★</span>
+    </div>
+  </div>
+
+  <!-- ==================== PART 3 ==================== -->
+  <div class="section" id="part3">
+    <h2>第三部分：复习题目</h2>
+
+    <div class="progress-bar" id="progressBar">
+      <span class="label">📊 做题进度</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-stats">已答 <strong id="answered">0</strong>/<span id="totalQ">15</span> 题，正确 <strong id="correctCount">0</strong> 题</span>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn" id="expandAll">展开全部答案</button>
+      <button class="btn" id="collapseAll">收起全部答案</button>
+    </div>
+
+    <!-- ===== Q1 ===== -->
+    <div class="question-block" id="q1">
+      <div class="q-header">
+        <span class="q-num">Q1</span>
+        <span class="q-tag type">选择题</span>
+        <span class="q-tag diff-basic">基础</span>
+        <span class="q-tag point">考点 1: CLT</span>
+      </div>
+      <p>中心极限定理 (CLT) 的核心含义是什么？</p>
+      <ul class="choices" data-answer="C" data-qid="q1">
+        <li data-option="A">A. 任何随机变量本身都服从正态分布</li>
+        <li data-option="B">B. 正态分布的均值等于中位数</li>
+        <li data-option="C">C. 大量独立随机变量的和（或均值）近似服从正态分布</li>
+        <li data-option="D">D. 样本量越大，方差越大</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><strong>正确答案：C</strong></p>
+          <p><strong>解析：</strong>CLT 说的是<em>和/均值</em>的分布趋向正态，而非原始变量本身。选项 A 混淆了这一点；B 是正态分布的性质但不是 CLT 的含义；D 完全错误。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q2 ===== -->
+    <div class="question-block" id="q2">
+      <div class="q-header">
+        <span class="q-num">Q2</span>
+        <span class="q-tag type">选择题</span>
+        <span class="q-tag diff-basic">基础</span>
+        <span class="q-tag point">考点 4: 似然函数</span>
+      </div>
+      <p>对于 $Y_1 \sim N(\mu, \sigma_0^2)$，似然函数 $L(\mu \mid Y_1)$ 是关于哪个变量的函数？</p>
+      <ul class="choices" data-answer="B" data-qid="q2">
+        <li data-option="A">A. $Y_1$</li>
+        <li data-option="B">B. $\mu$</li>
+        <li data-option="C">C. $\sigma_0^2$</li>
+        <li data-option="D">D. $Y_1$ 和 $\mu$</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><strong>正确答案：B</strong></p>
+          <p><strong>解析：</strong>似然函数的本质是"固定数据，让参数变化"。在这里 $y_1$ 和 $\sigma_0^2$ 都是已知常数，唯一变化的量是 $\mu$。这是非常核心的概念。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q3 ===== -->
+    <div class="question-block" id="q3">
+      <div class="q-header">
+        <span class="q-num">Q3</span>
+        <span class="q-tag type">判断题</span>
+        <span class="q-tag diff-basic">基础</span>
+        <span class="q-tag point">考点 8: 逐步更新</span>
+      </div>
+      <p>判断：对于 $n$ 个独立同分布正态观测，使用"逐步更新"（每次用一个数据点）和"一次性使用全部数据"得到的后验分布是不同的。</p>
+      <ul class="choices" data-answer="B" data-qid="q3">
+        <li data-option="A">A. 正确</li>
+        <li data-option="B">B. 错误</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><strong>正确答案：B（错误）</strong></p>
+          <p><strong>解析：</strong>两种方法得到的后验分布<strong>完全相同</strong>。逐步更新时，每一步的后验变成下一步的先验，最终结果与一次性使用全部数据等价。这是贝叶斯更新的重要性质。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q4 ===== -->
+    <div class="question-block" id="q4">
+      <div class="q-header">
+        <span class="q-num">Q4</span>
+        <span class="q-tag type">选择题</span>
+        <span class="q-tag diff-mid">进阶</span>
+        <span class="q-tag point">考点 6: 随机样本似然</span>
+      </div>
+      <p>$Y_1, \ldots, Y_n \sim N(\mu, \sigma_0^2)$ 的联合似然函数可以化简为只依赖于哪些统计量？</p>
+      <ul class="choices" data-answer="C" data-qid="q4">
+        <li data-option="A">A. 所有个体观测值 $y_1, \ldots, y_n$</li>
+        <li data-option="B">B. 样本方差 $s^2$</li>
+        <li data-option="C">C. 样本均值 $\bar{y}$ 和样本量 $n$</li>
+        <li data-option="D">D. 样本中位数和样本量 $n$</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><strong>正确答案：C</strong></p>
+          <p><strong>解析：</strong>$L(\mu \mid Y) \propto \exp\left(-\frac{n}{2\sigma_0^2}(\bar{y} - \mu)^2\right)$，只包含 $\bar{y}$ 和 $n$。$\bar{y}$ 是 $\mu$ 的充分统计量，它"足以"概括全部数据对 $\mu$ 的信息。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q5 ===== -->
+    <div class="question-block" id="q5">
+      <div class="q-header">
+        <span class="q-num">Q5</span>
+        <span class="q-tag type">计算题</span>
+        <span class="q-tag diff-mid">进阶</span>
+        <span class="q-tag point">考点 4, 5: 单次观测后验</span>
+      </div>
+      <p><strong>（Problem Sheet Q1a）</strong>设有 $Y \sim N(\mu, \sigma_0^2 = 0.25^2 = 0.0625)$，观测到 $Y_1 = 4.72$。$\mu$ 的可能取值为 $\{4, 5\}$，先验均匀（各 0.5）。求后验分布 $p(\mu \mid Y_1)$。</p>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><strong>解题步骤：</strong></p>
+          <div class="step">
+            <strong>Step 1：确定参数</strong><br>
+            $y_1 = 4.72$，$\sigma_0 = 0.25$，先验 $p(\mu=4) = p(\mu=5) = 0.5$
+          </div>
+          <div class="step">
+            <strong>Step 2：计算各 $\mu$ 的似然</strong><br>
+            $L(\mu=4 \mid Y_1) \propto e^{-\frac{1}{2}\left(\frac{4.72-4}{0.25}\right)^2} = e^{-\frac{1}{2}(2.88)^2} = e^{-4.1472} \approx 0.01588$<br><br>
+            $L(\mu=5 \mid Y_1) \propto e^{-\frac{1}{2}\left(\frac{4.72-5}{0.25}\right)^2} = e^{-\frac{1}{2}(-1.12)^2} = e^{-0.6272} \approx 0.5340$
+          </div>
+          <div class="step">
+            <strong>Step 3：先验 × 似然</strong><br>
+            $\mu=4$：$0.5 \times 0.01588 = 0.00794$<br>
+            $\mu=5$：$0.5 \times 0.5340 = 0.2670$<br>
+            求和：$0.00794 + 0.2670 = 0.27494$
+          </div>
+          <div class="step">
+            <strong>Step 4：归一化得后验</strong><br>
+            $p(\mu=4 \mid Y_1) = \frac{0.00794}{0.27494} \approx \boxed{0.0289}$<br><br>
+            $p(\mu=5 \mid Y_1) = \frac{0.2670}{0.27494} \approx \boxed{0.9711}$
+          </div>
+          <p><strong>结论：</strong>观测值 4.72 更接近 5，所以后验强烈倾向于 $\mu = 5$。</p>
+          <p class="warn">⚠️ 易错：$\sigma_0 = 0.25$（标准差），不是 $\sigma_0^2 = 0.0625$（方差），似然公式中分母是 $\sigma_0$！</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q6 ===== -->
+    <div class="question-block" id="q6">
+      <div class="q-header">
+        <span class="q-num">Q6</span>
+        <span class="q-tag type">计算题</span>
+        <span class="q-tag diff-hard">综合</span>
+        <span class="q-tag point">考点 6, 7: 随机样本后验</span>
+      </div>
+      <p><strong>（Problem Sheet Q1b）</strong>在 Q5 的设定下，现在使用全部 5 个数据点：$4.72, 5.19, 4.81, 4.87, 4.88$。求后验分布 $p(\mu \mid Y)$。</p>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <div class="step">
+            <strong>Step 1：计算样本均值</strong><br>
+            $\bar{y} = \frac{4.72 + 5.19 + 4.81 + 4.87 + 4.88}{5} = \frac{24.47}{5} = 4.894$
+          </div>
+          <div class="step">
+            <strong>Step 2：确定似然公式参数</strong><br>
+            $n = 5$，$\sigma_0^2 = 0.0625$<br>
+            $\frac{n}{2\sigma_0^2} = \frac{5}{2 \times 0.0625} = \frac{5}{0.125} = 40$<br>
+            所以 $L(\mu \mid Y) \propto e^{-40(\bar{y} - \mu)^2}$
+          </div>
+          <div class="step">
+            <strong>Step 3：计算各 $\mu$ 的似然</strong><br>
+            $\mu=4$：$e^{-40(4.894-4)^2} = e^{-40 \times 0.7992} = e^{-31.97} \approx 1.57 \times 10^{-14}$<br>
+            $\mu=5$：$e^{-40(4.894-5)^2} = e^{-40 \times 0.01124} = e^{-0.4494} \approx 0.6380$
+          </div>
+          <div class="step">
+            <strong>Step 4：先验 × 似然，归一化</strong><br>
+            $\mu=4$：$0.5 \times 1.57 \times 10^{-14} \approx 7.85 \times 10^{-15}$（几乎为零）<br>
+            $\mu=5$：$0.5 \times 0.6380 = 0.3190$<br>
+            求和 $\approx 0.3190$
+          </div>
+          <div class="step">
+            <strong>后验：</strong><br>
+            $p(\mu=4 \mid Y) \approx \boxed{0.0000}$（实际为 $2.46 \times 10^{-14}$）<br>
+            $p(\mu=5 \mid Y) \approx \boxed{1.0000}$
+          </div>
+          <p><strong>分析：</strong>5 个数据点的均值为 4.894，非常接近 5，远离 4。因此后验几乎 100% 确定 $\mu = 5$。对比 Q5（仅用一个数据点时还有约 3% 的概率给 $\mu=4$），多数据点大幅增强了推断的确定性。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q7 ===== -->
+    <div class="question-block" id="q7">
+      <div class="q-header">
+        <span class="q-num">Q7</span>
+        <span class="q-tag type">计算题</span>
+        <span class="q-tag diff-mid">进阶</span>
+        <span class="q-tag point">考点 10: 泊松-伽马共轭</span>
+      </div>
+      <p><strong>（Problem Sheet Q2a）</strong>有 5 个来自 $\text{Poisson}(\mu)$ 的观测：$3, 4, 3, 0, 1$。先验为 $\text{Gamma}(1, 1)$。求后验分布。</p>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <div class="step">
+            <strong>共轭公式：</strong>先验 $\text{Gamma}(\alpha, \beta)$ + 泊松数据 → 后验 $\text{Gamma}(\alpha + \sum y_i, \ \beta + n)$
+          </div>
+          <div class="step">
+            <strong>代入：</strong><br>
+            $\sum y_i = 3 + 4 + 3 + 0 + 1 = 11$，$n = 5$<br>
+            $\alpha' = 1 + 11 = 12$，$\beta' = 1 + 5 = 6$
+          </div>
+          <p><strong>后验：</strong>$\mu \mid Y \sim \boxed{\text{Gamma}(12,\ 6)}$</p>
+          <p><strong>后验均值：</strong>$E[\mu \mid Y] = \alpha'/\beta' = 12/6 = 2$</p>
+          <p class="warn">⚠️ 注意 Gamma 分布的参数化：这里用的是 $\text{Gamma}(\text{shape}, \text{rate})$，不是 $(\text{shape}, \text{scale})$。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q8 ===== -->
+    <div class="question-block" id="q8">
+      <div class="q-header">
+        <span class="q-num">Q8</span>
+        <span class="q-tag type">计算题</span>
+        <span class="q-tag diff-hard">综合</span>
+        <span class="q-tag point">考点 5（泊松版）: 离散先验后验</span>
+      </div>
+      <p><strong>（Problem Sheet Q2b）</strong>同 Q7 的数据（泊松观测 3,4,3,0,1），先验改为离散：$p(\mu=3)=0.6$，$p(\mu=4)=0.4$。求后验。</p>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <div class="step">
+            <strong>Step 1：泊松联合似然</strong><br>
+            $L(\mu \mid Y) \propto e^{-n\mu} \cdot \mu^{\sum y_i} = e^{-5\mu} \cdot \mu^{11}$
+          </div>
+          <div class="step">
+            <strong>Step 2：代入各 $\mu$</strong><br>
+            $\mu=3$：$e^{-15} \times 3^{11} = 3.059 \times 10^{-7} \times 177147 \approx 0.05419$<br>
+            $\mu=4$：$e^{-20} \times 4^{11} = 2.061 \times 10^{-9} \times 4194304 \approx 0.008647$
+          </div>
+          <div class="step">
+            <strong>Step 3：先验 × 似然</strong><br>
+            $\mu=3$：$0.6 \times 0.05419 = 0.03251$<br>
+            $\mu=4$：$0.4 \times 0.008647 = 0.003459$<br>
+            求和：$0.03597$
+          </div>
+          <div class="step">
+            <strong>Step 4：归一化</strong><br>
+            $p(\mu=3 \mid Y) = \frac{0.03251}{0.03597} \approx \boxed{0.9039}$<br><br>
+            $p(\mu=4 \mid Y) = \frac{0.003459}{0.03597} \approx \boxed{0.0961}$
+          </div>
+          <p><strong>解读：</strong>样本均值 $\bar{y} = 11/5 = 2.2$，比 3 和 4 都小，但 3 更接近。加上先验本身就偏向 3（60%），后验更确定 $\mu = 3$。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q9 ===== -->
+    <div class="question-block" id="q9">
+      <div class="q-header">
+        <span class="q-num">Q9</span>
+        <span class="q-tag type">计算题</span>
+        <span class="q-tag diff-hard">综合</span>
+        <span class="q-tag point">考点 12: 均匀先验</span>
+      </div>
+      <p><strong>（Problem Sheet Q2c）</strong>同 Q7 的数据，先验改为均匀先验 $p(\mu) = 1$，$\mu > 0$。求后验分布。</p>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <div class="step">
+            <strong>关键思路：均匀先验意味着后验 ∝ 似然</strong><br>
+            $p(\mu \mid Y) \propto L(\mu \mid Y) \times p(\mu) = L(\mu \mid Y) \times 1 = L(\mu \mid Y)$
+          </div>
+          <div class="step">
+            <strong>泊松似然：</strong><br>
+            $L(\mu \mid Y) \propto e^{-5\mu} \cdot \mu^{11}$
+          </div>
+          <div class="step">
+            <strong>识别分布形式：</strong><br>
+            $p(\mu \mid Y) \propto \mu^{11} \cdot e^{-5\mu}$<br>
+            对比 $\text{Gamma}(\alpha, \beta)$ 的核 $\mu^{\alpha-1} e^{-\beta\mu}$：<br>
+            $\alpha - 1 = 11 \Rightarrow \alpha = 12$，$\beta = 5$
+          </div>
+          <p><strong>后验：</strong>$\mu \mid Y \sim \boxed{\text{Gamma}(12,\ 5)}$</p>
+          <p><strong>后验均值：</strong>$E[\mu \mid Y] = 12/5 = 2.4$（即样本均值 $\bar{y} = 2.2$ 附近）</p>
+          <p class="warn">⚠️ 与 Q7（Gamma(1,1) 先验）的后验 Gamma(12,6) 对比：均匀先验的后验 Gamma(12,5) 的均值 2.4 > 2.0，因为均匀先验相当于 Gamma(1,0)，"先验拉力"更小。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q10 ===== -->
+    <div class="question-block" id="q10">
+      <div class="q-header">
+        <span class="q-num">Q10</span>
+        <span class="q-tag type">计算题</span>
+        <span class="q-tag diff-mid">进阶</span>
+        <span class="q-tag point">考点 11: 二项-贝塔共轭</span>
+      </div>
+      <p><strong>（Problem Sheet Q3a）</strong>从总体中抽取 $n=145$ 个样本，有 12 次成功。数据服从 $\text{Binomial}(145, \theta)$，$\sum y_i = 12$。先验 $\theta \sim \text{Beta}(1, 4)$。求后验。</p>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <div class="step">
+            <strong>共轭公式：</strong>先验 $\text{Beta}(\alpha, \beta)$ + 二项数据 → 后验 $\text{Beta}(\alpha + \sum y_i,\ \beta + n - \sum y_i)$
+          </div>
+          <div class="step">
+            <strong>代入：</strong><br>
+            $\alpha' = 1 + 12 = 13$<br>
+            $\beta' = 4 + 145 - 12 = 137$
+          </div>
+          <p><strong>后验：</strong>$\theta \mid Y \sim \boxed{\text{Beta}(13,\ 137)}$</p>
+          <p><strong>后验均值：</strong>$E[\theta \mid Y] = \frac{13}{13+137} = \frac{13}{150} \approx 0.0867$</p>
+          <p>（对比 MLE：$\hat{\theta} = 12/145 \approx 0.0828$，先验 Beta(1,4) 的均值为 $1/5=0.2$，后验被大量数据拉向 MLE。）</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q11 ===== -->
+    <div class="question-block" id="q11">
+      <div class="q-header">
+        <span class="q-num">Q11</span>
+        <span class="q-tag type">计算题</span>
+        <span class="q-tag diff-hard">综合</span>
+        <span class="q-tag point">考点 5（二项版）: 离散先验</span>
+      </div>
+      <p><strong>（Problem Sheet Q3b）</strong>同 Q10 数据，但先验改为离散：$\theta \in \{0.5, 0.8\}$，各概率 0.5。求后验。</p>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <div class="step">
+            <strong>Step 1：二项似然</strong><br>
+            $L(\theta \mid Y) \propto \theta^{12} (1-\theta)^{133}$<br>
+            （$\binom{145}{12}$ 对两个 $\theta$ 都一样，约分掉）
+          </div>
+          <div class="step">
+            <strong>Step 2：用对数比较</strong><br>
+            由于数值极小，用对数计算：<br>
+            $\ln L(0.5) = 12\ln(0.5) + 133\ln(0.5) = 145\ln(0.5) \approx -100.5$<br>
+            $\ln L(0.8) = 12\ln(0.8) + 133\ln(0.2) \approx -2.68 + (-214.05) = -216.73$<br><br>
+            $\ln L(0.5) - \ln L(0.8) \approx 116.2$<br>
+            即 $L(0.5) / L(0.8) \approx e^{116} \gg 1$
+          </div>
+          <div class="step">
+            <strong>Step 3：结论</strong><br>
+            $\theta = 0.5$ 的似然远远大于 $\theta = 0.8$，因此：<br>
+            $p(\theta = 0.5 \mid Y) \approx \boxed{1.0000}$<br>
+            $p(\theta = 0.8 \mid Y) \approx \boxed{0.0000}$
+          </div>
+          <p><strong>解读：</strong>12/145 ≈ 0.083，这个成功率离 0.5 和 0.8 都很远，但 0.5 产生如此低成功率的概率虽然极小，仍比 0.8 产生 12/145 的概率大得多（差了 $e^{116}$ 倍）。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q12 ===== -->
+    <div class="question-block" id="q12">
+      <div class="q-header">
+        <span class="q-num">Q12</span>
+        <span class="q-tag type">简答题</span>
+        <span class="q-tag diff-basic">基础</span>
+        <span class="q-tag point">考点 9: 数据量影响</span>
+      </div>
+      <p>用课件中的例子说明：当数据量从 1 增加到多个时，后验分布发生了什么变化？为什么会这样？</p>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><strong>参考答案：</strong></p>
+          <p>在课件例题中，仅使用单个观测 $Y_1 = 3.2$ 时，$p(\mu=2 \mid Y_1) = 0.1238$，各 $\mu$ 值的后验概率相对分散。</p>
+          <p>使用 4 个观测后（$\bar{y} = 3.275$），$p(\mu=2 \mid Y) = 0.0157$，后验概率集中在 $\mu = 3.0$ 和 $3.5$ 上。</p>
+          <p><strong>原因：</strong></p>
+          <p>（1）联合似然中指数的系数从 $\frac{1}{2\sigma_0^2}$ 变为 $\frac{n}{2\sigma_0^2}$，$n$ 越大，似然函数越"尖"，区分力越强。</p>
+          <p>（2）更多数据提供了关于 $\mu$ 的更多信息，后验越来越由数据（似然）主导，先验的影响相对减弱。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q13 ===== -->
+    <div class="question-block" id="q13">
+      <div class="q-header">
+        <span class="q-num">Q13</span>
+        <span class="q-tag type">选择题</span>
+        <span class="q-tag diff-mid">进阶</span>
+        <span class="q-tag point">考点 6: 似然公式细节</span>
+      </div>
+      <p>若 $Y_1, \ldots, Y_{10} \sim N(\mu, \sigma_0^2 = 4)$，$\bar{y} = 7.5$。联合似然中指数部分是？</p>
+      <ul class="choices" data-answer="A" data-qid="q13">
+        <li data-option="A">A. $e^{-\frac{10}{8}(7.5 - \mu)^2}$</li>
+        <li data-option="B">B. $e^{-\frac{1}{8}(7.5 - \mu)^2}$</li>
+        <li data-option="C">C. $e^{-\frac{10}{4}(7.5 - \mu)^2}$</li>
+        <li data-option="D">D. $e^{-\frac{1}{2}(7.5 - \mu)^2}$</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><strong>正确答案：A</strong></p>
+          <p><strong>解析：</strong>$L(\mu \mid Y) \propto e^{-\frac{n}{2\sigma_0^2}(\bar{y}-\mu)^2}$。代入 $n=10$，$\sigma_0^2=4$：<br>
+          指数 $= -\frac{10}{2 \times 4}(7.5 - \mu)^2 = -\frac{10}{8}(7.5 - \mu)^2$。<br>
+          选项 B 少了 $n$；C 分母只有 $\sigma_0^2$ 没乘 2；D 忽略了 $n$ 和 $\sigma_0^2$。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q14 ===== -->
+    <div class="question-block" id="q14">
+      <div class="q-header">
+        <span class="q-num">Q14</span>
+        <span class="q-tag type">简答题</span>
+        <span class="q-tag diff-mid">进阶</span>
+        <span class="q-tag point">考点 3, 5: 先验选择</span>
+      </div>
+      <p>在正态数据贝叶斯推断中，如果将离散均匀先验改为非均匀先验（例如给某个 $\mu_j$ 更高的先验概率），后验会如何变化？请用贝叶斯公式解释。</p>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><strong>参考答案：</strong></p>
+          <p>后验公式为 $p(\mu_j \mid Y) = \frac{p(Y \mid \mu_j) \cdot p(\mu_j)}{\sum_i p(Y \mid \mu_i) \cdot p(\mu_i)}$。</p>
+          <p>如果给 $\mu_j$ 更高的先验 $p(\mu_j)$，则分子中 $p(\mu_j)$ 增大，对应的后验概率也会增大（假设似然不变）。这意味着：</p>
+          <p>（1）先验概率高的值在后验中也会获得"加成"。</p>
+          <p>（2）但当数据量足够大时，似然函数的差异会主导后验，先验的影响变小。</p>
+          <p>（3）当数据量很小时，先验对后验的影响很显著。</p>
+          <p>这体现了贝叶斯推断的本质：<strong>后验 = 先验信念 + 数据证据的综合</strong>。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== Q15 ===== -->
+    <div class="question-block" id="q15">
+      <div class="q-header">
+        <span class="q-num">Q15</span>
+        <span class="q-tag type">计算题</span>
+        <span class="q-tag diff-hard">综合</span>
+        <span class="q-tag point">考点 4, 5, 6, 7 综合</span>
+      </div>
+      <p>设 $Y_1, Y_2, Y_3 \sim N(\mu, \sigma_0^2 = 1)$，观测到 $y_1 = 5.1$，$y_2 = 4.7$，$y_3 = 5.4$。$\mu \in \{4, 5, 6\}$，先验为 $p(\mu=4) = 0.2$，$p(\mu=5) = 0.5$，$p(\mu=6) = 0.3$。求后验分布。</p>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <div class="step">
+            <strong>Step 1：样本均值</strong><br>
+            $\bar{y} = \frac{5.1 + 4.7 + 5.4}{3} = \frac{15.2}{3} \approx 5.0667$
+          </div>
+          <div class="step">
+            <strong>Step 2：似然参数</strong><br>
+            $\frac{n}{2\sigma_0^2} = \frac{3}{2 \times 1} = 1.5$<br>
+            $L(\mu \mid Y) \propto e^{-1.5(\bar{y} - \mu)^2}$
+          </div>
+          <div class="step">
+            <strong>Step 3：各 $\mu$ 的似然</strong><br>
+            $\mu=4$：$e^{-1.5(5.0667-4)^2} = e^{-1.5 \times 1.1378} = e^{-1.7067} \approx 0.1816$<br>
+            $\mu=5$：$e^{-1.5(5.0667-5)^2} = e^{-1.5 \times 0.004444} = e^{-0.006667} \approx 0.9934$<br>
+            $\mu=6$：$e^{-1.5(5.0667-6)^2} = e^{-1.5 \times 0.8711} = e^{-1.3067} \approx 0.2709$
+          </div>
+          <div class="step">
+            <strong>Step 4：先验 × 似然</strong><br>
+            $\mu=4$：$0.2 \times 0.1816 = 0.03632$<br>
+            $\mu=5$：$0.5 \times 0.9934 = 0.49670$<br>
+            $\mu=6$：$0.3 \times 0.2709 = 0.08127$<br>
+            求和：$0.6143$
+          </div>
+          <div class="step">
+            <strong>Step 5：后验</strong><br>
+            $p(\mu=4 \mid Y) = \frac{0.03632}{0.6143} \approx \boxed{0.0591}$<br><br>
+            $p(\mu=5 \mid Y) = \frac{0.49670}{0.6143} \approx \boxed{0.8086}$<br><br>
+            $p(\mu=6 \mid Y) = \frac{0.08127}{0.6143} \approx \boxed{0.1323}$
+          </div>
+          <p><strong>验证：</strong>$0.0591 + 0.8086 + 0.1323 = 1.0000$ ✓</p>
+          <p><strong>解读：</strong>$\bar{y} \approx 5.07$ 非常接近 $\mu = 5$，且先验本身就给了 $\mu=5$ 最高权重（0.5），因此后验高度集中于 $\mu = 5$（约 81%）。</p>
+        </div>
+      </details>
+    </div>
+
+  </div><!-- end part3 section -->
+
+</div><!-- end container -->
+
+<button class="back-top" id="backTop" title="回到顶部">↑</button>
+
+<script>
+(function(){
+  'use strict';
+
+  // === MathJax fallback ===
+  var mjTimeout = setTimeout(function(){
+    var fb = document.getElementById('mjFallback');
+    if(fb && !document.body.classList.contains('mathjax-loaded')){
+      fb.classList.add('show');
+    }
+  }, 8000);
+
+  // === Progress tracking ===
+  var totalQ = 15;
+  var answeredSet = {};
+  var correctSet = {};
+
+  function updateProgress(){
+    var a = Object.keys(answeredSet).length;
+    var c = Object.keys(correctSet).length;
+    var pct = Math.round((a / totalQ) * 100);
+    var fill = document.getElementById('progressFill');
+    var ans = document.getElementById('answered');
+    var cor = document.getElementById('correctCount');
+    if(fill) fill.style.width = pct + '%';
+    if(ans) ans.textContent = a;
+    if(cor) cor.textContent = c;
+  }
+
+  // === Expand / Collapse all ===
+  document.addEventListener('click', function(e){
+    var target = e.target;
+
+    // Expand all
+    if(target.id === 'expandAll' || target.closest('#expandAll')){
+      var dets = document.querySelectorAll('details.answer-block');
+      for(var i=0; i<dets.length; i++) dets[i].open = true;
+      return;
+    }
+    // Collapse all
+    if(target.id === 'collapseAll' || target.closest('#collapseAll')){
+      var dets2 = document.querySelectorAll('details.answer-block');
+      for(var j=0; j<dets2.length; j++) dets2[j].open = false;
+      return;
+    }
+
+    // === Choice option click ===
+    var li = target.closest('.choices li');
+    if(!li) return;
+    var ul = li.closest('.choices');
+    if(!ul) return;
+
+    var qid = ul.getAttribute('data-qid');
+    var correctAns = ul.getAttribute('data-answer');
+    var chosen = li.getAttribute('data-option');
+
+    // Already answered?
+    if(answeredSet[qid]) return;
+
+    answeredSet[qid] = true;
+    var allLi = ul.querySelectorAll('li');
+
+    // Mark correct / incorrect
+    for(var k=0; k<allLi.length; k++){
+      var opt = allLi[k].getAttribute('data-option');
+      if(opt === correctAns){
+        allLi[k].classList.add('correct');
+      }
+      if(opt === chosen && opt !== correctAns){
+        allLi[k].classList.add('incorrect');
+      }
+      if(opt !== correctAns && opt !== chosen){
+        allLi[k].classList.add('locked');
+      }
+    }
+
+    if(chosen === correctAns){
+      correctSet[qid] = true;
+    }
+
+    // Open corresponding details
+    var block = ul.closest('.question-block');
+    if(block){
+      var det = block.querySelector('details.answer-block');
+      if(det) det.open = true;
+    }
+
+    updateProgress();
+  });
+
+  // === Back to top ===
+  var backBtn = document.getElementById('backTop');
+  window.addEventListener('scroll', function(){
+    if(backBtn){
+      if(window.scrollY > 400) backBtn.classList.add('show');
+      else backBtn.classList.remove('show');
+    }
+  });
+  if(backBtn){
+    backBtn.addEventListener('click', function(){
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  }
+
+})();
+</script>
+</body>
+</html>

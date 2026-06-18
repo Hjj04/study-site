@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 4 · 后验分布 — 交互式复习讲义</title>
+<style>
+:root{
+  --paper:#edf2ec; --card:#fbfdfa; --ink:#22302b; --soft:#5d6b66;
+  --line:#d6e0d6; --prior:#23606e; --lik:#3f7d3a; --marg:#5d6b6a; --post:#b34a2e;
+  --amber:#c08a2d; --amber-bg:#fdf6e6; --teal-bg:#e9f2f3; --green-bg:#ecf4ea;
+  --red-bg:#faece7; --radius:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:72px}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{animation:none!important;transition:none!important} }
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",sans-serif;
+  font-size:16px; line-height:1.85;
+}
+.wrap{max-width:940px; margin:0 auto; padding:0 18px}
+h1,h2,h3,h4{font-family:"Songti SC","Noto Serif SC","STSong",Georgia,"Times New Roman",serif; line-height:1.4}
+
+/* ===== Hero ===== */
+header.hero{
+  background:linear-gradient(150deg,#16424d 0%,#23606e 55%,#2d7263 100%);
+  color:#f2f7f4; padding:42px 0 34px;
+}
+.hero .eyebrow{font-size:13px; letter-spacing:.25em; opacity:.82; text-transform:uppercase}
+.hero h1{font-size:clamp(24px,4.4vw,36px); margin:6px 0 4px}
+.hero .sub{font-size:14.5px; opacity:.85; margin:0 0 22px}
+.bayes-card{
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.22);
+  border-radius:var(--radius); padding:20px 16px 14px; backdrop-filter:blur(2px);
+}
+.bayes-eq{display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;
+  font-family:Georgia,"Times New Roman",serif; font-size:clamp(20px,3.4vw,28px); font-style:italic}
+.frac{display:inline-flex; flex-direction:column; align-items:center}
+.frac .num{padding:0 10px 4px; border-bottom:2px solid rgba(255,255,255,.75)}
+.frac .den{padding:4px 10px 0}
+.frag{font-weight:600; white-space:nowrap}
+.frag.post{color:#ffb89c}.frag.lik{color:#a9e89c}.frag.prior{color:#9bd6ff}.frag.marg{color:#d8ded9}
+.legend{display:flex; flex-wrap:wrap; gap:8px 14px; justify-content:center; margin-top:16px; font-size:13px}
+.lg{display:inline-flex; align-items:center; gap:6px; opacity:.95}
+.lg::before{content:""; width:10px; height:10px; border-radius:3px; display:inline-block}
+.lg.post::before{background:#ffb89c}.lg.lik::before{background:#a9e89c}
+.lg.prior::before{background:#9bd6ff}.lg.marg::before{background:#d8ded9}
+
+/* ===== Nav ===== */
+nav#topnav{
+  position:sticky; top:0; z-index:50; background:rgba(251,253,250,.94);
+  border-bottom:1px solid var(--line); backdrop-filter:blur(6px);
+}
+nav#topnav .bar{display:flex; align-items:center; gap:8px; padding:9px 0; overflow-x:auto; -webkit-overflow-scrolling:touch}
+nav#topnav a, nav#topnav button{
+  flex:0 0 auto; font-size:14px; padding:6px 13px; border-radius:999px; cursor:pointer;
+  border:1px solid var(--line); background:#fff; color:var(--ink); text-decoration:none; font-family:inherit;
+}
+nav#topnav a:hover, nav#topnav button:hover{border-color:var(--prior); color:var(--prior)}
+nav#topnav a:focus-visible, nav#topnav button:focus-visible, .option:focus-visible, summary:focus-visible{
+  outline:2px solid var(--prior); outline-offset:2px}
+#progress{flex:0 0 auto; margin-left:auto; font-size:13px; padding:6px 13px; border-radius:999px;
+  background:var(--teal-bg); border:1px solid #bcd6da; color:var(--prior); white-space:nowrap}
+
+/* ===== Sections ===== */
+main{padding:30px 0 70px}
+section.part{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:26px 26px 30px; margin:26px 0; box-shadow:0 1px 4px rgba(34,48,43,.05)}
+section.part > h2{display:flex; align-items:center; gap:12px; font-size:24px; margin:0 0 6px}
+section.part > h2 .pno{flex:0 0 auto; width:38px; height:38px; border-radius:10px; display:inline-flex;
+  align-items:center; justify-content:center; color:#fff; font-size:17px; font-family:inherit}
+#part1 > h2 .pno{background:var(--prior)} #part2 > h2 .pno{background:var(--lik)} #part3 > h2 .pno{background:var(--post)}
+.part-intro{color:var(--soft); font-size:14.5px; margin-top:0}
+h3{font-size:19px; margin:30px 0 10px; padding-left:11px; border-left:4px solid var(--prior)}
+#part2 h3{border-left-color:var(--lik)} #part3 h3{border-left-color:var(--post)}
+h4{font-size:16.5px; margin:20px 0 8px}
+p{margin:10px 0}
+ul,ol{padding-left:1.5em; margin:8px 0}
+li{margin:5px 0}
+strong{color:#15201c}
+
+/* boxes */
+.keybox,.warnbox,.tipbox,.exbox{border-radius:10px; padding:13px 16px; margin:14px 0; border:1px solid; border-left-width:5px}
+.keybox{background:var(--teal-bg); border-color:#b9d3d8; border-left-color:var(--prior)}
+.warnbox{background:var(--red-bg); border-color:#ecc9bd; border-left-color:var(--post)}
+.tipbox{background:var(--green-bg); border-color:#c5dcc1; border-left-color:var(--lik)}
+.exbox{background:var(--amber-bg); border-color:#ead8b4; border-left-color:var(--amber)}
+.boxtitle{font-weight:700; display:block; margin-bottom:4px}
+.keybox .boxtitle{color:var(--prior)} .warnbox .boxtitle{color:var(--post)}
+.tipbox .boxtitle{color:var(--lik)} .exbox .boxtitle{color:#8a6312}
+
+/* flow */
+.flow{display:flex; flex-wrap:wrap; align-items:stretch; gap:8px; margin:16px 0}
+.flow .step{flex:1 1 150px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px; text-align:center; font-size:14px}
+.flow .step b{display:block; font-size:15px; margin-bottom:2px}
+.flow .arr{flex:0 0 auto; align-self:center; color:var(--soft); font-size:18px}
+.step.c-prior b{color:var(--prior)} .step.c-lik b{color:var(--lik)} .step.c-post b{color:var(--post)}
+
+/* tables */
+.tablewrap{overflow-x:auto; margin:14px 0; border:1px solid var(--line); border-radius:10px}
+table{border-collapse:collapse; width:100%; min-width:480px; font-size:14.5px; background:#fff}
+th,td{border:1px solid var(--line); padding:7px 10px; text-align:center}
+th{background:#f1f6f0; font-weight:600}
+tbody tr:nth-child(even){background:#fafcf9}
+th.h-prior{background:#e4eef0; color:var(--prior)} th.h-lik{background:#e8f1e5; color:var(--lik)}
+th.h-marg{background:#eceeec; color:var(--marg)} th.h-post{background:#f6e8e2; color:var(--post)}
+tr.sumrow td{background:#f3f1e7; font-weight:600}
+.eqd{margin:12px 0; overflow-x:auto}
+
+/* ===== Part 2: exam points ===== */
+.kp{border:1px solid var(--line); border-radius:12px; background:#fff; padding:14px 18px; margin:14px 0}
+.kp-head{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:4px}
+.kp-head .kp-id{font-weight:700; color:var(--lik); font-size:15px}
+.kp-head .kp-title{font-weight:700; font-size:16px}
+.stars{font-size:14px; letter-spacing:1px}
+.stars.s3{color:#c0392b}.stars.s2{color:var(--amber)}.stars.s1{color:#9aa49d}
+.chip{font-size:12px; padding:2px 9px; border-radius:999px; border:1px solid}
+.chip.mem{color:var(--prior); border-color:#b9d3d8; background:var(--teal-bg)}
+.chip.und{color:var(--lik); border-color:#c5dcc1; background:var(--green-bg)}
+.kp dl{margin:6px 0 0}
+.kp dt{font-weight:600; color:var(--soft); font-size:13.5px; margin-top:7px}
+.kp dd{margin:1px 0 0 0}
+
+/* ===== Part 3: questions ===== */
+.qgroup-title{display:flex; align-items:center; gap:10px}
+.q{border:1px solid var(--line); border-left:6px solid; border-radius:12px; background:#fff; padding:16px 18px 14px; margin:18px 0}
+.q.d1{border-left-color:#5a9c55}.q.d2{border-left-color:var(--amber)}.q.d3{border-left-color:#c0392b}
+.qmeta{display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin-bottom:8px}
+.qno{font-weight:800; font-family:Georgia,serif; font-size:17px; color:var(--ink)}
+.tag{font-size:12px; padding:2px 9px; border-radius:999px; border:1px solid var(--line); background:#f6f8f5; color:var(--soft)}
+.tag.diff1{background:#ecf4ea; color:#3f7d3a; border-color:#c5dcc1}
+.tag.diff2{background:var(--amber-bg); color:#8a6312; border-color:#ead8b4}
+.tag.diff3{background:var(--red-bg); color:#b3452e; border-color:#ecc9bd}
+.qtext{margin:6px 0 10px}
+.mcq{display:flex; flex-direction:column; gap:8px; margin:10px 0 12px}
+.option{border:1.5px solid var(--line); border-radius:10px; padding:9px 13px; cursor:pointer;
+  background:#fdfefd; transition:border-color .15s, background .15s; user-select:none}
+.option:hover{border-color:var(--prior); background:#f4f9fa}
+.mcq[data-done] .option{cursor:default}
+.mcq[data-done] .option:hover{border-color:var(--line); background:#fdfefd}
+.option.correct{background:#e7f3e4!important; border-color:#4d8c47!important; box-shadow:inset 0 0 0 1px #4d8c47}
+.option.wrong{background:#fae6df!important; border-color:#c0392b!important; box-shadow:inset 0 0 0 1px #c0392b}
+.option.correct::after{content:" ✓ 正确答案"; color:#33702e; font-weight:700; font-size:13px}
+.option.wrong::after{content:" ✗"; color:#c0392b; font-weight:700}
+
+/* details / summary */
+details.answer-block{margin-top:10px; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#fcfdfb}
+details.answer-block > summary{
+  list-style:none; cursor:pointer; padding:9px 15px; font-weight:600; font-size:14.5px;
+  background:linear-gradient(180deg,#2b6d7c,#23606e); color:#fff; user-select:none;
+}
+details.answer-block > summary::-webkit-details-marker{display:none}
+details.answer-block > summary:hover{background:#1d525f}
+details.answer-block[open] > summary{background:#173f49}
+.answer-content{padding:12px 17px 14px; border-top:1px solid var(--line)}
+.answer-content > p:first-child{margin-top:2px}
+.ans-final{display:inline-block; background:var(--red-bg); border:1px solid #ecc9bd; color:#9e3a22;
+  border-radius:8px; padding:2px 10px; font-weight:700}
+.steps{counter-reset:st; padding-left:0; list-style:none}
+.steps > li{counter-increment:st; padding-left:34px; position:relative; margin:8px 0}
+.steps > li::before{content:counter(st); position:absolute; left:0; top:3px; width:22px; height:22px;
+  border-radius:50%; background:var(--teal-bg); color:var(--prior); border:1px solid #b9d3d8;
+  font-size:13px; display:flex; align-items:center; justify-content:center; font-weight:700}
+
+/* footer / misc */
+#backtop{position:fixed; right:18px; bottom:20px; z-index:60; width:44px; height:44px; border-radius:50%;
+  border:1px solid var(--line); background:#fff; color:var(--prior); font-size:19px; cursor:pointer;
+  box-shadow:0 2px 8px rgba(34,48,43,.18); opacity:0; pointer-events:none; transition:opacity .2s}
+#backtop.show{opacity:1; pointer-events:auto}
+#mathjax-warn{display:none; margin:14px 0; padding:11px 15px; border-radius:10px;
+  background:var(--amber-bg); border:1px solid #ead8b4; color:#7a5a14; font-size:14px}
+#mathjax-warn.show{display:block}
+footer{color:var(--soft); font-size:13px; text-align:center; padding:8px 0 40px}
+mjx-container{overflow-x:auto; overflow-y:hidden; max-width:100%}
+@media (max-width:640px){
+  body{font-size:15.5px}
+  section.part{padding:18px 14px 22px}
+  .bayes-eq{font-size:19px}
+  table{font-size:13px; min-width:430px}
+  th,td{padding:6px 7px}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">MTH · Bayesian Statistics · Lecture 4</div>
+    <h1>贝叶斯定理的组成部分：后验分布</h1>
+    <p class="sub">基于 Dr. Nivedita Viswanathan 的 Lecture 4 课件与 Problem Sheet 整理 · 交互式复习讲义（讲解 + 考点 + 习题）</p>
+    <div class="bayes-card">
+      <div class="bayes-eq">
+        <span class="frag post">p(θ&thinsp;|&thinsp;Y)</span>
+        <span>=</span>
+        <span class="frac">
+          <span class="num"><span class="frag lik">p(Y&thinsp;|&thinsp;θ)</span>&nbsp;·&nbsp;<span class="frag prior">p(θ)</span></span>
+          <span class="den"><span class="frag marg">p(Y)</span></span>
+        </span>
+      </div>
+      <div class="legend">
+        <span class="lg post">后验：看到数据后的信念</span>
+        <span class="lg lik">似然：给定 θ 时数据出现的概率</span>
+        <span class="lg prior">先验：看数据前的信念</span>
+        <span class="lg marg">边际：归一化常数</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav id="topnav" aria-label="页面导航">
+  <div class="wrap bar">
+    <a href="#part1">① 课程讲解</a>
+    <a href="#part2">② 考点梳理</a>
+    <a href="#part3">③ 复习题目</a>
+    <button type="button" data-action="expand">展开全部答案</button>
+    <button type="button" data-action="collapse">收起全部答案</button>
+    <span id="progress">已作答 0 / 0 · 答对 0</span>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<div id="mathjax-warn">⚠ 数学公式渲染组件（MathJax）未能从网络加载。公式将以原始 LaTeX 代码形式显示（如 <code>\(\theta\)</code> 表示 θ），不影响其余内容阅读；联网后刷新页面即可恢复正常显示。</div>
+
+<!-- ====================== 第一部分：课程讲解 ====================== -->
+<section class="part" id="part1">
+  <h2><span class="pno">①</span>课程内容讲解</h2>
+  <p class="part-intro">面向第一次接触贝叶斯推断的同学：先建立整体认知，再分模块拆解。</p>
+
+  <h3>1.0 这一讲在解决什么问题？（整体脉络）</h3>
+  <p>上一讲（Lecture 3）学的是<strong>极大似然估计 MLE</strong>：只用数据，给未知参数 θ 算出<strong>一个</strong>最可能的点估计值（如样本均值）。这一讲换一种思路——<strong>贝叶斯推断</strong>：把参数 θ 本身看成不确定的（有概率分布），先表达我们看数据之前的信念（<span style="color:var(--prior);font-weight:700">先验</span>），再用观测到的数据（通过<span style="color:var(--lik);font-weight:700">似然</span>）去<strong>更新</strong>这个信念，得到看数据之后的<span style="color:var(--post);font-weight:700">后验分布</span>。输出的不再是一个点，而是 θ 取每个值的<strong>整张概率分布表</strong>。</p>
+
+  <div class="flow" aria-label="贝叶斯更新流程">
+    <div class="step c-prior"><b>先验 p(θ)</b>看数据前的信念</div>
+    <div class="arr">→</div>
+    <div class="step c-lik"><b>数据 Y 与似然 p(Y|θ)</b>每个 θ 对数据的解释力</div>
+    <div class="arr">→</div>
+    <div class="step"><b>贝叶斯定理</b>相乘后归一化</div>
+    <div class="arr">→</div>
+    <div class="step c-post"><b>后验 p(θ|Y)</b>看数据后的新信念</div>
+  </div>
+
+  <div class="tipbox"><span class="boxtitle">类比：医生诊断</span>
+  病人还没开口，医生根据疾病的流行程度对各种病有个大致判断——这是<strong>先验</strong>；"如果是病 A，出现这些症状的概率有多大"——这是<strong>似然</strong>；结合症状之后医生更新的诊断把握——这是<strong>后验</strong>。贝叶斯定理就是把"经验 + 证据"合成"结论"的数学规则。</div>
+
+  <p>本讲的知识地图分三块，环环相扣：</p>
+  <ol>
+    <li><strong>贝叶斯定理的四个组成部分</strong>——先验、似然、边际、后验各是什么；</li>
+    <li><strong>后验分布的计算（表格法）</strong>——离散参数下五步算出后验，配三个模型（摸球 / 泊松 / 二项）；</li>
+    <li><strong>贝叶斯推断的两条性质</strong>——① 后验同时取决于先验与数据；② 序贯更新与一次性分析结果相同。</li>
+  </ol>
+
+  <h3>1.1 贝叶斯定理的四个组成部分</h3>
+  <div class="keybox"><span class="boxtitle">核心公式（必背）</span>
+    <div class="eqd">\[ p(\theta\mid Y)=\frac{p(Y\mid\theta)\,p(\theta)}{p(Y)} \qquad\Longleftrightarrow\qquad \text{后验}=\frac{\text{似然}\times\text{先验}}{\text{边际}} \]</div>
+  </div>
+  <ul>
+    <li><strong style="color:var(--prior)">先验 p(θ)</strong>：看到数据<strong>之前</strong>，我们对 θ 各个取值的信念。例如"完全不知道 → 各值等可能（均匀先验）"。</li>
+    <li><strong style="color:var(--lik)">似然 p(Y|θ)</strong>：<strong>假设</strong> θ 取某个值时，观测到这份数据的概率。数据固定后，它被当作 θ 的函数来比较"哪个 θ 更能解释数据"。</li>
+    <li><strong style="color:var(--marg)">边际 p(Y)</strong>：数据本身的总概率，由全概率公式得到（θ 离散时）：
+      <div class="eqd">\[ p(Y)=\sum_{\theta\in\Theta} p(Y\mid\theta)\,p(\theta) \]</div>
+      它<strong>不含 θ</strong>，对每一行都一样，唯一作用是把"先验×似然"缩放成总和为 1 的合法分布，故称<strong>归一化常数</strong>。</li>
+    <li><strong style="color:var(--post)">后验 p(θ|Y)</strong>：看到数据<strong>之后</strong>，θ 各取值的更新信念——本讲的主角。</li>
+  </ul>
+  <div class="warnbox"><span class="boxtitle">易混警告</span>
+  似然 p(Y|θ) <strong>不是</strong> θ 的概率分布：把它对 θ 求和，结果一般不等于 1（例如摸球模型里 \(\sum_\theta \theta/9 = 5\)）。真正"对 θ 求和等于 1"的是先验和后验。另外，先验 p(θ) 与边际 p(Y) 的具体形式取决于 θ 与 Y 是离散还是连续（连续时求和换成积分）。</div>
+
+  <h3>1.2 后验分布：是一张真正的概率分布表</h3>
+  <p>设 θ 为未知参数，Θ 为参数空间（θ 所有可能取值的集合），Y 为样本数据。对每个 \(\theta\in\Theta\)，\(p(\theta\mid Y)\) 给出"看完数据后 θ 取该值的概率"，这一整套数值就叫<strong>后验概率分布</strong>。它必须满足：</p>
+  <div class="keybox"><span class="boxtitle">归一化性质</span>
+    <div class="eqd">\[ \theta\ \text{离散：}\ \sum_{\theta\in\Theta}p(\theta\mid Y)=1; \qquad \theta\ \text{连续：}\ \int_{\theta\in\Theta}p(\theta\mid Y)\,d\theta=1. \]</div>
+  </div>
+  <p>记忆口诀：<strong>后验 ∝ 似然 × 先验</strong>（"∝"读作"正比于"）。分母 p(Y) 只是常数，所以后验的<strong>形状</strong>由"似然 × 先验"决定，最后除以总和补上比例即可。这也解释了为什么任何不含 θ 的常数因子（比如二项系数）都不影响后验。</p>
+
+  <h3>1.3 表格法：离散后验的标准算法（本讲核心技能）</h3>
+  <p>当 θ 只有有限个候选值时，所有计算都可以装进一张"四列表"。这是问题集 1、2、3 的统一解法：</p>
+  <ol class="steps">
+    <li>第一列列出 θ 的所有候选值，第二列写出每个值的<strong style="color:var(--prior)">先验 p(θ)</strong>；</li>
+    <li>第三列写出每个 θ 下数据的<strong style="color:var(--lik)">似然 p(Y|θ)</strong>（按模型套公式）；</li>
+    <li>第四列逐行相乘：<strong>先验 × 似然</strong>；</li>
+    <li>把第四列<strong>求和</strong>——这个总和就是边际 <strong style="color:var(--marg)">p(Y)</strong>；</li>
+    <li>第四列每行除以总和，得到<strong style="color:var(--post)">后验 p(θ|Y)</strong>。<em>自检：后验列总和必须等于 1。</em></li>
+  </ol>
+
+  <h4>例 1：摸球（课件原例）</h4>
+  <p>罐中 9 个球，红绿不限，红球数 θ 未知，先验取均匀：\(p(\theta=\theta_0)=\tfrac1{10},\ \theta_0\in\{0,1,\dots,9\}\)。随机摸一个球，结果是红色（记 Y = red）。某个具体取值，比如 θ = 4，的后验是：</p>
+  <div class="eqd">\[ p(\theta=4\mid Y=\text{red})=\frac{p(Y=\text{red}\mid\theta=4)\,p(\theta=4)}{p(Y=\text{red})}=\frac{\frac49\times 0.1}{\frac{45}{90}}=0.0889. \]</div>
+  <p><strong>解读：</strong>摸球前你相信"罐里恰有 4 个红球"的概率是 0.1；摸出一个红球后，这个信念<strong>下降</strong>到约 0.089——因为"只有 4 个红球"时摸到红球的可能性（4/9）低于平均水平，红球的出现让"红球偏少"的假设变得更不可信。完整的十行表格见复习题 Q9。</p>
+
+  <h4>例 2：抛硬币（课件原例）</h4>
+  <p>抛 1000 次，得 600 正 400 反（MLE 为 \(\hat\theta=0.6\)）。这次不用连续先验，而给 θ 一个<strong>离散先验</strong>：\(p(\theta)=\tfrac12\)（当 \(\theta\in\{0.5,0.7\}\)），其余为 0。数据 \(Y_i\sim^{i.i.d}\text{Ber}(\theta)\)，似然为 \(p(Y\mid\theta)=\theta^{600}(1-\theta)^{400}\)。套贝叶斯定理：</p>
+  <div class="eqd">\[ p(\theta=0.5\mid Y)=\frac{(0.5)^{600}(0.5)^{400}\cdot\frac12}{(0.5)^{1000}\cdot\frac12+(0.7)^{600}(0.3)^{400}\cdot\frac12}=0.92,\qquad p(\theta=0.7\mid Y)=0.08. \]</div>
+  <p><strong>解读：</strong>看数据前，"硬币是公平的"只有 50% 的把握；看完数据后升到 <strong>92%</strong>。直觉上，样本比例 0.6 虽然不等于 0.5，但在似然意义下 θ = 0.5 解释这份数据的能力远强于 θ = 0.7，所以信念大幅倒向公平硬币。</p>
+
+  <h3>1.4 性质一：后验同时取决于先验与数据</h3>
+  <p>把上面硬币例子的先验改掉——假设你事先有理由相信硬币更可能是偏的：\(p(\theta=0.5)=\tfrac15,\ p(\theta=0.7)=\tfrac45\)。数据完全不变，重新计算（过程见复习题 Q15）得：</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>先验设定</th><th class="h-post">p(θ=0.5 | Y)</th><th class="h-post">p(θ=0.7 | Y)</th></tr></thead>
+    <tbody>
+      <tr><td>等可能先验（½, ½）</td><td>0.92</td><td>0.08</td></tr>
+      <tr><td>偏向有偏硬币（1/5, 4/5）</td><td>0.74</td><td>0.26</td></tr>
+    </tbody>
+  </table></div>
+  <div class="keybox"><span class="boxtitle">结论（性质 1）</span>同一份数据，不同的先验信念会给出<strong>不同的后验概率</strong>——先验决定起点，似然（数据）决定推动的方向与力度，两者共同决定后验。课件注明：先验的选择如何影响后验，后续课程会详细展开。</div>
+
+  <h3>1.5 性质二：贝叶斯推断是序贯的（Sequential）</h3>
+  <p>拿到多批数据时，有两条等价的路线：</p>
+  <ul>
+    <li><strong>路线 A（逐个更新）：</strong>第 1 步用初始先验 + 第 1 个观测算出后验；第 2 步把<strong>上一步的后验当作新的先验</strong>，结合第 2 个观测再算后验……如此滚动下去；</li>
+    <li><strong>路线 B（一次到位）：</strong>从初始先验出发，把<strong>全部观测</strong>放进一个联合似然，一步算出后验。</li>
+  </ul>
+  <div class="keybox"><span class="boxtitle">结论（性质 2）</span>两条路线得到的后验分布<strong>完全相同</strong>。口诀：<strong>"今天的后验，就是明天的先验。"</strong>问题集 1(d)(e) 与 3(b)(c) 正是让你亲手验证这一点。</div>
+  <p><strong>为什么相同？</strong>独立观测的联合似然可以拆成各步似然的乘积，序贯更新等于把这些因子一个个乘进去；中途产生的任何常数差异（如二项系数 \(\binom{10}{7}\binom{5}{2}\) vs \(\binom{15}{9}\)）都会在归一化时被约掉，所以最终的分布一致。"先验 × 似然"中间列的数值可以不同，但归一化后的后验列必然相同。</p>
+
+  <div class="exbox"><span class="boxtitle">课件指定练习对照表</span>
+  表格法入门 → Problem Sheet 练习 1(c)、2、3(a)；序贯性验证 → 练习 1(d)(e)、3(b)(c)；另请复习 Lecture 3 问题集的练习 4、5、6（MLE）。这些题目全部收录在本页第三部分，并配完整解答。</div>
+</section>
+<!-- ====================== 第二部分：考点梳理 ====================== -->
+<section class="part" id="part2">
+  <h2><span class="pno">②</span>考点梳理</h2>
+  <p class="part-intro">按模块系统列出 Lecture 4 全部考点。重要程度：<span class="stars s3">★★★</span> 高频 / <span class="stars s2">★★</span> 中等 / <span class="stars s1">★</span> 低频（依据课件强调程度与指定练习判断）；标签区分 <span class="chip mem">需记忆</span> 与 <span class="chip und">需理解 / 计算</span>。</p>
+
+  <h3>模块 A · 贝叶斯定理及其四个组成部分</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-id">A1</span><span class="kp-title">贝叶斯定理（核心公式）</span><span class="stars s3">★★★</span><span class="chip mem">需记忆</span><span class="chip und">需理解</span></div>
+    <dl>
+      <dt>定义与公式</dt><dd>\[ p(\theta\mid Y)=\dfrac{p(Y\mid\theta)\,p(\theta)}{p(Y)},\qquad \text{即 后验}=\dfrac{\text{似然}\times\text{先验}}{\text{边际}};\quad \text{后验}\propto\text{似然}\times\text{先验}. \]</dd>
+      <dt>易混淆点 / 常见错误</dt><dd>① 分子两项写反位置不算错，但把分母 p(Y) 误写成 p(θ) 或漏掉是大错；② 误以为分母随 θ 变化——它是与 θ 无关的常数；③ 比例式"∝"省略的正是这个常数。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-id">A2</span><span class="kp-title">先验分布 p(θ)</span><span class="stars s3">★★★</span><span class="chip mem">需记忆</span></div>
+    <dl>
+      <dt>定义</dt><dd>看到数据之前对参数 θ 的信念，是 θ 的概率分布。"完全无知"常用均匀先验，如摸球例 \(p(\theta=\theta_0)=\tfrac1{10}\)；先验也可以不均匀（如硬币例的 1/5 与 4/5），其形式取决于 θ 离散还是连续。</dd>
+      <dt>易混淆点</dt><dd>先验是<strong>主观/经验信念</strong>的量化，不需要由当前数据决定；不同的人可以有不同的合理先验。填表时注意各候选值的先验可以不相等（练习 2 中 1/4 与 1/8 混用）。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-id">A3</span><span class="kp-title">似然 p(Y | θ)</span><span class="stars s3">★★★</span><span class="chip und">需理解 / 计算</span></div>
+    <dl>
+      <dt>定义</dt><dd>给定 θ 的取值时，观测到这份数据的概率；数据固定后将其视为 θ 的函数，衡量各候选 θ 对数据的"解释力"。</dd>
+      <dt>易混淆点 / 常见错误</dt><dd><strong>似然不是 θ 的概率分布</strong>——对 θ 求和不必为 1；不要在似然列做归一化。书写时要按具体模型套对公式（见模块 B）。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-id">A4</span><span class="kp-title">边际分布 p(Y)（归一化常数）</span><span class="stars s2">★★</span><span class="chip und">需理解 / 计算</span></div>
+    <dl>
+      <dt>公式（θ 离散）</dt><dd>\[ p(Y)=\sum_{\theta\in\Theta}p(Y\mid\theta)\,p(\theta) \]（θ 连续时换成积分）。在表格法中即"先验 × 似然"列的<strong>总和</strong>。</dd>
+      <dt>易混淆点 / 常见错误</dt><dd>① 全概率公式漏乘先验、或漏掉某些候选值；② 它保证后验总和为 1，对每个 θ 都相同；③ 练习 1(b) 中 \(p(Y_1=1)=\tfrac12\) 正是这样算出来的。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-id">A5</span><span class="kp-title">后验分布 p(θ | Y) 的定义与归一化性质</span><span class="stars s3">★★★</span><span class="chip mem">需记忆</span><span class="chip und">需理解</span></div>
+    <dl>
+      <dt>定义</dt><dd>对每个 \(\theta\in\Theta\)，p(θ|Y) 是"看完数据后 θ 取该值的概率"，刻画<strong>分析数据后的更新信念</strong>（本讲的 Session Outcome）。</dd>
+      <dt>关键性质</dt><dd>后验是真正的概率分布：θ 离散时 \(\sum_{\theta}p(\theta\mid Y)=1\)；θ 连续时 \(\int p(\theta\mid Y)\,d\theta=1\)。</dd>
+      <dt>易混淆点 / 常见错误</dt><dd>把"先验 × 似然"直接当后验（忘记除以总和）；算完不检查后验列和是否为 1。</dd>
+    </dl>
+  </div>
+
+  <h3>模块 B · 离散后验的表格计算法（三类模型）</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-id">B1</span><span class="kp-title">表格法五步流程</span><span class="stars s3">★★★</span><span class="chip und">需计算</span></div>
+    <dl>
+      <dt>步骤</dt><dd>列候选 θ 与先验 → 写似然 → 逐行相乘 → 求和得 p(Y) → 每行除以总和得后验（并自检总和 = 1）。问题集所有大题共用此模板。</dd>
+      <dt>常见错误</dt><dd>似然套错模型公式；中间结果过早四舍五入导致后验不归一（建议至少保留 4 位小数或用分数）。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-id">B2</span><span class="kp-title">摸球模型的似然（含不放回抽样）</span><span class="stars s3">★★★</span><span class="chip und">需理解 / 计算</span></div>
+    <dl>
+      <dt>公式（9 球、θ 个红球）</dt><dd>第一次抽：\(p(Y_1=1\mid\theta)=\dfrac{\theta}{9}\)，\(p(Y_1=0\mid\theta)=\dfrac{9-\theta}{9}\)。<strong>不放回</strong>且第一次为红时，第二次抽：剩 8 球、红球剩 θ−1、绿球仍 9−θ，故 \(p(Y_2=0\mid\theta,Y_1=1)=\dfrac{9-\theta}{8}\)。两次联合：\(p(Y_1=1,Y_2=0\mid\theta)=\dfrac{\theta}{9}\cdot\dfrac{9-\theta}{8}\)。</dd>
+      <dt>易混淆点 / 常见错误</dt><dd>第二次抽样分母忘记从 9 改成 8；红绿球计数没有按第一次结果调整；放回与不放回混淆。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-id">B3</span><span class="kp-title">泊松模型的似然</span><span class="stars s2">★★</span><span class="chip mem">需记忆</span><span class="chip und">需计算</span></div>
+    <dl>
+      <dt>公式</dt><dd>\(Y\sim\text{Pois}(\lambda)\) 时 \[ p(Y=y\mid\lambda)=\dfrac{\lambda^{y}e^{-\lambda}}{y!}. \] 练习 2 中观测 Y = 2，则似然为 \(\lambda^{2}e^{-\lambda}/2\)。</dd>
+      <dt>常见错误</dt><dd>漏写 \(e^{-\lambda}\) 或 \(y!\)；把不同 λ 的先验当成全部相等（练习 2 中是 1/4、1/4、1/4、1/8、1/8）。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-id">B4</span><span class="kp-title">二项（Bernoulli 试验）模型的似然</span><span class="stars s3">★★★</span><span class="chip mem">需记忆</span><span class="chip und">需计算</span></div>
+    <dl>
+      <dt>公式</dt><dd>n 次独立试验、成功概率 θ、成功次数 Y：\[ p(Y=y\mid\theta)=\binom{n}{y}\theta^{y}(1-\theta)^{n-y}. \] 抛硬币 600 正 400 反的序列数据则用 \(\theta^{600}(1-\theta)^{400}\)。</dd>
+      <dt>易混淆点 / 常见错误</dt><dd>① 二项系数 \(\binom{n}{y}\) 不含 θ，是常数——<strong>不影响后验</strong>（归一化时约掉），但似然列按定义应写全；② 合并 15 次试验时系数是 \(\binom{15}{9}=5005\)，与序贯两步的 \(\binom{10}{7}\binom{5}{2}=1200\) 不同，但后验相同；③ 指数 y 与 n−y 写反。</dd>
+    </dl>
+  </div>
+
+  <h3>模块 C · 贝叶斯推断的两条性质</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-id">C1</span><span class="kp-title">性质 1：后验依赖于先验与数据</span><span class="stars s3">★★★</span><span class="chip und">需理解</span></div>
+    <dl>
+      <dt>内容</dt><dd>计算后验时，先验信念与所收集的数据<strong>都</strong>起作用。标志性例子：同样的 1000 次抛掷数据，先验 (½, ½) 给出后验 (0.92, 0.08)；先验 (1/5, 4/5) 给出后验 (0.74, 0.26)。</dd>
+      <dt>易混淆点</dt><dd>不要把"数据相同"误推成"后验相同"；也不要认为先验完全决定结果——两个例子里数据都显著抬升了 θ=0.5 的可信度（0.5→0.92，0.2→0.74）。课件预告：先验选择的影响将在后续课程详细学习。</dd>
+    </dl>
+  </div>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-id">C2</span><span class="kp-title">性质 2：贝叶斯推断的序贯性</span><span class="stars s3">★★★</span><span class="chip und">需理解 / 计算</span></div>
+    <dl>
+      <dt>内容</dt><dd>"逐个观测、滚动更新（上一步后验 = 下一步先验）"与"全部观测一次性分析"得到<strong>相同的后验分布</strong>。这是问题集 1(d)(e)、3(b)(c) 的命题核心。</dd>
+      <dt>易混淆点 / 常见错误</dt><dd>① 序贯第二步忘记换先验，仍用初始先验；② 看到两种方法"先验 × 似然"列数值不同（差一个常数倍）就以为算错——归一化后后验一致才是判断标准；③ 不放回情形第二步的似然要以第一步结果为条件。</dd>
+    </dl>
+  </div>
+
+  <h3>模块 D · 背景知识：MLE 回顾（Lecture 3 衔接）</h3>
+
+  <div class="kp">
+    <div class="kp-head"><span class="kp-id">D1</span><span class="kp-title">常见分布的 MLE 速查表</span><span class="stars s1">★</span><span class="chip mem">需记忆</span></div>
+    <dl>
+      <dt>内容（n 个 i.i.d. 观测）</dt>
+      <dd>
+        <div class="tablewrap"><table>
+          <thead><tr><th>数据分布</th><th>MLE</th></tr></thead>
+          <tbody>
+            <tr><td>\(Y_i\sim\text{Ber}(\theta)\)</td><td>\(\hat\theta=\frac{\sum y_i}{n}\)（样本均值）</td></tr>
+            <tr><td>\(Y_i\sim\text{Poisson}(\lambda)\)</td><td>\(\hat\lambda=\frac{\sum y_i}{n}\)（样本均值）</td></tr>
+            <tr><td>\(Y_i\sim N(\mu,\sigma^2)\)</td><td>\(\hat\mu=\frac{\sum y_i}{n}\)（样本均值）</td></tr>
+            <tr><td>\(Y_i\sim\text{Exp}(\lambda)\)</td><td>\(\hat\lambda=\frac{n}{\sum y_i}\)（样本均值的倒数）</td></tr>
+            <tr><td>\(Y_i\sim U[0,\theta]\)</td><td>\(\hat\theta=\max(y_i)\)</td></tr>
+          </tbody>
+        </table></div>
+      </dd>
+      <dt>定位</dt><dd>本讲开头的回顾内容，作为"频率派点估计 vs 贝叶斯分布更新"的对照背景；课件建议完成 Lecture 3 问题集练习 4、5、6。在 Lecture 4 的考核中属低频，但概念对比（MLE 给一个点、后验给一张分布）可能出简答。</dd>
+    </dl>
+  </div>
+
+  <div class="warnbox"><span class="boxtitle">考前易错总清单（建议最后再过一遍）</span>
+    <ol>
+      <li>似然 ≠ θ 的概率分布，似然列不归一化、对 θ 求和不必为 1；</li>
+      <li>"先验 × 似然"不是后验——必须除以列总和；后验列算完检查总和 = 1；</li>
+      <li>边际 p(Y) 用全概率公式，别漏乘先验、别漏候选值；</li>
+      <li>不放回抽样：第二次似然分母变 8，且红/绿球数要按第一次抽样结果调整；</li>
+      <li>泊松似然别丢 \(e^{-\lambda}\) 和 \(y!\)；二项似然指数别写反；</li>
+      <li>序贯更新第二步的先验 = 第一步的后验（不是初始先验）；</li>
+      <li>序贯与合并分析的中间列可以差常数倍（如 1200 vs 5005），但后验必须一致；</li>
+      <li>中间结果保留足够位数（≥4 位小数）再归一化，避免舍入误差。</li>
+    </ol>
+  </div>
+</section>
+<!-- ====================== 第三部分：复习题目 ====================== -->
+<section class="part" id="part3">
+  <h2><span class="pno">③</span>考察题目设计（共 16 题）</h2>
+  <p class="part-intro">难度三级递进：<span class="tag diff1">基础</span> 概念辨析（Q1–Q7）→ <span class="tag diff2">进阶</span> 单步表格计算（Q8–Q12）→ <span class="tag diff3">综合</span> 序贯性与论述（Q13–Q16）。选择 / 判断题点击选项即可作答并自动展开解析；计算题建议先在纸上完成再核对答案。</p>
+
+  <h3 class="qgroup-title">基础题 · 概念与公式辨析</h3>
+
+  <article class="q d1" id="q1">
+    <div class="qmeta"><span class="qno">Q1</span><span class="tag">选择题</span><span class="tag">考点 A1 / A4 · 边际分布的角色</span><span class="tag diff1">基础</span></div>
+    <p class="qtext">在贝叶斯定理 \(p(\theta\mid Y)=\dfrac{p(Y\mid\theta)p(\theta)}{p(Y)}\) 中，对分母 \(p(Y)\) 最准确的描述是：</p>
+    <div class="mcq" data-answer="C" role="group" aria-label="Q1 选项">
+      <div class="option" data-opt="A" tabindex="0">A. θ 的先验概率，表示看数据前的信念</div>
+      <div class="option" data-opt="B" tabindex="0">B. 给定 θ 时数据出现的概率，且随 θ 取值不同而变化</div>
+      <div class="option" data-opt="C" tabindex="0">C. 数据的边际分布，是与 θ 无关的归一化常数</div>
+      <div class="option" data-opt="D" tabindex="0">D. θ 的后验概率，表示看数据后的信念</div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：C</span></p>
+        <p><strong>考查点：</strong>贝叶斯定理四个组成部分的识别（A1、A4）。</p>
+        <p><strong>解题思路：</strong>\(p(Y)=\sum_{\theta}p(Y\mid\theta)p(\theta)\) 已对所有 θ 求和，结果不再含 θ，对公式里每个候选 θ 都是同一个数。它的唯一作用是把"似然 × 先验"缩放成总和为 1 的合法概率分布，因此叫归一化常数。在表格法中它就是"先验 × 似然"列的总和。</p>
+        <p><strong>易错提醒：</strong>B 选项描述的是似然 \(p(Y\mid\theta)\)；"随 θ 变化"正是似然与边际的本质区别。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d1" id="q2">
+    <div class="qmeta"><span class="qno">Q2</span><span class="tag">选择题</span><span class="tag">考点 A3 · 似然的本质</span><span class="tag diff1">基础</span></div>
+    <p class="qtext">关于似然 \(p(Y\mid\theta)\)，下列说法<strong>正确</strong>的是：</p>
+    <div class="mcq" data-answer="B" role="group" aria-label="Q2 选项">
+      <div class="option" data-opt="A" tabindex="0">A. 它是 θ 的概率分布，因此对 θ 求和必定等于 1</div>
+      <div class="option" data-opt="B" tabindex="0">B. 数据固定后，它被视为 θ 的函数，用来比较各候选 θ 对数据的解释力</div>
+      <div class="option" data-opt="C" tabindex="0">C. 它就是后验分布的另一种写法</div>
+      <div class="option" data-opt="D" tabindex="0">D. 它与 θ 的取值无关，是一个常数</div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：B</span></p>
+        <p><strong>考查点：</strong>似然的定义与"似然不是 θ 的分布"这一关键辨析（A3）。</p>
+        <p><strong>解题思路：</strong>似然回答"假如 θ 取这个值，看到这份数据的概率是多大"。数据固定后它随 θ 变化（排除 D），衡量解释力，故 B 正确。</p>
+        <p><strong>易错提醒：</strong>A 是最常见的错误认知。反例：摸球模型中 \(\sum_{\theta=0}^{9}p(Y_1=1\mid\theta)=\sum_{\theta=0}^{9}\frac{\theta}{9}=\frac{45}{9}=5\neq1\)。真正对 θ 求和为 1 的是先验和后验。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d1" id="q3">
+    <div class="qmeta"><span class="qno">Q3</span><span class="tag">判断题</span><span class="tag">考点 A5 · 后验的归一化</span><span class="tag diff1">基础</span></div>
+    <p class="qtext">判断正误："后验分布是一个真正的概率分布：若 θ 离散，则 \(\sum_{\theta\in\Theta}p(\theta\mid Y)=1\)；若 θ 连续，则 \(\int_{\theta\in\Theta}p(\theta\mid Y)\,d\theta=1\)。"</p>
+    <div class="mcq" data-answer="T" role="group" aria-label="Q3 选项">
+      <div class="option" data-opt="T" tabindex="0">正确</div>
+      <div class="option" data-opt="F" tabindex="0">错误</div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：正确</span></p>
+        <p><strong>考查点：</strong>后验分布的归一化性质（A5），课件原文强调"posterior distribution is a probability distribution!"。</p>
+        <p><strong>解题思路：</strong>贝叶斯公式的分母 p(Y) 正是为保证这一点而存在：把每行"先验 × 似然"除以它们的总和，总和自然变为 1。</p>
+        <p><strong>易错提醒：</strong>这也是表格题的自检手段——后验列加起来不是 1（允许微小舍入误差），说明某步算错了。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d1" id="q4">
+    <div class="qmeta"><span class="qno">Q4</span><span class="tag">填空题</span><span class="tag">考点 A1 · 核心公式</span><span class="tag diff1">基础</span></div>
+    <p class="qtext">用中文名词补全：① 后验 = （&nbsp;&nbsp;&nbsp;&nbsp;） × （&nbsp;&nbsp;&nbsp;&nbsp;） ÷ （&nbsp;&nbsp;&nbsp;&nbsp;）；② 比例形式：后验 ∝ （&nbsp;&nbsp;&nbsp;&nbsp;） × （&nbsp;&nbsp;&nbsp;&nbsp;）。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：① 似然 × 先验 ÷ 边际（分布）；② 似然 × 先验</span></p>
+        <p><strong>考查点：</strong>贝叶斯定理的文字版记忆（A1）。对应符号式 \(p(\theta\mid Y)=\dfrac{p(Y\mid\theta)p(\theta)}{p(Y)}\)。</p>
+        <p><strong>解题思路：</strong>"∝"省略掉的正是不含 θ 的常数 1/p(Y)，所以比例式只剩似然与先验两项。</p>
+        <p><strong>易错提醒：</strong>分子中似然与先验的先后顺序不重要（乘法可交换），但"除以边际"不能丢；写比例式时不要再带分母。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d1" id="q5">
+    <div class="qmeta"><span class="qno">Q5</span><span class="tag">选择题</span><span class="tag">考点 C1 · 先验对后验的影响</span><span class="tag diff1">基础</span></div>
+    <p class="qtext">抛硬币 1000 次得 600 正 400 反。若先验为 \(p(\theta=0.5)=p(\theta=0.7)=\tfrac12\)，课件算得 \(p(\theta=0.5\mid Y)=0.92\)。现把先验改为 \(p(\theta=0.5)=\tfrac15,\ p(\theta=0.7)=\tfrac45\)（数据不变），则 \(p(\theta=0.5\mid Y)\) 变为：</p>
+    <div class="mcq" data-answer="B" role="group" aria-label="Q5 选项">
+      <div class="option" data-opt="A" tabindex="0">A. 仍为 0.92（数据相同则后验相同）</div>
+      <div class="option" data-opt="B" tabindex="0">B. 0.74</div>
+      <div class="option" data-opt="C" tabindex="0">C. 0.26</div>
+      <div class="option" data-opt="D" tabindex="0">D. 0.08</div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：B（0.74）</span></p>
+        <p><strong>考查点：</strong>性质 1——后验同时依赖先验与数据（C1），数值出自课件原例。</p>
+        <p><strong>解题思路：</strong>θ=0.5 的先验权重从 1/2 降到 1/5，其后验也随之从 0.92 降到 0.74（完整计算见 Q15）。A 选项的说法违背性质 1；C 是 \(p(\theta=0.7\mid Y)\) 的新值；D 是旧先验下 θ=0.7 的后验。</p>
+        <p><strong>易错提醒：</strong>注意方向感——尽管先验只给 θ=0.5 两成把握，数据仍把它推高到 0.74，说明这份数据强烈支持公平硬币。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d1" id="q6">
+    <div class="qmeta"><span class="qno">Q6</span><span class="tag">判断题</span><span class="tag">考点 C2 · 序贯性</span><span class="tag diff1">基础</span></div>
+    <p class="qtext">判断正误："对同一批观测，'逐个观测、每步把上一步的后验当作新先验'与'全部观测一次性分析'两种方法得到的后验分布相同。"</p>
+    <div class="mcq" data-answer="T" role="group" aria-label="Q6 选项">
+      <div class="option" data-opt="T" tabindex="0">正确</div>
+      <div class="option" data-opt="F" tabindex="0">错误</div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：正确</span></p>
+        <p><strong>考查点：</strong>性质 2——贝叶斯推断的序贯性（C2），课件原文："Analysing data sequentially or together yields the same posterior results."</p>
+        <p><strong>解题思路：</strong>独立观测的联合似然等于各步似然之积，序贯更新相当于把这些因子逐个乘进先验，最终归一化后与一次性分析一致。问题集 1(d)(e) 与 3(b)(c)（即本页 Q13、Q14）是数值验证。</p>
+        <p><strong>易错提醒：</strong>成立的前提是序贯每一步都正确换用"上一步后验"作先验；若第二步仍用初始先验则结论不成立。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d1" id="q7">
+    <div class="qmeta"><span class="qno">Q7</span><span class="tag">简答题</span><span class="tag">考点 A1–A5 · 四要素综合理解</span><span class="tag diff1">基础</span></div>
+    <p class="qtext">医生为病人诊断某疾病：把"病人患病与否"类比为参数 θ，把"检查/化验结果"类比为数据 Y。请用这个情境，分别用一两句话解释先验、似然、边际、后验各自的含义，并写出它们在贝叶斯定理中的关系式。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>参考答案：</strong></p>
+        <ul>
+          <li><strong>先验 p(θ)：</strong>病人未做检查前，医生基于疾病流行程度等背景知识，对"患病/不患病"的初始判断；</li>
+          <li><strong>似然 p(Y|θ)：</strong>假设病人患病（或不患病），出现当前这种检查结果的概率——衡量每种假设对证据的解释力；</li>
+          <li><strong>边际 p(Y)：</strong>不论患病与否，出现这种检查结果的总概率，\(p(Y)=\sum_\theta p(Y\mid\theta)p(\theta)\)，起归一化作用；</li>
+          <li><strong>后验 p(θ|Y)：</strong>看到检查结果后，医生更新的患病概率判断——即更新后的信念。</li>
+        </ul>
+        <p>关系式：\(p(\theta\mid Y)=\dfrac{p(Y\mid\theta)\,p(\theta)}{p(Y)}\)，即 后验 = 似然 × 先验 ÷ 边际。</p>
+        <p><strong>考查点：</strong>能否脱离公式、用自然语言准确表述四要素（A1–A5）——简答题高频考法。</p>
+        <p><strong>易错提醒：</strong>① 似然的条件方向别写反：是"给定 θ 看数据"，不是"给定数据看 θ"（后者是后验）；② 边际要体现"对所有 θ 加权求和"，不能只说"数据的概率"而漏掉全概率结构。</p>
+      </div>
+    </details>
+  </article>
+
+  <h3 class="qgroup-title">进阶题 · 表格法计算</h3>
+
+  <article class="q d2" id="q8">
+    <div class="qmeta"><span class="qno">Q8</span><span class="tag">计算题</span><span class="tag">考点 B2 / A4 · 摸球似然与边际</span><span class="tag diff2">进阶</span><span class="tag">对应 Problem Sheet 1(a)(b)</span></div>
+    <p class="qtext">罐中 9 个球（红或绿），红球数 θ 未知，先验均匀：\(p(\theta)=\tfrac1{10},\ \theta\in\{0,1,\dots,9\}\)。随机摸出一球，令 \(Y_1=1\) 表示红色。(i) 写出条件概率 \(p(Y_1=1\mid\theta)\) 与 \(p(Y_1=0\mid\theta)\)；(ii) 求边际分布 \(p(Y_1=1)\) 与 \(p(Y_1=0)\)。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：p(Y₁=1|θ) = θ/9，p(Y₁=0|θ) = (9−θ)/9；p(Y₁=1) = p(Y₁=0) = 1/2</span></p>
+        <p><strong>解题步骤：</strong></p>
+        <ol class="steps">
+          <li>罐中共 9 球、θ 个红球，等可能摸取，故 \(p(Y_1=1\mid\theta)=\frac{\theta}{9}\)，\(p(Y_1=0\mid\theta)=\frac{9-\theta}{9}\)。逐行填表：</li>
+          <li>
+            <div class="tablewrap"><table>
+              <thead><tr><th>θ</th><th class="h-prior">p(θ)</th><th class="h-lik">p(Y₁=1|θ)</th><th class="h-lik">p(Y₁=0|θ)</th></tr></thead>
+              <tbody>
+                <tr><td>0</td><td>1/10</td><td>0/9</td><td>9/9</td></tr>
+                <tr><td>1</td><td>1/10</td><td>1/9</td><td>8/9</td></tr>
+                <tr><td>2</td><td>1/10</td><td>2/9</td><td>7/9</td></tr>
+                <tr><td>3</td><td>1/10</td><td>3/9</td><td>6/9</td></tr>
+                <tr><td>4</td><td>1/10</td><td>4/9</td><td>5/9</td></tr>
+                <tr><td>5</td><td>1/10</td><td>5/9</td><td>4/9</td></tr>
+                <tr><td>6</td><td>1/10</td><td>6/9</td><td>3/9</td></tr>
+                <tr><td>7</td><td>1/10</td><td>7/9</td><td>2/9</td></tr>
+                <tr><td>8</td><td>1/10</td><td>8/9</td><td>1/9</td></tr>
+                <tr><td>9</td><td>1/10</td><td>9/9</td><td>0/9</td></tr>
+              </tbody>
+            </table></div>
+          </li>
+          <li>用全概率公式求边际：\[ p(Y_1=1)=\sum_{\theta=0}^{9}p(Y_1=1\mid\theta)\,p(\theta)=\frac1{10}\cdot\frac{0+1+\dots+9}{9}=\frac1{10}\cdot\frac{45}{9}=\frac{45}{90}=\frac12. \]</li>
+          <li>同理（或由互补性）\(p(Y_1=0)=1-\frac12=\frac12\)。</li>
+        </ol>
+        <p><strong>考查点：</strong>按模型写似然（B2）+ 全概率公式求边际（A4）。</p>
+        <p><strong>易错提醒：</strong>求边际时务必乘上先验 1/10——直接把似然列相加得到 5，是典型错误；结果 1/2 也符合直觉：先验对红绿完全对称。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d2" id="q9">
+    <div class="qmeta"><span class="qno">Q9</span><span class="tag">计算题</span><span class="tag">考点 B1 / B2 · 表格法求后验</span><span class="tag diff2">进阶</span><span class="tag">对应 Problem Sheet 1(c)</span></div>
+    <p class="qtext">承 Q8，已知第一个摸出的球是红色（\(Y_1=1\)）。用表格法求 θ 的后验分布 \(p(\theta\mid Y_1=1)\)，并指出 \(p(\theta=4\mid Y_1=1)\) 的值。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：p(θ|Y₁=1) = θ/45；特别地 p(θ=4|Y₁=1) = 4/45 ≈ 0.0889</span></p>
+        <p><strong>解题步骤：</strong>先验 × 似然 \(=\frac1{10}\cdot\frac{\theta}{9}=\frac{\theta}{90}\)；总和 \(=\frac{45}{90}=\frac12\)（即 Q8 的边际）；后验 \(=\frac{\theta/90}{1/2}=\frac{\theta}{45}\)。</p>
+        <div class="tablewrap"><table>
+          <thead><tr><th>θ</th><th class="h-prior">先验 p(θ)</th><th class="h-lik">似然 p(Y₁=1|θ)</th><th>先验 × 似然</th><th class="h-post">后验 p(θ|Y₁=1)</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>1/10</td><td>0/9</td><td>0</td><td>0</td></tr>
+            <tr><td>1</td><td>1/10</td><td>1/9</td><td>1/90</td><td>1/45 ≈ 0.0222</td></tr>
+            <tr><td>2</td><td>1/10</td><td>2/9</td><td>2/90</td><td>2/45 ≈ 0.0444</td></tr>
+            <tr><td>3</td><td>1/10</td><td>3/9</td><td>3/90</td><td>3/45 ≈ 0.0667</td></tr>
+            <tr><td>4</td><td>1/10</td><td>4/9</td><td>4/90</td><td>4/45 ≈ 0.0889</td></tr>
+            <tr><td>5</td><td>1/10</td><td>5/9</td><td>5/90</td><td>5/45 ≈ 0.1111</td></tr>
+            <tr><td>6</td><td>1/10</td><td>6/9</td><td>6/90</td><td>6/45 ≈ 0.1333</td></tr>
+            <tr><td>7</td><td>1/10</td><td>7/9</td><td>7/90</td><td>7/45 ≈ 0.1556</td></tr>
+            <tr><td>8</td><td>1/10</td><td>8/9</td><td>8/90</td><td>8/45 ≈ 0.1778</td></tr>
+            <tr><td>9</td><td>1/10</td><td>9/9</td><td>9/90</td><td>9/45 = 0.2000</td></tr>
+            <tr class="sumrow"><td colspan="3">合计</td><td>45/90 = 1/2 = p(Y₁=1)</td><td>1 ✓</td></tr>
+          </tbody>
+        </table></div>
+        <p><strong>考查点：</strong>表格法五步全流程（B1）；结果与课件示范 \(p(\theta=4\mid Y=\text{red})=0.0889\) 一致。</p>
+        <p><strong>解读：</strong>摸到红球后，信念整体向"红球多"的方向倾斜：θ 越大后验越高（θ=9 最可信，0.2），θ=0 被彻底排除（罐里至少有 1 个红球）。</p>
+        <p><strong>易错提醒：</strong>最后一步忘记除以 1/2，把 θ/90 当成后验——检查总和是否为 1 即可发现。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d2" id="q10">
+    <div class="qmeta"><span class="qno">Q10</span><span class="tag">选择题</span><span class="tag">考点 B3 · 泊松似然</span><span class="tag diff2">进阶</span></div>
+    <p class="qtext">设 \(Y\sim\text{Pois}(\lambda)\)，观测到 \(Y=2\)。当 \(\lambda=2\) 时，似然 \(p(Y=2\mid\lambda=2)\) 等于：</p>
+    <div class="mcq" data-answer="A" role="group" aria-label="Q10 选项">
+      <div class="option" data-opt="A" tabindex="0">A. \(2e^{-2}\approx 0.271\)</div>
+      <div class="option" data-opt="B" tabindex="0">B. \(e^{-2}\approx 0.135\)</div>
+      <div class="option" data-opt="C" tabindex="0">C. \(4e^{-2}\approx 0.541\)</div>
+      <div class="option" data-opt="D" tabindex="0">D. \(2e^{-1}\approx 0.736\)</div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：A</span></p>
+        <p><strong>考查点：</strong>泊松概率质量函数的正确使用（B3）：\(p(Y=y\mid\lambda)=\dfrac{\lambda^{y}e^{-\lambda}}{y!}\)。</p>
+        <p><strong>解题思路：</strong>代入 y=2、λ=2：\(\dfrac{2^{2}e^{-2}}{2!}=\dfrac{4e^{-2}}{2}=2e^{-2}\approx0.2707\)。</p>
+        <p><strong>易错提醒：</strong>C 是忘记除以 \(2!=2\) 的结果；B 是漏掉 \(\lambda^{y}\)（或误算 4/2!）后的常见残值；D 是把 \(e^{-\lambda}\) 的 λ 错代成 1。三个干扰项对应三种典型笔误。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d2" id="q11">
+    <div class="qmeta"><span class="qno">Q11</span><span class="tag">计算题</span><span class="tag">考点 B1 / B3 · 泊松后验</span><span class="tag diff2">进阶</span><span class="tag">对应 Problem Sheet 2</span></div>
+    <p class="qtext">\(Y\sim\text{Pois}(\lambda)\)，λ 的候选值为 1–5，先验为 \(p(\lambda)=\tfrac14\)（λ∈{1,2,3}）、\(p(\lambda)=\tfrac18\)（λ∈{4,5}）。观测到 \(Y=2\)。用表格法求后验分布 \(p(\lambda\mid Y=2)\)（保留 4 位小数）。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：后验 ≈ (0.2317, 0.3409, 0.2822, 0.0923, 0.0530)（λ = 1…5）</span></p>
+        <p><strong>解题步骤：</strong></p>
+        <ol class="steps">
+          <li>似然公式：\(p(Y=2\mid\lambda)=\dfrac{\lambda^{2}e^{-\lambda}}{2!}=\dfrac{\lambda^{2}e^{-\lambda}}{2}\)。示范一行（λ=3）：\(\frac{9e^{-3}}{2}=4.5\times0.0498=0.2240\)。</li>
+          <li>逐行乘以先验、求和、归一化：</li>
+        </ol>
+        <div class="tablewrap"><table>
+          <thead><tr><th>λ</th><th class="h-prior">先验 p(λ)</th><th class="h-lik">似然 p(Y=2|λ)</th><th>先验 × 似然</th><th class="h-post">后验 p(λ|Y=2)</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>1/4</td><td>0.1839</td><td>0.0460</td><td>0.2317</td></tr>
+            <tr><td>2</td><td>1/4</td><td>0.2707</td><td>0.0677</td><td>0.3409</td></tr>
+            <tr><td>3</td><td>1/4</td><td>0.2240</td><td>0.0560</td><td>0.2822</td></tr>
+            <tr><td>4</td><td>1/8</td><td>0.1465</td><td>0.0183</td><td>0.0923</td></tr>
+            <tr><td>5</td><td>1/8</td><td>0.0842</td><td>0.0105</td><td>0.0530</td></tr>
+            <tr class="sumrow"><td colspan="3">合计</td><td>0.1985 = p(Y=2)</td><td>≈ 1.0000 ✓</td></tr>
+          </tbody>
+        </table></div>
+        <p><strong>考查点：</strong>非均匀先验下的表格法（B1）+ 泊松似然（B3）。</p>
+        <p><strong>解读：</strong>后验众数在 λ=2，与观测值 Y=2 吻合（似然在 λ=2 处最大）；λ=4、5 不仅似然较小，还被较低的先验 1/8 进一步压低。</p>
+        <p><strong>易错提醒：</strong>① 五个先验不全相等，别一律写 1/5；② 漏掉 \(e^{-\lambda}\) 或 \(2!\)；③ 中间列保留 4 位小数再归一化，否则后验列总和明显偏离 1。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d2" id="q12">
+    <div class="qmeta"><span class="qno">Q12</span><span class="tag">计算题</span><span class="tag">考点 B4 / B1 · 二项后验</span><span class="tag diff2">进阶</span><span class="tag">对应 Problem Sheet 3(a)</span></div>
+    <p class="qtext">n = 10 次独立试验，成功概率 θ 恒定，候选值 θ∈{0.20, 0.40} 且先验等可能。观测到成功次数 \(Y_1=7\)。求后验分布 \(p(\theta\mid Y_1=7)\)。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：p(θ=0.2|Y₁=7) = 1/55 ≈ 0.0182，p(θ=0.4|Y₁=7) = 54/55 ≈ 0.9818</span></p>
+        <p><strong>解题步骤：</strong></p>
+        <ol class="steps">
+          <li>二项似然：\(p(Y_1=7\mid\theta)=\binom{10}{7}\theta^{7}(1-\theta)^{3}=120\,\theta^{7}(1-\theta)^{3}\)。</li>
+          <li>θ=0.2：\(120\times(0.2)^{7}(0.8)^{3}=120\times(1.28\times10^{-5})\times0.512=0.000786\)。<br>θ=0.4：\(120\times(0.4)^{7}(0.6)^{3}=120\times0.0016384\times0.216=0.042467\)。</li>
+          <li>填表并归一化：</li>
+        </ol>
+        <div class="tablewrap"><table>
+          <thead><tr><th>θ</th><th class="h-prior">先验 p(θ)</th><th class="h-lik">似然 p(Y₁=7|θ)</th><th>先验 × 似然</th><th class="h-post">后验 p(θ|Y₁=7)</th></tr></thead>
+          <tbody>
+            <tr><td>0.20</td><td>0.5</td><td>0.000786</td><td>0.000393</td><td>1/55 ≈ 0.0182</td></tr>
+            <tr><td>0.40</td><td>0.5</td><td>0.042467</td><td>0.021234</td><td>54/55 ≈ 0.9818</td></tr>
+            <tr class="sumrow"><td colspan="3">合计</td><td>0.021627 = p(Y₁=7)</td><td>1 ✓</td></tr>
+          </tbody>
+        </table></div>
+        <p><strong>巧算（验证用）：</strong>先验相等时，后验之比 = 似然之比：\(\dfrac{L(0.2)}{L(0.4)}=\Big(\dfrac{0.2}{0.4}\Big)^{7}\Big(\dfrac{0.8}{0.6}\Big)^{3}=\dfrac{1}{2^{7}}\cdot\dfrac{64}{27}=\dfrac1{54}\)，故后验为 \(\dfrac{1}{55}\) 与 \(\dfrac{54}{55}\)。</p>
+        <p><strong>考查点：</strong>二项似然的书写与代入（B4）、表格法（B1）。</p>
+        <p><strong>解读：</strong>10 次中成功 7 次（样本比例 0.7）离 0.4 远比离 0.2 近，数据压倒性支持 θ=0.4。</p>
+        <p><strong>易错提醒：</strong>① 指数写反（θ³(1−θ)⁷）会得出完全相反的结论；② 二项系数 120 在两行同乘，归一化后约掉——漏写它后验不变，但似然列的数值就错了。</p>
+      </div>
+    </details>
+  </article>
+  <h3 class="qgroup-title">综合题 · 序贯更新与论述</h3>
+
+  <article class="q d3" id="q13">
+    <div class="qmeta"><span class="qno">Q13</span><span class="tag">计算题</span><span class="tag">考点 C2 / B2 · 不放回序贯更新</span><span class="tag diff3">综合</span><span class="tag">对应 Problem Sheet 1(d)(e)</span></div>
+    <p class="qtext">承 Q9（已知第一球为红，后验为 \(p(\theta\mid Y_1=1)=\theta/45\)）。现<strong>不放回</strong>地摸第二球，结果为绿色（\(Y_2=0\)）。<br>(d) 以 Q9 的后验作为新先验，求更新后的后验；(e) 改为把两次摸球当作一个整体实验（\(Y_1=1,Y_2=0\)），从初始均匀先验出发直接求后验，并比较两种方法的结果。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：两种方法的后验完全相同：p(θ | Y₁=1, Y₂=0) = θ(9−θ)/120</span></p>
+        <p><strong>(d) 序贯方法：</strong></p>
+        <ol class="steps">
+          <li><strong>新先验</strong> = 上一步后验 = θ/45。</li>
+          <li><strong>第二次似然：</strong>第一球（红）未放回，罐中剩 8 球；红球剩 θ−1，绿球仍为 9−θ。故 \(p(Y_2=0\mid\theta,Y_1=1)=\dfrac{9-\theta}{8}\)。</li>
+          <li>先验 × 似然 \(=\dfrac{\theta}{45}\cdot\dfrac{9-\theta}{8}=\dfrac{\theta(9-\theta)}{360}\)；总和 \(=\dfrac{120}{360}=\dfrac13\)；后验 \(=\dfrac{\theta(9-\theta)}{120}\)。</li>
+        </ol>
+        <div class="tablewrap"><table>
+          <thead><tr><th>θ</th><th class="h-prior">先验 θ/45</th><th class="h-lik">似然 (9−θ)/8</th><th>先验 × 似然</th><th class="h-post">后验</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>0</td><td>9/8</td><td>0</td><td>0</td></tr>
+            <tr><td>1</td><td>1/45</td><td>8/8</td><td>8/360</td><td>8/120 ≈ 0.0667</td></tr>
+            <tr><td>2</td><td>2/45</td><td>7/8</td><td>14/360</td><td>14/120 ≈ 0.1167</td></tr>
+            <tr><td>3</td><td>3/45</td><td>6/8</td><td>18/360</td><td>18/120 = 0.1500</td></tr>
+            <tr><td>4</td><td>4/45</td><td>5/8</td><td>20/360</td><td>20/120 ≈ 0.1667</td></tr>
+            <tr><td>5</td><td>5/45</td><td>4/8</td><td>20/360</td><td>20/120 ≈ 0.1667</td></tr>
+            <tr><td>6</td><td>6/45</td><td>3/8</td><td>18/360</td><td>18/120 = 0.1500</td></tr>
+            <tr><td>7</td><td>7/45</td><td>2/8</td><td>14/360</td><td>14/120 ≈ 0.1167</td></tr>
+            <tr><td>8</td><td>8/45</td><td>1/8</td><td>8/360</td><td>8/120 ≈ 0.0667</td></tr>
+            <tr><td>9</td><td>9/45</td><td>0/8</td><td>0</td><td>0</td></tr>
+            <tr class="sumrow"><td colspan="3">合计</td><td>120/360 = 1/3</td><td>1 ✓</td></tr>
+          </tbody>
+        </table></div>
+        <p><strong>(e) 整体方法：</strong>初始先验 1/10；联合似然 \(p(Y_1=1,Y_2=0\mid\theta)=\dfrac{\theta}{9}\cdot\dfrac{9-\theta}{8}=\dfrac{\theta(9-\theta)}{72}\)；先验 × 似然 \(=\dfrac{\theta(9-\theta)}{720}\)；总和 \(=\dfrac{120}{720}=\dfrac16\)；后验 \(=\dfrac{\theta(9-\theta)}{120}\)。</p>
+        <div class="tablewrap"><table>
+          <thead><tr><th>θ</th><th class="h-prior">先验 1/10</th><th class="h-lik">似然 θ(9−θ)/72</th><th>先验 × 似然</th><th class="h-post">后验</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>1/10</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><td>1</td><td>1/10</td><td>8/72</td><td>8/720</td><td>8/120</td></tr>
+            <tr><td>2</td><td>1/10</td><td>14/72</td><td>14/720</td><td>14/120</td></tr>
+            <tr><td>3</td><td>1/10</td><td>18/72</td><td>18/720</td><td>18/120</td></tr>
+            <tr><td>4</td><td>1/10</td><td>20/72</td><td>20/720</td><td>20/120</td></tr>
+            <tr><td>5</td><td>1/10</td><td>20/72</td><td>20/720</td><td>20/120</td></tr>
+            <tr><td>6</td><td>1/10</td><td>18/72</td><td>18/720</td><td>18/120</td></tr>
+            <tr><td>7</td><td>1/10</td><td>14/72</td><td>14/720</td><td>14/120</td></tr>
+            <tr><td>8</td><td>1/10</td><td>8/72</td><td>8/720</td><td>8/120</td></tr>
+            <tr><td>9</td><td>1/10</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr class="sumrow"><td colspan="3">合计</td><td>120/720 = 1/6</td><td>1 ✓</td></tr>
+          </tbody>
+        </table></div>
+        <p><strong>比较与结论：</strong>两张表的后验列逐行相同——验证了性质 2（序贯分析与整体分析等价）。注意"先验 × 似然"列与总和（1/3 与 1/6）并不相同，但归一化后结果一致。</p>
+        <p><strong>解读：</strong>见过一红一绿后，θ=0 与 θ=9 的后验为 0（罐里必然两色都有）；后验关于 θ=4.5 对称，峰值在 θ=4、5。</p>
+        <p><strong>易错提醒：</strong>① (d) 中第二次似然分母误写 9（忘记不放回剩 8 球）；② (d) 的先验误用初始的 1/10；③ (e) 的联合似然忘记乘第一次的 θ/9。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d3" id="q14">
+    <div class="qmeta"><span class="qno">Q14</span><span class="tag">计算题</span><span class="tag">考点 C2 / B4 · 二项序贯更新</span><span class="tag diff3">综合</span><span class="tag">对应 Problem Sheet 3(b)(c)</span></div>
+    <p class="qtext">承 Q12（10 次试验观测 \(Y_1=7\)，后验为 1/55 与 54/55）。<br>(b) 再做 5 次独立试验，观测到 \(Y_2=2\) 次成功。以 Q12 的后验为先验，求 \(p(\theta\mid Y_1=7,Y_2=2)\)；(c) 改为把 15 次试验合并（共 9 次成功），从初始先验 (0.5, 0.5) 出发直接求后验，并比较结果。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：两种方法结果相同：p(θ=0.2 | 数据) = 8/737 ≈ 0.0109，p(θ=0.4 | 数据) ≈ 0.9891</span></p>
+        <p><strong>(b) 序贯方法：</strong>第二批数据的似然 \(p(Y_2=2\mid\theta)=\binom{5}{2}\theta^{2}(1-\theta)^{3}=10\,\theta^{2}(1-\theta)^{3}\)：<br>θ=0.2：\(10\times0.04\times0.512=0.2048\)；θ=0.4：\(10\times0.16\times0.216=0.3456\)。</p>
+        <div class="tablewrap"><table>
+          <thead><tr><th>θ</th><th class="h-prior">先验（=Q12 后验）</th><th class="h-lik">似然 p(Y₂=2|θ)</th><th>先验 × 似然</th><th class="h-post">后验</th></tr></thead>
+          <tbody>
+            <tr><td>0.20</td><td>1/55 ≈ 0.0182</td><td>0.2048</td><td>0.003724</td><td>8/737 ≈ 0.0109</td></tr>
+            <tr><td>0.40</td><td>54/55 ≈ 0.9818</td><td>0.3456</td><td>0.339316</td><td>729/737 ≈ 0.9891</td></tr>
+            <tr class="sumrow"><td colspan="3">合计</td><td>0.343040</td><td>1 ✓</td></tr>
+          </tbody>
+        </table></div>
+        <p>精确分数验证：后验比 \(=\dfrac{1}{54}\times\dfrac{16}{27}=\dfrac{8}{729}\)（其中 16/27 为第二批似然比），故后验为 \(\dfrac{8}{737}\) 与 \(\dfrac{729}{737}\)。</p>
+        <p><strong>(c) 整体方法：</strong>合并似然 \(p(Y=9\mid\theta)=\binom{15}{9}\theta^{9}(1-\theta)^{6}=5005\,\theta^{9}(1-\theta)^{6}\)：<br>θ=0.2：\(5005\times(0.2)^{9}(0.8)^{6}=0.000672\)；θ=0.4：\(5005\times(0.4)^{9}(0.6)^{6}=0.061214\)。</p>
+        <div class="tablewrap"><table>
+          <thead><tr><th>θ</th><th class="h-prior">先验 p(θ)</th><th class="h-lik">似然 p(Y=9|θ)</th><th>先验 × 似然</th><th class="h-post">后验</th></tr></thead>
+          <tbody>
+            <tr><td>0.20</td><td>0.5</td><td>0.000672</td><td>0.000336</td><td>≈ 0.0109</td></tr>
+            <tr><td>0.40</td><td>0.5</td><td>0.061214</td><td>0.030607</td><td>≈ 0.9891</td></tr>
+            <tr class="sumrow"><td colspan="3">合计</td><td>0.030943</td><td>1 ✓</td></tr>
+          </tbody>
+        </table></div>
+        <p><strong>比较与结论：</strong>(b)、(c) 的后验完全一致——再次验证性质 2。15 次中 9 次成功（比例 0.6）进一步巩固了 θ=0.4 的压倒性优势。</p>
+        <p><strong>考查点：</strong>序贯性（C2）+ 二项似然（B4）的综合运用，是本讲计算类压轴题型。</p>
+        <p><strong>易错提醒：</strong>① (b) 的先验必须用 (1/55, 54/55)，不能再用 (0.5, 0.5)；② (c) 中合并数据是"15 试验 9 成功"，n 与 y 都要更新；③ 两种方法"先验 × 似然"列不同（0.3430 vs 0.0309）属正常现象，见 Q16。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d3" id="q15">
+    <div class="qmeta"><span class="qno">Q15</span><span class="tag">论述题</span><span class="tag">考点 C1 · 先验与数据共同决定后验</span><span class="tag diff3">综合</span></div>
+    <p class="qtext">结合课件中的抛硬币例子（1000 次得 600 正 400 反，θ∈{0.5, 0.7}），论述"后验同时取决于先验信念与数据"：(i) 写出先验为 \(p(\theta=0.5)=\tfrac15,\ p(\theta=0.7)=\tfrac45\) 时 \(p(\theta=0.5\mid Y)\) 的完整计算过程；(ii) 与等可能先验的结果对比，说明先验与数据各自扮演的角色。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>(i) 计算过程：</strong>数据 Y 为 600 个 1 与 400 个 0，\(Y_i\sim^{i.i.d}\text{Ber}(\theta)\)，似然 \(p(Y\mid\theta=i)=i^{600}(1-i)^{400}\)。由贝叶斯定理（分母按全概率展开）：</p>
+        <div class="eqd">\[ p(\theta=0.5\mid Y)=\frac{p(Y\mid 0.5)\,p(0.5)}{p(Y\mid 0.5)\,p(0.5)+p(Y\mid 0.7)\,p(0.7)}=\frac{(0.5)^{600}(0.5)^{400}\cdot\frac15}{(0.5)^{600}(0.5)^{400}\cdot\frac15+(0.7)^{600}(0.3)^{400}\cdot\frac45}=0.74. \]</div>
+        <p>相应地 \(p(\theta=0.7\mid Y)=1-0.74=0.26\)。</p>
+        <p><strong>(ii) 对比与论述（要点）：</strong></p>
+        <ul>
+          <li><strong>数据的作用：</strong>两种先验下，似然比 \(L(0.5)/L(0.7)\) 都强烈偏向 θ=0.5（样本比例 0.6 在似然意义下更支持公平硬币）。证据是：θ=0.5 的信念在等可能先验下从 0.50 升到 0.92，在偏向先验下从 0.20 升到 0.74——<strong>数据把信念朝同一方向推动</strong>。</li>
+          <li><strong>先验的作用：</strong>同一份数据，起点不同终点也不同：(½, ½) → (0.92, 0.08)，而 (1/5, 4/5) → (0.74, 0.26)。<strong>先验决定起点与初始权重</strong>，后验是"先验权重 × 似然解释力"再归一化的折中。</li>
+          <li><strong>结论：</strong>后验 ∝ 似然 × 先验——两个因子缺一不可；改变其中任何一个都会改变后验。课件注明：先验选择对后验的影响将在后续课程系统学习。</li>
+        </ul>
+        <p><strong>考查点：</strong>性质 1 的计算 + 解释（C1），论述题须"有公式、有数值、有对比、有结论"。</p>
+        <p><strong>易错提醒：</strong>分母里两项各自要乘<strong>自己的</strong>先验（1/5 与 4/5），不能提出公因子；最终只需报告到课件精度（0.74 / 0.26）即可。</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="q d3" id="q16">
+    <div class="qmeta"><span class="qno">Q16</span><span class="tag">选择题</span><span class="tag">考点 C2 / B4 · 常数与归一化</span><span class="tag diff3">综合</span></div>
+    <p class="qtext">在 Q14 中，整体分析的似然系数为 \(\binom{15}{9}=5005\)，而序贯两步的系数乘积为 \(\binom{10}{7}\binom{5}{2}=120\times10=1200\)，两者并不相等。为什么最终的后验分布仍然相同？</p>
+    <div class="mcq" data-answer="B" role="group" aria-label="Q16 选项">
+      <div class="option" data-opt="A" tabindex="0">A. 因为 5005 和 1200 在数学上其实相等，只是写法不同</div>
+      <div class="option" data-opt="B" tabindex="0">B. 因为这些系数不含 θ，对每个候选 θ 同倍放大"先验 × 似然"，在除以列总和（归一化）时被约掉</div>
+      <div class="option" data-opt="C" tabindex="0">C. 因为先验 (0.5, 0.5) 恰好抵消了系数的差异，换一个先验结论就不成立</div>
+      <div class="option" data-opt="D" tabindex="0">D. 纯属本题数字上的巧合，一般情况下两种方法的后验并不相同</div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-final">答案：B</span></p>
+        <p><strong>考查点：</strong>"后验 ∝ 似然 × 先验"的深层含义（A1）与序贯性成立的原因（C2、B4）。</p>
+        <p><strong>解题思路：</strong>设常数 c 不依赖 θ，则把每行"先验 × 似然"换成 c × (先验 × 似然) 后，归一化结果为 \(\dfrac{c\cdot a_\theta}{\sum_{\theta'} c\cdot a_{\theta'}}=\dfrac{a_\theta}{\sum_{\theta'} a_{\theta'}}\)——c 在分子分母同时出现而约去。二项系数恰是这类常数，所以两种方法的中间列差一个倍数、后验却完全一致。这与先验取值无关（排除 C），也不是巧合（排除 D），更不是因为 5005=1200（排除 A）。</p>
+        <p><strong>易错提醒：</strong>同理，θ 的次序信息（具体哪几次成功）与成功总数给出的后验也一致——凡不含 θ 的因子都被归一化"吸收"。考试中看到中间列不同不要慌，检查后验列是否一致即可。</p>
+      </div>
+    </details>
+  </article>
+
+</section>
+
+</main>
+
+<button id="backtop" type="button" data-action="top" aria-label="回到顶部" title="回到顶部">↑</button>
+
+<footer class="wrap">
+  本讲义严格基于 Lecture 4 课件（Components of Bayes Theorem: Posterior Distribution）与配套 Problem Sheet 整理 · 所有数值均经逐题核算 · 祝复习顺利 ✦
+</footer>
+
+<script>
+/* MathJax 配置须在加载脚本前挂在 window.MathJax 上（库的硬性要求）；
+   其余全部逻辑封装在下方 IIFE 内，不向 window 暴露任何函数。 */
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] },
+  startup: { typeset: true }
+};
+
+(function(){
+  'use strict';
+
+  /* ---------- 1. MathJax 动态加载 + 失败提示（不使用内联事件属性） ---------- */
+  var mjWarn = document.getElementById('mathjax-warn');
+  var mjLoaded = false;
+  function showMjWarn(){ if (!mjLoaded && mjWarn) { mjWarn.classList.add('show'); } }
+  try {
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js';
+    s.async = true;
+    s.addEventListener('load', function(){ mjLoaded = true; });
+    s.addEventListener('error', showMjWarn);
+    document.head.appendChild(s);
+    /* 兜底：12 秒后仍未加载成功（如离线打开）则提示 */
+    setTimeout(function(){ if (!mjLoaded) showMjWarn(); }, 12000);
+  } catch(e) { showMjWarn(); }
+
+  /* ---------- 2. 做题进度统计 ---------- */
+  var progressEl = document.getElementById('progress');
+  function updateProgress(){
+    var all = document.querySelectorAll('.mcq');
+    var done = document.querySelectorAll('.mcq[data-done]');
+    var right = document.querySelectorAll('.mcq[data-done="right"]');
+    if (progressEl) {
+      progressEl.textContent = '已作答 ' + done.length + ' / ' + all.length + ' · 答对 ' + right.length;
+    }
+  }
+
+  /* ---------- 3. 选择题判分（作答后锁定 + 自动展开解析） ---------- */
+  function gradeOption(optionEl){
+    var mcq = optionEl.closest('.mcq');
+    if (!mcq || mcq.hasAttribute('data-done')) return;   /* 已作答则锁定 */
+    var chosen = optionEl.getAttribute('data-opt');
+    var answer = mcq.getAttribute('data-answer');
+    var correct = (chosen === answer);
+    /* 标色：所选项 + 正确项 */
+    var opts = mcq.querySelectorAll('.option');
+    for (var i = 0; i < opts.length; i++) {
+      var o = opts[i];
+      if (o.getAttribute('data-opt') === answer) { o.classList.add('correct'); }
+      else if (o === optionEl) { o.classList.add('wrong'); }
+      o.setAttribute('aria-disabled', 'true');
+    }
+    mcq.setAttribute('data-done', correct ? 'right' : 'wrong');
+    /* 自动展开本题解析（直接操作原生 open 属性） */
+    var qCard = mcq.closest('.q');
+    if (qCard) {
+      var det = qCard.querySelector('details.answer-block');
+      if (det) det.open = true;
+    }
+    updateProgress();
+  }
+
+  /* ---------- 4. 全局事件委托：唯一的 click 监听器 ---------- */
+  document.addEventListener('click', function(event){
+    var t = event.target;
+
+    var opt = t.closest ? t.closest('.option') : null;
+    if (opt) { gradeOption(opt); return; }
+
+    var btn = t.closest ? t.closest('[data-action]') : null;
+    if (!btn) return;
+    var action = btn.getAttribute('data-action');
+
+    if (action === 'expand' || action === 'collapse') {
+      var open = (action === 'expand');
+      var dets = document.querySelectorAll('details.answer-block');
+      for (var i = 0; i < dets.length; i++) { dets[i].open = open; }  /* 直接操作 open 属性 */
+    } else if (action === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+
+  /* 键盘可达性：焦点在选项上时按 Enter / 空格作答 */
+  document.addEventListener('keydown', function(event){
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    var t = event.target;
+    if (t && t.classList && t.classList.contains('option')) {
+      event.preventDefault();
+      gradeOption(t);
+    }
+  });
+
+  /* ---------- 5. 回到顶部按钮显隐 ---------- */
+  var backtop = document.getElementById('backtop');
+  function toggleBacktop(){
+    if (!backtop) return;
+    if (window.scrollY > 500) backtop.classList.add('show');
+    else backtop.classList.remove('show');
+  }
+  window.addEventListener('scroll', toggleBacktop, { passive: true });
+  toggleBacktop();
+
+  updateProgress();
+})();
+</script>
+</body>
+</html>

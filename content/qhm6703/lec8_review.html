@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 8 复习 · 等价样本量与三大分布</title>
+
+<!-- MathJax 配置（须在加载脚本之前） -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
+  };
+</script>
+<script async id="MathJax-script"
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+  :root{
+    --bg:#EBEEF4;
+    --paper:#FFFFFF;
+    --ink:#1B2A4A;          /* 深靛蓝标题 */
+    --text:#2C3545;         /* 正文 */
+    --muted:#6B7588;        /* 次要文字 */
+    --accent:#1F7A8C;       /* 主题青（密度曲线感） */
+    --accent-deep:#155F6E;
+    --accent-soft:#E2EFF1;
+    --indigo-soft:#E7ECF7;
+    --gold:#B5821A;
+    --gold-soft:#F6ECD2;
+    --green:#1E9E6B;
+    --green-soft:#E1F2EA;
+    --red:#CC4434;
+    --red-soft:#FAE5E2;
+    --border:#D8DEE8;
+    --shadow:0 1px 2px rgba(27,42,74,.05), 0 8px 28px rgba(27,42,74,.07);
+    --radius:14px;
+    --maxw:920px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    font-size:16.5px;
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 18px;}
+
+  /* ---------- 顶部导航 ---------- */
+  header.topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:saturate(160%) blur(8px);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar .inner{
+    max-width:var(--maxw);margin:0 auto;padding:10px 18px;
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  }
+  .brand{font-weight:700;color:var(--ink);font-size:15px;letter-spacing:.3px;white-space:nowrap;}
+  .brand .dot{color:var(--accent);}
+  nav.mapnav{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;}
+  nav.mapnav a{
+    text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:600;
+    padding:5px 11px;border-radius:999px;border:1px solid transparent;
+  }
+  nav.mapnav a:hover{background:var(--indigo-soft);border-color:var(--border);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:40px 0 14px;}
+  .hero .eyebrow{
+    color:var(--accent-deep);font-weight:700;font-size:12.5px;
+    letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;
+  }
+  .hero h1{
+    color:var(--ink);font-size:30px;line-height:1.25;margin:0 0 12px;
+    font-weight:800;letter-spacing:.2px;
+  }
+  .hero p.lead{color:var(--muted);margin:0 0 18px;max-width:660px;}
+  .curve{display:block;width:100%;max-width:660px;height:64px;margin-top:4px;}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+  .chip{
+    font-size:13px;font-weight:600;color:var(--accent-deep);
+    background:var(--accent-soft);border:1px solid #CBE3E7;
+    padding:4px 11px;border-radius:999px;
+  }
+
+  /* ---------- 区块 ---------- */
+  section.block{padding:30px 0 8px;}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin:0 0 6px;}
+  .sec-num{
+    font-size:13px;font-weight:800;color:#fff;background:var(--accent);
+    width:30px;height:30px;border-radius:9px;display:inline-flex;
+    align-items:center;justify-content:center;flex:none;align-self:center;
+  }
+  .sec-head h2{color:var(--ink);font-size:23px;margin:0;font-weight:800;}
+  .sec-sub{color:var(--muted);font-size:14.5px;margin:2px 0 22px 42px;}
+
+  .card{
+    background:var(--paper);border:1px solid var(--border);
+    border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:22px 24px;margin:16px 0;
+  }
+  .card h3{color:var(--ink);font-size:18.5px;margin:2px 0 10px;font-weight:750;}
+  .card h4{color:var(--accent-deep);font-size:15.5px;margin:18px 0 6px;font-weight:700;}
+  .card p{margin:9px 0;}
+  .card ul,.card ol{margin:9px 0;padding-left:22px;}
+  .card li{margin:5px 0;}
+  strong{color:var(--ink);}
+  .kw{color:var(--accent-deep);font-weight:700;}
+
+  /* 高亮框 */
+  .callout{
+    border-left:4px solid var(--accent);background:var(--accent-soft);
+    padding:13px 16px;border-radius:0 10px 10px 0;margin:14px 0;
+  }
+  .callout.warn{border-left-color:var(--gold);background:var(--gold-soft);}
+  .callout.key{border-left-color:var(--green);background:var(--green-soft);}
+  .callout .t{font-weight:750;color:var(--ink);display:block;margin-bottom:3px;font-size:14.5px;}
+
+  .formula{
+    background:#F7F9FC;border:1px solid var(--border);border-radius:10px;
+    padding:6px 14px;margin:12px 0;overflow-x:auto;
+  }
+
+  /* 类比块 */
+  .analogy{
+    background:linear-gradient(180deg,#FBFCFE,#F4F7FB);
+    border:1px dashed #C4CEDD;border-radius:12px;padding:14px 16px;margin:14px 0;
+  }
+  .analogy .lab{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-deep);font-weight:700;}
+
+  /* 三种情形对照表 */
+  .tbl{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px;overflow-x:auto;display:block;}
+  .tbl table{width:100%;border-collapse:collapse;}
+  table.simple{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px;}
+  table.simple th,table.simple td{border:1px solid var(--border);padding:9px 11px;text-align:left;vertical-align:top;}
+  table.simple th{background:var(--indigo-soft);color:var(--ink);font-weight:700;}
+  table.simple tr:nth-child(even) td{background:#FAFBFD;}
+  .scroll-x{overflow-x:auto;}
+
+  /* ---------- 考点卡 ---------- */
+  .kp{
+    background:var(--paper);border:1px solid var(--border);border-radius:12px;
+    padding:16px 18px;margin:12px 0;box-shadow:var(--shadow);
+  }
+  .kp-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
+  .kp-id{font-size:12.5px;font-weight:800;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:6px;}
+  .kp-title{font-weight:750;color:var(--ink);font-size:16px;flex:1;min-width:160px;}
+  .badge{font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;}
+  .imp-3{background:var(--gold-soft);color:#7A560C;border:1px solid #E6CF94;}
+  .imp-2{background:var(--accent-soft);color:var(--accent-deep);border:1px solid #BFDEE3;}
+  .imp-1{background:#EEF0F4;color:#5C6678;border:1px solid #D5DAE3;}
+  .tag-mem{background:#EFE8F6;color:#6B4A91;border:1px solid #DBC9EE;}
+  .tag-calc{background:#E5F1E9;color:#1E7A52;border:1px solid #BFE0CC;}
+  .kp-body{margin-top:8px;}
+  .kp-body .row{margin:6px 0;}
+  .kp-body .lbl{font-weight:700;color:var(--accent-deep);}
+  .mini-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:8px 0 18px 42px;}
+  .mini-legend span{display:inline-flex;align-items:center;gap:5px;}
+
+  /* ---------- 题目 / 答案 ---------- */
+  .quiz,.qa{
+    background:var(--paper);border:1px solid var(--border);border-radius:12px;
+    padding:16px 18px;margin:14px 0;box-shadow:var(--shadow);
+  }
+  .q-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px;}
+  .q-meta .m{font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:#EEF0F4;color:#566;border:1px solid #DCE1EA;}
+  .q-meta .m.type{background:var(--indigo-soft);color:var(--ink);}
+  .q-meta .m.d1{background:var(--green-soft);color:#1E7A52;}
+  .q-meta .m.d2{background:var(--gold-soft);color:#7A560C;}
+  .q-meta .m.d3{background:var(--red-soft);color:#a23;}
+  .q-text{font-weight:600;color:var(--ink);margin-bottom:10px;}
+  .q-num{color:var(--accent);font-weight:800;margin-right:6px;}
+
+  ul.options{list-style:none;margin:10px 0 6px;padding:0;}
+  ul.options li.option{
+    border:1px solid var(--border);border-radius:9px;padding:9px 13px;margin:7px 0;
+    cursor:pointer;transition:background .15s,border-color .15s;background:#FCFDFE;
+    user-select:none;
+  }
+  ul.options li.option:hover{background:var(--indigo-soft);border-color:#BBC6DA;}
+  .quiz.locked ul.options li.option{cursor:default;}
+  .quiz.locked ul.options li.option:hover{background:#FCFDFE;border-color:var(--border);}
+  ul.options li.option.correct{background:var(--green-soft);border-color:#8FD3B2;color:#14613f;font-weight:600;}
+  ul.options li.option.correct::after{content:"  ✓ 正确";color:var(--green);font-weight:700;font-size:13px;}
+  ul.options li.option.wrong{background:var(--red-soft);border-color:#E8A89F;color:#8a2e23;font-weight:600;}
+  ul.options li.option.wrong::after{content:"  ✗ 你的选择";color:var(--red);font-weight:700;font-size:13px;}
+
+  details.answer-block{margin-top:10px;border-top:1px dashed var(--border);padding-top:4px;}
+  details.answer-block summary{
+    cursor:pointer;list-style:none;color:var(--accent-deep);font-weight:700;font-size:14.5px;
+    padding:8px 0 4px;user-select:none;display:inline-block;
+  }
+  details.answer-block summary::-webkit-details-marker{display:none;}
+  details.answer-block summary:hover{color:var(--accent);}
+  details.answer-block[open] summary{margin-bottom:4px;}
+  .answer-content{
+    background:#F8FAFC;border:1px solid var(--border);border-radius:10px;
+    padding:12px 15px;margin-top:4px;font-size:15px;
+  }
+  .answer-content .ans{font-weight:750;color:var(--green);}
+  .answer-content .pt{font-weight:700;color:var(--accent-deep);}
+  .answer-content .warn-inline{color:#9a6a0a;font-weight:600;}
+
+  /* 进度条 */
+  .progress-wrap{
+    background:var(--paper);border:1px solid var(--border);border-radius:12px;
+    padding:14px 18px;margin:6px 0 18px;box-shadow:var(--shadow);
+  }
+  .progress-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;}
+  .progress-stats b{color:var(--ink);}
+  .progress-stats .ok{color:var(--green);}
+  .bar{height:9px;background:#E7EBF1;border-radius:999px;margin-top:10px;overflow:hidden;}
+  .bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:999px;transition:width .35s ease;}
+
+  .toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:6px 0 4px;}
+  .btn{
+    font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;
+    border:1px solid var(--border);background:var(--paper);color:var(--ink);
+    padding:7px 14px;border-radius:9px;
+  }
+  .btn:hover{background:var(--indigo-soft);}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .btn.primary:hover{background:var(--accent-deep);}
+
+  /* MathJax 失败提示 */
+  #mathjax-warning{
+    display:none;background:var(--gold-soft);border:1px solid #E6CF94;color:#7A560C;
+    border-radius:10px;padding:10px 14px;margin:14px 0;font-size:14px;
+  }
+
+  /* 回到顶部 */
+  #to-top-btn{
+    position:fixed;right:18px;bottom:18px;z-index:60;opacity:0;pointer-events:none;
+    transform:translateY(8px);transition:opacity .25s,transform .25s;
+    background:var(--ink);color:#fff;border:none;border-radius:50%;
+    width:46px;height:46px;font-size:19px;cursor:pointer;box-shadow:0 6px 18px rgba(27,42,74,.28);
+  }
+  #to-top-btn.show{opacity:.94;pointer-events:auto;transform:translateY(0);}
+  #to-top-btn:hover{background:var(--accent-deep);}
+
+  footer.foot{color:var(--muted);font-size:13px;text-align:center;padding:34px 0 50px;}
+
+  @media (max-width:600px){
+    body{font-size:15.5px;}
+    .hero h1{font-size:24px;}
+    .sec-head h2{font-size:20px;}
+    .card{padding:18px 16px;}
+    nav.mapnav{width:100%;margin-left:0;}
+    .sec-sub,.mini-legend{margin-left:0;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="inner">
+    <div class="brand">Lecture 8 <span class="dot">·</span> 贝叶斯复习</div>
+    <nav class="mapnav">
+      <a href="#part1">① 课程讲解</a>
+      <a href="#part2">② 考点梳理</a>
+      <a href="#part3">③ 复习题目</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ===================== HERO ===================== -->
+  <div class="hero">
+    <div class="eyebrow">Bayesian Statistics · Lecture 8</div>
+    <h1>等价样本量与三大连续分布</h1>
+    <p class="lead">这节课回答两个问题：我的<strong>先验到底有多强</strong>，会不会过度主导后验？以及贝叶斯里最常用的 <strong>Beta / Gamma / Normal</strong> 三个分布长什么样、怎么算。下面把讲解、考点、配套题目（含习题册 10 题完整解析）整理在一页。</p>
+    <svg class="curve" viewBox="0 0 660 64" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,60 C120,60 180,8 230,8 C280,8 290,60 330,60 C360,60 380,20 410,18 C470,14 480,60 560,60 C600,60 630,46 660,40"
+            fill="none" stroke="#1F7A8C" stroke-width="2.2" opacity="0.85"/>
+      <path d="M0,62 C160,62 200,30 330,30 C460,30 500,62 660,62" fill="none" stroke="#B5821A" stroke-width="1.6" opacity="0.5" stroke-dasharray="4 4"/>
+    </svg>
+    <div class="chips">
+      <span class="chip">等价样本量 $n_{eq}$</span>
+      <span class="chip">Beta 分布</span>
+      <span class="chip">Gamma 分布</span>
+      <span class="chip">Normal 分布 &amp; Z 表</span>
+    </div>
+  </div>
+
+  <div id="mathjax-warning">
+    ⚠️ 数学公式渲染库（MathJax）未能从网络加载，下方公式将以原始 LaTeX 文本显示（如 <code>\frac{a}{a+b}</code>），不影响文字阅读。联网后刷新即可正常显示。
+  </div>
+
+  <!-- ===================== PART 1 ===================== -->
+  <section class="block" id="part1">
+    <div class="sec-head"><span class="sec-num">1</span><h2>课程内容讲解</h2></div>
+    <div class="sec-sub">先看整体脉络，再逐模块拆解；抽象的地方都配了类比。</div>
+
+    <div class="card">
+      <h3>整体脉络：这节课在解决什么</h3>
+      <p>贝叶斯推断的核心是一句话：<strong>后验 ∝ 先验 × 似然</strong>。后验是「你原来的信念（先验）」和「新数据（似然）」的折中。但折中时谁说了算？这节课的两部分正是围绕这件事：</p>
+      <ul>
+        <li><strong>Part I — 等价样本量：</strong>把抽象的「先验有多强」翻译成一个能直接比较的数字 $n_{eq}$（先验相当于多少个样本的信息）。用它判断先验是不是太强、会不会盖过数据。</li>
+        <li><strong>Part II — 三大分布：</strong>系统介绍贝叶斯里最常用的三个连续分布 Beta、Gamma、Normal——它们的密度函数、均值方差、形状，以及正态分布怎么算区间概率。</li>
+      </ul>
+      <div class="callout key">
+        <span class="t">两部分怎么连起来</span>
+        Part I 里用到的先验（Beta、Gamma、Normal）正好是 Part II 要详细讲的分布。所以 <strong>Part II 是 Part I 的工具箱基础</strong>——先认识分布，才能算它的方差、才能求等价样本量。
+      </div>
+    </div>
+
+    <!-- 模块1 -->
+    <div class="card">
+      <h3>模块一 · 等价样本量（Equivalent Sample Size, $n_{eq}$）</h3>
+
+      <h4>1. 它想回答的问题</h4>
+      <p>当你把先验和数据结合得到后验时：<span class="kw">是先验在主导，还是数据在主导？</span>如果你掌握的先验信息，比一个规模为 $n_{eq}$ 的样本还多，那说明先验偏强，可能<strong>过度</strong>影响了后验推断——这往往不是我们想要的。</p>
+
+      <div class="analogy">
+        <div class="lab">用一个类比理解</div>
+        <p style="margin:6px 0 0">把先验想成你的<strong>「老经验」</strong>，数据是<strong>「新证据」</strong>。等价样本量回答的是：你这套老经验，相当于「看过多少个新样本」才积累出来的？</p>
+        <p style="margin:6px 0 0">如果你的老经验只相当于看过 3 个样本（$n_{eq}=3$），可现在你新收集了 129 个样本，那新证据明显占上风——先验不算强，数据会显著改变结论。反过来，若 $n_{eq}$ 很大而实际数据很少，先验就「压」住了数据。</p>
+      </div>
+
+      <h4>2. 定义</h4>
+      <div class="callout">
+        <span class="t">等价样本量 $n_{eq}$</span>
+        为了提供「与先验同等的信息量」（关于未知总体参数）所需要的<strong>样本数据规模</strong>。
+      </div>
+      <p><strong>判断准则：</strong>把实际样本量 $n$ 与 $n_{eq}$ 比较。$n \gg n_{eq}$ → 先验弱、数据强；$n \ll n_{eq}$ → 先验强，需警惕它过度影响后验。</p>
+
+      <h4>3. 统一求法（最重要的一招）</h4>
+      <div class="callout key">
+        <span class="t">核心原则</span>
+        在<strong>先验均值</strong>处的<strong>数据方差</strong> = <strong>先验方差</strong>，解出 $n$，即为 $n_{eq}$。
+      </div>
+      <p><strong>为什么是「让方差相等」？</strong>方差衡量不确定性（数据或先验有多「散」）。我们让 $n$ 个数据携带的「关于参数的不确定性」恰好等于先验的不确定性，对应的那个 $n$ 就是 $n_{eq}$。本课考虑数据 $Y$ 服从 binomial、Poisson 或 Normal 三种情形，未知参数都是「比例 / 均值」。</p>
+
+      <h4>4. 三种情形（务必记结论 + 会推）</h4>
+
+      <p><strong>(A) Beta–Binomial：</strong> $Y\sim \text{binomial}(n,\omega),\ \omega\sim \text{beta}(a,b)$</p>
+      <ul>
+        <li>先验均值 $\omega_0=\dfrac{a}{a+b}$；</li>
+        <li>在 $\omega_0$ 处的数据方差 $\mathrm{Var}[Y\mid\omega_0]=n\,\omega_0(1-\omega_0)$；</li>
+        <li>令其等于先验方差并求解：</li>
+      </ul>
+      <div class="formula">$$ n\cdot\frac{a}{a+b}\Big(1-\frac{a}{a+b}\Big)=\frac{ab}{(a+b)^2(a+b+1)} \;\Longrightarrow\; \boxed{\,n_{eq}=a+b+1\,} $$</div>
+      <p class="kw">例：</p>
+      <p>$Y_1,\dots,Y_{129}\sim\text{binomial}(1,\omega),\ \omega\sim\text{beta}(1,1)$。则 $n_{eq}=1+1+1=3$。先验只值 3 个样本，而实际有 129 个 → 先验不强，数据显著影响后验。</p>
+
+      <p><strong>(B) Gamma–Poisson：</strong> $Y\sim\text{Pois}(\mu),\ \mu\sim\text{gamma}(a,b)$（此处 $b$ 为 rate 速率参数）</p>
+      <ul>
+        <li>先验均值 $\mu_0=\dfrac{a}{b}$，先验方差 $=\dfrac{a}{b^2}$；</li>
+        <li>$n$ 个数据均值的方差 $=\dfrac{\mu_0}{n}=\dfrac{a}{bn}$；</li>
+        <li>令两者相等：$\dfrac{a}{bn}=\dfrac{a}{b^2}\;\Longrightarrow\;$</li>
+      </ul>
+      <div class="formula">$$ \boxed{\,n_{eq}=b\,}\quad(\text{即 gamma 的 rate 参数}) $$</div>
+      <p class="kw">例：</p>
+      <p>$\mu\sim\text{gamma}(6.25,\,2.5)$，则 $n_{eq}=2.5$。只要记录到 ≥ 2.5 个数据点，就能从数据和先验中得到关于 $\mu$ 的等量信息。</p>
+
+      <p><strong>(C) Normal–Normal：</strong> $Y_i\sim N(\mu,\sigma_0^2),\ \mu\sim N(m,s^2)$（数据方差 $\sigma_0^2$ 已知）</p>
+      <ul>
+        <li>$n$ 个数据均值的方差 $=\dfrac{\sigma_0^2}{n}$；</li>
+        <li>令其等于先验方差 $s^2$：$\dfrac{\sigma_0^2}{n}=s^2\;\Longrightarrow\;$</li>
+      </ul>
+      <div class="formula">$$ \boxed{\,n_{eq}=\dfrac{\sigma_0^2}{s^2}\,} $$</div>
+      <p class="kw">例：</p>
+      <p>采集 12 个点，$Y_i\sim N(\mu,2^2)$，先验 $\mu\sim N(30,4^2)$。则 $n_{eq}=\dfrac{2^2}{4^2}=\dfrac{4}{16}=0.25$。极小！意味着只要采集多于 0.25 个样本（这里有 12 个），先验就不强，数据足以影响后验。</p>
+
+      <div class="scroll-x">
+      <table class="simple">
+        <tr><th>情形</th><th>数据 / 先验</th><th>先验均值</th><th>等价样本量 $n_{eq}$</th></tr>
+        <tr><td>Beta–Binomial</td><td>$Y\sim\text{Bin}(n,\omega)$ / $\text{beta}(a,b)$</td><td>$\dfrac{a}{a+b}$</td><td>$a+b+1$</td></tr>
+        <tr><td>Gamma–Poisson</td><td>$Y\sim\text{Pois}(\mu)$ / $\text{gamma}(a,b)$</td><td>$\dfrac{a}{b}$</td><td>$b$（rate）</td></tr>
+        <tr><td>Normal–Normal</td><td>$Y\sim N(\mu,\sigma_0^2)$ / $N(m,s^2)$</td><td>$m$</td><td>$\dfrac{\sigma_0^2}{s^2}$</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <!-- 模块2 -->
+    <div class="card">
+      <h3>模块二 · 三大连续分布</h3>
+      <p>记忆要点：看<strong>取值范围</strong>就知道它适合给什么参数当先验。</p>
+
+      <h4>Beta 分布 — 取值 $[0,1]$，天生适合「比例 / 概率」</h4>
+      <p>密度函数：</p>
+      <div class="formula">$$ g(x\mid a,b)=k\,x^{a-1}(1-x)^{b-1},\quad 0\le x\le 1;\qquad k=\frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)} $$</div>
+      <ul>
+        <li>曲线形状只由 $x^{a-1}(1-x)^{b-1}$ 决定；常数 $k$ 只是为了让积分 = 1。</li>
+        <li>$a,b$ 是<strong>形状参数</strong>：$a$ 越大曲线越偏向 1；$b$ 越大越偏向 0；$a,b$ 越接近越对称。</li>
+        <li>均值 $E(X)=\dfrac{a}{a+b}$，方差 $\mathrm{Var}(X)=\dfrac{ab}{(a+b)^2(a+b+1)}$。</li>
+      </ul>
+      <div class="callout"><span class="t">Gamma 函数</span> 对正整数 $c$，$\Gamma(c)=(c-1)!$。这是算 $k$、算积分时反复要用的。</div>
+
+      <h4>Gamma 分布 — 取值 $[0,\infty)$，适合「正的、无上界的量」（如泊松率 $\mu$）</h4>
+      <p>密度函数：</p>
+      <div class="formula">$$ g(x\mid a,b)=k\,x^{a-1}e^{-bx},\quad 0\le x<\infty;\qquad k=\frac{b^{a}}{\Gamma(a)} $$</div>
+      <ul>
+        <li>$a$ 是<strong>形状参数</strong>：$a=1$ 时退化为<strong>指数分布</strong>；$a>1$ 时更接近钟形。</li>
+        <li>$b$ 是<strong>速率参数 (rate)</strong>，是 scale 的倒数，决定曲线在 x 轴上铺得多开。</li>
+        <li>均值 $E(X)=\dfrac{a}{b}$，方差 $\mathrm{Var}(X)=\dfrac{a}{b^2}$。</li>
+      </ul>
+      <div class="callout warn"><span class="t">⚠️ 易踩坑：rate 还是 scale？</span> 有些教材把 gamma 的第二个参数写成 <strong>scale</strong>（尺度），方向与 rate 相反！读外部资料时务必确认。本课用的是 rate，因此 $n_{eq}=b$（rate）。</div>
+
+      <h4>Normal 分布 — 取值 $(-\infty,\infty)$，真实数据最常见</h4>
+      <p>密度函数（钟形、对称）：</p>
+      <div class="formula">$$ f(x\mid\mu,\sigma^2)=\frac{1}{\sqrt{2\pi\sigma^2}}\,e^{-\frac{(x-\mu)^2}{2\sigma^2}},\quad -\infty<x<\infty $$</div>
+      <p><strong>怎么算 $P(a\le X\le b)$？</strong> 先<strong>标准化</strong>：</p>
+      <div class="formula">$$ Z=\frac{X-\mu}{\sigma}\sim N(0,1),\qquad P(a'\le Z\le b')\ \text{查 Z 表即可} $$</div>
+      <div class="callout warn"><span class="t">最常见错误</span> 标准化时分母是<strong>标准差 $\sigma$</strong>，不是方差 $\sigma^2$！注意题目给的是 $\sigma$ 还是 $\sigma^2$。</div>
+
+      <div class="scroll-x">
+      <table class="simple">
+        <tr><th>常用 Z 临界值（双侧）</th><th>$z_0$</th><th>中间面积</th></tr>
+        <tr><td>90%</td><td>1.645</td><td>$P(-z_0\le Z\le z_0)=0.90$</td></tr>
+        <tr><td>95%</td><td>1.96</td><td>$0.95$</td></tr>
+        <tr><td>98%</td><td>2.33</td><td>$0.98$（每侧尾部 0.01）</td></tr>
+        <tr><td>99%</td><td>2.576</td><td>$0.99$</td></tr>
+      </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PART 2 ===================== -->
+  <section class="block" id="part2">
+    <div class="sec-head"><span class="sec-num">2</span><h2>考点梳理</h2></div>
+    <div class="sec-sub">按主题分组，逐条给定义 / 公式 / 易混点 / 重要度 / 记忆或计算。</div>
+    <div class="mini-legend">
+      <span><span class="badge imp-3">★★★ 高频</span></span>
+      <span><span class="badge imp-2">★★ 中等</span></span>
+      <span><span class="badge imp-1">★ 低频</span></span>
+      <span><span class="badge tag-mem">需记忆</span></span>
+      <span><span class="badge tag-calc">需理解/计算</span></span>
+    </div>
+
+    <!-- A 组 -->
+    <h3 style="color:var(--ink);margin:18px 0 6px;">A. 等价样本量</h3>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">A1</span><span class="kp-title">等价样本量的概念与意义</span><span class="badge imp-3">★★★</span><span class="badge tag-mem">需记忆</span></div>
+      <div class="kp-body">
+        <div class="row"><span class="lbl">定义：</span>提供与先验等量信息所需的样本规模 $n_{eq}$。</div>
+        <div class="row"><span class="lbl">意义：</span>$n_{eq}$ 越大 → 先验信息越多、先验越强。</div>
+        <div class="row"><span class="lbl">易混：</span>$n_{eq}$ 与「实际样本量 $n$」是两个不同的量，比较二者才得出结论。</div>
+      </div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">A2</span><span class="kp-title">统一求解原则</span><span class="badge imp-3">★★★</span><span class="badge tag-calc">需理解</span></div>
+      <div class="kp-body">
+        <div class="row"><span class="lbl">原则：</span><strong>「先验均值处的数据方差 = 先验方差」</strong>，解 $n$。</div>
+        <div class="row"><span class="lbl">关键：</span>用的是 $n$ 个数据<strong>均值</strong>的方差（含 $1/n$），不是单个观测的方差。</div>
+      </div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">A3</span><span class="kp-title">Beta–Binomial：$n_{eq}=a+b+1$</span><span class="badge imp-3">★★★</span><span class="badge tag-mem">记忆</span><span class="badge tag-calc">计算</span></div>
+      <div class="kp-body">
+        <div class="row"><span class="lbl">结论：</span>$\text{beta}(a,b)$ 先验值 $a+b+1$ 个样本。</div>
+        <div class="row"><span class="lbl">易混：</span>是 $a+b+\mathbf{1}$，别漏那个 $+1$；$\text{beta}(1,1)$（均匀先验）值 3 个样本。</div>
+      </div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">A4</span><span class="kp-title">Gamma–Poisson：$n_{eq}=b$（rate）</span><span class="badge imp-3">★★★</span><span class="badge tag-mem">记忆</span><span class="badge tag-calc">计算</span></div>
+      <div class="kp-body">
+        <div class="row"><span class="lbl">结论：</span>等价样本量就是 gamma 的 <strong>rate 参数 $b$</strong>，与 $a$ 无关。</div>
+        <div class="row"><span class="lbl">易混：</span>若资料里 $b$ 是 scale，则结论不同——先确认参数定义（见 C2）。</div>
+      </div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">A5</span><span class="kp-title">Normal–Normal：$n_{eq}=\sigma_0^2/s^2$</span><span class="badge imp-3">★★★</span><span class="badge tag-mem">记忆</span><span class="badge tag-calc">计算</span></div>
+      <div class="kp-body">
+        <div class="row"><span class="lbl">结论：</span>数据方差 ÷ 先验方差。</div>
+        <div class="row"><span class="lbl">易混：</span>分子是<strong>数据</strong>方差 $\sigma_0^2$，分母是<strong>先验</strong>方差 $s^2$，别颠倒；注意题目给的是标准差还是方差。</div>
+      </div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">A6</span><span class="kp-title">先验强弱的判断</span><span class="badge imp-3">★★★</span><span class="badge tag-calc">理解</span></div>
+      <div class="kp-body">
+        <div class="row"><span class="lbl">判据：</span>$n\gg n_{eq}$ → 先验弱、数据主导；$n\ll n_{eq}$ → 先验强、可能过度影响后验。</div>
+        <div class="row"><span class="lbl">应用：</span>同均值下 $n_{eq}$ 越大的先验，需要越多数据才能扭转后验。</div>
+      </div>
+    </div>
+
+    <!-- B 组 -->
+    <h3 style="color:var(--ink);margin:22px 0 6px;">B. Beta 分布</h3>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">B1</span><span class="kp-title">密度函数与归一化常数</span><span class="badge imp-2">★★</span><span class="badge tag-mem">记忆</span></div>
+      <div class="kp-body">
+        <div class="row"><span class="lbl">pdf：</span>$g(x\mid a,b)=k\,x^{a-1}(1-x)^{b-1}$，$0\le x\le1$。</div>
+        <div class="row"><span class="lbl">常数：</span>$k=\dfrac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}$，其中 $\Gamma(c)=(c-1)!$。</div>
+      </div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">B2</span><span class="kp-title">形状参数 $a,b$ 的作用</span><span class="badge imp-2">★★</span><span class="badge tag-calc">理解</span></div>
+      <div class="kp-body">
+        <div class="row">$a$ 大 → 偏向 1；$b$ 大 → 偏向 0；$a,b$ 越接近 → 越对称。</div>
+      </div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">B3</span><span class="kp-title">均值与方差</span><span class="badge imp-3">★★★</span><span class="badge tag-mem">记忆</span><span class="badge tag-calc">计算</span></div>
+      <div class="kp-body">
+        <div class="row">$E(X)=\dfrac{a}{a+b}$，$\ \mathrm{Var}(X)=\dfrac{ab}{(a+b)^2(a+b+1)}$，$\ E(X^2)=\dfrac{a(a+1)}{(a+b)(a+b+1)}$。</div>
+        <div class="row"><span class="lbl">易混：</span>方差分母含 $(a+b+1)$，与 $n_{eq}$ 的 $+1$ 同源。</div>
+      </div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">B4</span><span class="kp-title">形状分类（对称 / 偏态 / U 形 / J 形）</span><span class="badge imp-2">★★</span><span class="badge tag-calc">理解</span></div>
+      <div class="kp-body">
+        <div class="row">对称：$a=b$；右偏（尾在右、质量偏左）：$a<b$；左偏：$a>b$；U 形：$a<1$ 且 $b<1$；J 形：$a,b$ 中恰一个 $<1$；均匀：$a=b=1$。</div>
+      </div>
+    </div>
+
+    <!-- C 组 -->
+    <h3 style="color:var(--ink);margin:22px 0 6px;">C. Gamma 分布</h3>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">C1</span><span class="kp-title">密度函数与归一化常数</span><span class="badge imp-2">★★</span><span class="badge tag-mem">记忆</span></div>
+      <div class="kp-body">
+        <div class="row"><span class="lbl">pdf：</span>$g(x\mid a,b)=k\,x^{a-1}e^{-bx}$，$x\ge0$；$\ k=\dfrac{b^a}{\Gamma(a)}$。</div>
+      </div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">C2</span><span class="kp-title">shape 与 rate 参数（rate / scale 陷阱）</span><span class="badge imp-2">★★</span><span class="badge tag-calc">理解</span></div>
+      <div class="kp-body">
+        <div class="row">$a$ = shape（$a=1$ → 指数分布，$a>1$ → 更钟形）；$b$ = rate = scale 的倒数。</div>
+        <div class="row"><span class="lbl">易混：</span>部分教材 $b$ 表示 scale，方向相反，影响 $n_{eq}$ 与方差，读资料须确认。</div>
+      </div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">C3</span><span class="kp-title">均值与方差</span><span class="badge imp-3">★★★</span><span class="badge tag-mem">记忆</span><span class="badge tag-calc">计算</span></div>
+      <div class="kp-body">
+        <div class="row">$E(X)=\dfrac{a}{b}$，$\ \mathrm{Var}(X)=\dfrac{a}{b^2}$。</div>
+        <div class="row"><span class="lbl">易混：</span>方差是 $a/b^2$（分母平方），不是 $a/b$。</div>
+      </div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">C4</span><span class="kp-title">$a=1$ 退化为指数分布</span><span class="badge imp-1">★</span><span class="badge tag-mem">记忆</span></div>
+      <div class="kp-body"><div class="row">$\text{gamma}(1,b)$ 即指数分布 $\text{Exp}(b)$。</div></div>
+    </div>
+
+    <!-- D 组 -->
+    <h3 style="color:var(--ink);margin:22px 0 6px;">D. Normal 分布</h3>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">D1</span><span class="kp-title">密度函数</span><span class="badge imp-2">★★</span><span class="badge tag-mem">记忆</span></div>
+      <div class="kp-body"><div class="row">$f(x\mid\mu,\sigma^2)=\dfrac{1}{\sqrt{2\pi\sigma^2}}e^{-(x-\mu)^2/(2\sigma^2)}$，钟形、对称。</div></div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">D2</span><span class="kp-title">标准化与 Z 表</span><span class="badge imp-3">★★★</span><span class="badge tag-calc">计算</span></div>
+      <div class="kp-body">
+        <div class="row"><span class="lbl">标准化：</span>$Z=\dfrac{X-\mu}{\sigma}\sim N(0,1)$（分母是 $\sigma$，不是 $\sigma^2$）。</div>
+        <div class="row"><span class="lbl">查表：</span>$P(a'\le Z\le b')=\Phi(b')-\Phi(a')$；利用对称 $\Phi(-z)=1-\Phi(z)$。</div>
+      </div>
+    </div>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">D3</span><span class="kp-title">对称性与反查临界值</span><span class="badge imp-2">★★</span><span class="badge tag-calc">计算</span></div>
+      <div class="kp-body">
+        <div class="row">由概率反求 $z$：双侧 95% → $z_0=1.96$；98% → $z_0=2.33$；99% → $z_0=2.576$。</div>
+      </div>
+    </div>
+
+    <!-- E 组 -->
+    <h3 style="color:var(--ink);margin:22px 0 6px;">E. 分布变换与辨析</h3>
+
+    <div class="kp">
+      <div class="kp-head"><span class="kp-id">E1</span><span class="kp-title">$1-X$ 的分布（Beta 对称性）</span><span class="badge imp-1">★</span><span class="badge tag-calc">理解</span></div>
+      <div class="kp-body"><div class="row">$X\sim\text{beta}(a,b)\Rightarrow 1-X\sim\text{beta}(b,a)$；几何上是关于 $x=0.5$ 的镜像翻转。</div></div>
+    </div>
+  </section>
+
+  <!-- ===================== PART 3 ===================== -->
+  <section class="block" id="part3">
+    <div class="sec-head"><span class="sec-num">3</span><h2>复习题目</h2></div>
+    <div class="sec-sub">基础 → 进阶 → 综合三档。选择题点选项即时判分；计算/简答题点「显示答案与解析」展开。习题册 10 题已全部含完整解析。</div>
+
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <div class="progress-stats">选择题进度：已答 <b id="stat-answered">0</b> / 共 <b id="stat-total">0</b> 题　|　答对 <b class="ok" id="stat-correct">0</b> 题</div>
+        <div class="toolbar">
+          <button class="btn" data-action="expand-all">展开全部答案</button>
+          <button class="btn" data-action="collapse-all">收起全部答案</button>
+        </div>
+      </div>
+      <div class="bar"><i id="progress-bar-fill"></i></div>
+    </div>
+
+    <!-- ===== 基础巩固（选择/填空/判断） ===== -->
+    <h3 style="color:var(--ink);margin:20px 0 4px;">基础巩固</h3>
+
+    <div class="quiz" data-answer="B">
+      <div class="q-meta"><span class="m type">选择</span><span class="m">考点 A3</span><span class="m d1">基础</span></div>
+      <div class="q-text"><span class="q-num">Q1.</span> 先验 $\text{beta}(3,7)$ 的等价样本量是多少？</div>
+      <ul class="options">
+        <li class="option" data-opt="A">A) 10</li>
+        <li class="option" data-opt="B">B) 11</li>
+        <li class="option" data-opt="C">C) 3</li>
+        <li class="option" data-opt="D">D) 21</li>
+      </ul>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：B（11）。</span></p>
+          <p><span class="pt">考查点：</span>Beta–Binomial 的 $n_{eq}=a+b+1$。</p>
+          <p>$n_{eq}=3+7+1=11$。<span class="warn-inline">易错：</span>漏掉 $+1$ 会选成 A（10）。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="quiz" data-answer="A">
+      <div class="q-meta"><span class="m type">选择</span><span class="m">考点 C3</span><span class="m d1">基础</span></div>
+      <div class="q-text"><span class="q-num">Q2.</span> 若 $X\sim\text{gamma}(a,b)$（$b$ 为 rate），则 $E(X)$ 与 $\mathrm{Var}(X)$ 分别为？</div>
+      <ul class="options">
+        <li class="option" data-opt="A">A) $a/b,\ a/b^2$</li>
+        <li class="option" data-opt="B">B) $ab,\ ab^2$</li>
+        <li class="option" data-opt="C">C) $a/b^2,\ a/b$</li>
+        <li class="option" data-opt="D">D) $b/a,\ b/a^2$</li>
+      </ul>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：A。</span></p>
+          <p><span class="pt">考查点：</span>Gamma 的均值方差。$E(X)=a/b$，$\mathrm{Var}(X)=a/b^2$。</p>
+          <p><span class="warn-inline">易错：</span>方差分母是 $b^2$ 不是 $b$；别把两者写反（C 项）。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="quiz" data-answer="B">
+      <div class="q-meta"><span class="m type">选择</span><span class="m">考点 B3</span><span class="m d1">基础</span></div>
+      <div class="q-text"><span class="q-num">Q3.</span> $X\sim\text{beta}(2,8)$ 的均值是？</div>
+      <ul class="options">
+        <li class="option" data-opt="A">A) 0.25</li>
+        <li class="option" data-opt="B">B) 0.2</li>
+        <li class="option" data-opt="C">C) 0.8</li>
+        <li class="option" data-opt="D">D) 0.1</li>
+      </ul>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：B（0.2）。</span></p>
+          <p><span class="pt">考查点：</span>$E(X)=\dfrac{a}{a+b}=\dfrac{2}{2+8}=0.2$。</p>
+          <p>这正对应「缺陷率约 20%」的先验设定（见 Q9）。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa">
+      <div class="q-meta"><span class="m type">填空</span><span class="m">考点 B1</span><span class="m d1">基础</span></div>
+      <div class="q-text"><span class="q-num">Q4.</span> Beta 分布密度中的归一化常数 $k=\underline{\quad\quad}$。</div>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：$k=\dfrac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}$。</span></p>
+          <p><span class="pt">考查点：</span>归一化常数。作用是让密度在 $[0,1]$ 上积分等于 1；其中 $\Gamma(c)=(c-1)!$。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa">
+      <div class="q-meta"><span class="m type">填空</span><span class="m">考点 C2/C4</span><span class="m d1">基础</span></div>
+      <div class="q-text"><span class="q-num">Q5.</span> 当 $a=\underline{\quad}$ 时，$\text{gamma}(a,b)$ 退化为指数分布。</div>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：$a=1$。</span></p>
+          <p><span class="pt">考查点：</span>$\text{gamma}(1,b)=\text{Exp}(b)$，密度 $g(x)=b\,e^{-bx}$。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="quiz" data-answer="A">
+      <div class="q-meta"><span class="m type">判断</span><span class="m">考点 A1/A6</span><span class="m d1">基础</span></div>
+      <div class="q-text"><span class="q-num">Q6.</span> 「等价样本量 $n_{eq}$ 越大，说明先验携带的信息越多、先验越强。」</div>
+      <ul class="options">
+        <li class="option" data-opt="A">A) 正确</li>
+        <li class="option" data-opt="B">B) 错误</li>
+      </ul>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：A（正确）。</span></p>
+          <p><span class="pt">考查点：</span>$n_{eq}$ 的含义。它等于「先验相当于多少个样本」，所以越大先验越强，越需要更多数据才能扭转后验。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="quiz" data-answer="B">
+      <div class="q-meta"><span class="m type">判断</span><span class="m">考点 C2</span><span class="m d1">基础</span></div>
+      <div class="q-text"><span class="q-num">Q7.</span> 「所有教材里 $\text{gamma}(a,b)$ 的第二个参数 $b$ 都表示 rate（速率）。」</div>
+      <ul class="options">
+        <li class="option" data-opt="A">A) 正确</li>
+        <li class="option" data-opt="B">B) 错误</li>
+      </ul>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：B（错误）。</span></p>
+          <p><span class="pt">考查点：</span>rate / scale 陷阱。有的书用 $b$ 表示 scale（= rate 的倒数），方向相反，会影响 $n_{eq}$ 和方差，读资料时须确认。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="quiz" data-answer="B">
+      <div class="q-meta"><span class="m type">判断</span><span class="m">考点 D2</span><span class="m d1">基础</span></div>
+      <div class="q-text"><span class="q-num">Q8.</span> 「把 $N(\mu,\sigma^2)$ 标准化为 $Z$ 时，用 $Z=\dfrac{X-\mu}{\sigma^2}$。」</div>
+      <ul class="options">
+        <li class="option" data-opt="A">A) 正确</li>
+        <li class="option" data-opt="B">B) 错误</li>
+      </ul>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：B（错误）。</span></p>
+          <p><span class="pt">考查点：</span>标准化公式。分母是<strong>标准差 $\sigma$</strong>，不是方差 $\sigma^2$：$Z=\dfrac{X-\mu}{\sigma}$。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== 进阶应用（习题册 1-6） ===== -->
+    <h3 style="color:var(--ink);margin:24px 0 4px;">进阶应用（习题册 1–6：等价样本量）</h3>
+
+    <div class="qa">
+      <div class="q-meta"><span class="m type">简答/计算</span><span class="m">考点 A3/A6</span><span class="m d2">进阶</span></div>
+      <div class="q-text"><span class="q-num">Q9.</span>（习题 1）质量工程师认为缺陷率约 20%，编码为 $\text{beta}(2,8)$ 先验。它的等价样本量是多少？用通俗语言描述其强弱。</div>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：$n_{eq}=2+8+1=11$。</span></p>
+          <p><span class="pt">思路：</span>先验均值 $2/(2+8)=0.2$ 确实对应 20% 缺陷率；由 $n_{eq}=a+b+1$ 得 11。</p>
+          <p><span class="pt">通俗描述：</span>这套先验信念大约相当于「已经观察了 11 个产品」积累出来的经验——属于<strong>偏弱</strong>的先验。只要后续收集的数据量明显超过 11，数据就会主导后验；若样本只有寥寥几个，先验仍会起较大作用。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa">
+      <div class="q-meta"><span class="m type">简答/计算</span><span class="m">考点 A3</span><span class="m d2">进阶</span></div>
+      <div class="q-text"><span class="q-num">Q10.</span>（习题 2）某临床试验用 $\text{beta}(10,40)$ 作成功率先验。同事说它「大约值 50 个病人」，对吗？$\text{beta}(1,1)$ 又值多少？</div>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：$n_{eq}=10+40+1=51$，同事基本正确（精确是 51，约等于 50）。$\text{beta}(1,1)$ 值 $1+1+1=3$。</span></p>
+          <p><span class="pt">思路：</span>直接套 $a+b+1$。</p>
+          <p><span class="warn-inline">提醒：</span>「约 50」是近似说法，严格应为 51——大参数时常被四舍五入掉那个 $+1$。$\text{beta}(1,1)$ 是均匀（无信息）先验，但仍值 3 个样本，并非 0。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa">
+      <div class="q-meta"><span class="m type">简答/计算</span><span class="m">考点 A3/A6</span><span class="m d2">进阶</span></div>
+      <div class="q-text"><span class="q-num">Q11.</span>（习题 3）两位分析师对同一枚硬币建模：A 用 $\text{beta}(5,5)$，B 用 $\text{beta}(50,50)$，先验均值相同。两者等价样本量有何差异？这对「真实数据多快改变各自后验」意味着什么？</div>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：均值都为 $0.5$。$n_{eq}^{A}=5+5+1=11$，$n_{eq}^{B}=50+50+1=101$。</span></p>
+          <p><span class="pt">含义：</span>虽然先验均值一样，但 B 的先验<strong>强得多</strong>（约 9 倍信息）。要压过 B 的先验，需要超过约 101 个数据点；而压过 A 只需超过约 11 个。</p>
+          <p>因此 <strong>A 的后验会被真实数据更快地改变</strong>，B 则「顽固」得多——相同数据下 B 的后验更靠近其先验。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa">
+      <div class="q-meta"><span class="m type">简答/证明/计算</span><span class="m">考点 A4/C3</span><span class="m d2">进阶</span></div>
+      <div class="q-text"><span class="q-num">Q12.</span>（习题 4）生态学家研究鸟类目击：一人用 $\text{gamma}(9,3)$ 先验，另一人用 $\text{gamma}(3,1)$。证明两者均值相同。哪个携带更多信息？以等价样本量计，差多少？</div>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：均值都为 3；$\text{gamma}(9,3)$ 信息更多，$n_{eq}$ 多 2（3 对 1，即 3 倍）。</span></p>
+          <p><span class="pt">证明均值：</span>$E(X)=a/b$。$\ 9/3=3$，$\ 3/1=3$，相等。</p>
+          <p><span class="pt">等价样本量：</span>$n_{eq}=b$（rate）。$\text{gamma}(9,3)\Rightarrow n_{eq}=3$；$\text{gamma}(3,1)\Rightarrow n_{eq}=1$。</p>
+          <p>故 $\text{gamma}(9,3)$ 相当于 3 个观测、$\text{gamma}(3,1)$ 相当于 1 个观测，前者多 2 个观测（信息量为 3 倍）。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa">
+      <div class="q-meta"><span class="m type">计算</span><span class="m">考点 A4/C3</span><span class="m d2">进阶</span></div>
+      <div class="q-text"><span class="q-num">Q13.</span>（习题 5）数据科学家希望她对泊松率的 gamma 先验等价于 20 个观测，且先验均值为每天 5 次。求 $\alpha,\beta$。</div>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：$\alpha=100,\ \beta=20$。</span></p>
+          <p><span class="pt">思路（反解）：</span>由 $n_{eq}=\beta=20$ 直接得 $\beta=20$。</p>
+          <p>再由先验均值 $\dfrac{\alpha}{\beta}=5\Rightarrow \alpha=5\beta=5\times20=100$。</p>
+          <p>检验：$\text{gamma}(100,20)$ 均值 $100/20=5$ ✓，$n_{eq}=20$ ✓。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa">
+      <div class="q-meta"><span class="m type">计算</span><span class="m">考点 A5</span><span class="m d2">进阶</span></div>
+      <div class="q-text"><span class="q-num">Q14.</span>（习题 6）数据服从正态分布，均值未知、方差已知 $\sigma^2=9$。分析师说「我的先验值 10 个观测」。她应给正态先验（对未知均值）赋多大的先验方差？</div>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">答案：先验方差 $s^2=0.9$。</span></p>
+          <p><span class="pt">思路（反解）：</span>$n_{eq}=\dfrac{\sigma_0^2}{s^2}=10\Rightarrow s^2=\dfrac{\sigma_0^2}{10}=\dfrac{9}{10}=0.9$。</p>
+          <p><span class="warn-inline">提醒：</span>$\sigma_0^2$（数据方差）在分子、$s^2$（先验方差）在分母，别颠倒。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ===== 综合提高（习题册 7-10） ===== -->
+    <h3 style="color:var(--ink);margin:24px 0 4px;">综合提高（习题册 7–10：分布性质与 Z 表）</h3>
+
+    <div class="qa">
+      <div class="q-meta"><span class="m type">证明/简答</span><span class="m">考点 E1/B4</span><span class="m d3">综合</span></div>
+      <div class="q-text"><span class="q-num">Q15.</span>（习题 7）设 $X\sim\text{beta}(\alpha,\beta)$。证明 $1-X\sim\text{beta}(\beta,\alpha)$。这种对称性的几何含义是什么？</div>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="pt">证明（变量替换）：</span>令 $Y=1-X$，则 $X=1-Y$，$\left|\dfrac{dx}{dy}\right|=1$。代入 Beta 密度：</p>
+          <div class="formula">$$ g_Y(y)=g_X(1-y)\cdot1=\frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}(1-y)^{\alpha-1}\big(1-(1-y)\big)^{\beta-1} $$</div>
+          <div class="formula">$$ =\frac{\Gamma(\beta+\alpha)}{\Gamma(\beta)\Gamma(\alpha)}\,y^{\beta-1}(1-y)^{\alpha-1} $$</div>
+          <p>这恰是 $\text{beta}(\beta,\alpha)$ 的密度，故 $1-X\sim\text{beta}(\beta,\alpha)$。$\blacksquare$</p>
+          <p><span class="pt">几何含义：</span>把 $\alpha,\beta$ 互换，相当于把曲线关于 $x=0.5$ <strong>左右镜像翻转</strong>。所以 $\text{beta}(\beta,\alpha)$ 是 $\text{beta}(\alpha,\beta)$ 的镜像；当 $\alpha=\beta$ 时图像自身对称（关于 0.5）。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa">
+      <div class="q-meta"><span class="m type">简答</span><span class="m">考点 B4</span><span class="m d3">综合</span></div>
+      <div class="q-text"><span class="q-num">Q16.</span>（习题 8）对哪些 $\alpha,\beta$，Beta 分布是：(a) 对称　(b) 右偏　(c) U 形　(d) J 形？</div>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="pt">考查点：</span>由密度 $\propto x^{\alpha-1}(1-x)^{\beta-1}$ 的端点行为与对称性判断形状。</p>
+          <p><span class="ans">(a) 对称：</span>$\alpha=\beta$（关于 $x=0.5$ 对称；$\alpha=\beta=1$ 时为均匀分布）。</p>
+          <p><span class="ans">(b) 右偏（正偏，长尾在右、质量偏左）：</span>$\alpha<\beta$（均值 $<0.5$）。<span style="color:var(--muted)">对应地 $\alpha>\beta$ 为左偏。</span></p>
+          <p><span class="ans">(c) U 形：</span>$\alpha<1$ 且 $\beta<1$（两端密度趋于 $\infty$，中间凹陷）。</p>
+          <p><span class="ans">(d) J 形 / 反 J 形：</span>$\alpha,\beta$ 中<strong>恰有一个 $<1$</strong>、另一个 $\ge1$，密度单调（在某一端趋于 $\infty$）。</p>
+          <p style="color:var(--muted)">补充：$\alpha>1$ 且 $\beta>1$ 时为内部单峰的钟形。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa">
+      <div class="q-meta"><span class="m type">计算</span><span class="m">考点 D2</span><span class="m d3">综合</span></div>
+      <div class="q-text"><span class="q-num">Q17.</span>（习题 9）求下列概率（必要时配密度函数草图理解）：<br>
+        (a) $P(Z<1.42)$　(b) $P(-0.15<Z<0.5)$　(c) $P(Z>z)=0.1423$，求 $z$　(d) $Y\sim N(2,\sigma=4)$，求 $P(-2\le Y\le2)$。</div>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">(a) $P(Z<1.42)=\Phi(1.42)\approx0.92$。</span> 直接查标准正态表。</p>
+          <p><span class="ans">(b) $P(-0.15<Z<0.5)=\Phi(0.5)-\Phi(-0.15)$</span> $=0.6915-(1-0.5596)=0.6915-0.4404=0.2511$。利用 $\Phi(-z)=1-\Phi(z)$。</p>
+          <p><span class="ans">(c) $z=1.07$。</span> $P(Z>z)=0.1423\Rightarrow\Phi(z)=1-0.1423=0.8577$，反查得 $z\approx1.07$。</p>
+          <p><span class="ans">(d) $P(-2\le Y\le2)=0.3413$。</span> 这里 $\mu=2,\ \sigma=4$。标准化：下限 $\dfrac{-2-2}{4}=-1$，上限 $\dfrac{2-2}{4}=0$。故 $P(-1\le Z\le0)=\Phi(0)-\Phi(-1)=0.5-0.1587=0.3413$。</p>
+          <p><span class="warn-inline">易错：</span>(d) 给的是 $\sigma=4$（标准差），不是方差；标准化除以 4。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa">
+      <div class="q-meta"><span class="m type">计算</span><span class="m">考点 D3</span><span class="m d3">综合</span></div>
+      <div class="q-text"><span class="q-num">Q18.</span>（习题 10）求 $z_0$ 使得：(a) $P(-z_0\le Z\le z_0)=0.95$　(b) $P(-z_0\le Z\le z_0)=0.98$。</div>
+      <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <p><span class="ans">(a) $z_0=1.96$。</span> 中间面积 0.95 → 每侧尾部 0.025 → $\Phi(z_0)=0.975$ → $z_0=1.96$。</p>
+          <p><span class="ans">(b) $z_0=2.33$。</span> 中间面积 0.98 → 每侧尾部 0.01 → $\Phi(z_0)=0.99$ → $z_0\approx2.33$。</p>
+          <p><span class="warn-inline">⚠️ 关于答案册：</span>习题册第 10(b) 题给出的「0.01」实为<strong>每侧尾部面积</strong>（非临界值），是排版笔误；正确的临界值是 $z_0=2.33$。考试中若题目要求的是 $z_0$，应填 2.33。</p>
+        </div>
+      </details>
+    </div>
+
+  </section>
+
+  <footer class="foot">
+    基于 Lecture 8 讲义与习题册整理 · 共 8 道选择/判断即时判分题 + 10 道习题册解析<br>
+    点击选项即时反馈 · 公式由 MathJax 渲染 · 祝考试顺利 📈
+  </footer>
+</div>
+
+<button id="to-top-btn" data-action="to-top" aria-label="回到顶部">↑</button>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---- MathJax 加载失败兜底（6 秒后仍无则提示） ---- */
+  window.setTimeout(function () {
+    if (!(window.MathJax && window.MathJax.typesetPromise)) {
+      var w = document.getElementById('mathjax-warning');
+      if (w) { w.style.display = 'block'; }
+    }
+  }, 6000);
+
+  /* ---- 选择题进度状态 ---- */
+  var totalMCQ = document.querySelectorAll('.quiz[data-answer]').length;
+  var answered = 0;
+  var correctCount = 0;
+
+  function refreshProgress() {
+    var a = document.getElementById('stat-answered');
+    var c = document.getElementById('stat-correct');
+    var t = document.getElementById('stat-total');
+    var bar = document.getElementById('progress-bar-fill');
+    if (a) { a.textContent = answered; }
+    if (c) { c.textContent = correctCount; }
+    if (t) { t.textContent = totalMCQ; }
+    if (bar) { bar.style.width = (totalMCQ ? (answered / totalMCQ * 100) : 0) + '%'; }
+  }
+  refreshProgress();
+
+  /* ---- 统一事件委托：选项判分 / 展开收起 / 回到顶部 ---- */
+  document.addEventListener('click', function (e) {
+
+    /* 全局动作按钮 */
+    var actionEl = e.target.closest('[data-action]');
+    if (actionEl) {
+      var action = actionEl.getAttribute('data-action');
+      if (action === 'expand-all' || action === 'collapse-all') {
+        var open = (action === 'expand-all');
+        var all = document.querySelectorAll('details');
+        for (var i = 0; i < all.length; i++) { all[i].open = open; }
+        return;
+      }
+      if (action === 'to-top') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+    }
+
+    /* 选择题选项 */
+    var opt = e.target.closest('.option');
+    if (opt) {
+      var quiz = opt.closest('.quiz');
+      if (!quiz || quiz.classList.contains('locked')) { return; }
+      var correct = quiz.getAttribute('data-answer');
+      var chosen = opt.getAttribute('data-opt');
+      quiz.classList.add('locked');
+
+      var opts = quiz.querySelectorAll('.option');
+      for (var j = 0; j < opts.length; j++) {
+        var v = opts[j].getAttribute('data-opt');
+        if (v === correct) { opts[j].classList.add('correct'); }
+        else if (v === chosen) { opts[j].classList.add('wrong'); }
+      }
+
+      var det = quiz.querySelector('details');
+      if (det) { det.open = true; }
+
+      answered += 1;
+      if (chosen === correct) { correctCount += 1; }
+      refreshProgress();
+      return;
+    }
+  });
+
+  /* ---- 回到顶部按钮：滚动时显隐（纯增强） ---- */
+  var topBtn = document.getElementById('to-top-btn');
+  if (topBtn) {
+    window.addEventListener('scroll', function () {
+      if (window.pageYOffset > 400) { topBtn.classList.add('show'); }
+      else { topBtn.classList.remove('show'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

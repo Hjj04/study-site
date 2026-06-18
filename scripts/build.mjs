@@ -62,14 +62,25 @@ async function build() {
       if (IGNORE.has(name) || name.startsWith('.') || name.startsWith('_')) continue;
       const stat = await fs.stat(path.join(dir, name));
       const ov = meta[name] || {};
+      const kind = kindOf(name);
+
+      // HTML 资料：优先取页面自身的 <title> 作为标题（比文件名好看），可被 _meta.json 覆盖
+      let htmlTitle = null;
+      if (kind === 'html') {
+        try {
+          const m = (await fs.readFile(path.join(dir, name), 'utf8')).match(/<title>([^<]*)<\/title>/i);
+          if (m && m[1].trim()) htmlTitle = m[1].trim();
+        } catch { /* 忽略 */ }
+      }
+
       materials.push({
         id: `${c.id}/${name}`,
         course: c.id,
-        title: ov.title || prettify(name),
+        title: ov.title || htmlTitle || prettify(name),
         description: ov.description || '',
         originalName: name,
         file: `content/${c.id}/${name}`, // 站内相对路径
-        kind: kindOf(name),
+        kind,
         size: stat.size,
         uploadedAt: Math.round(stat.mtimeMs),
       });
