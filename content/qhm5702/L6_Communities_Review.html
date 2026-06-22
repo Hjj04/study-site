@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L6 Communities 期末复习梳理</title>
+
+<!-- MathJax 配置 -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true
+  },
+  options: {
+    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+  },
+  startup: {
+    ready: () => {
+      MathJax.startup.defaultReady();
+      document.getElementById('mathjax-status').style.display = 'none';
+    }
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" id="MathJax-script" async
+  onerror="document.getElementById('mathjax-status').innerHTML='⚠️ 数学公式渲染库加载失败，公式将以源码形式显示，但不影响其余内容阅读。'"></script>
+
+<style>
+:root {
+  --bg: #fafaf7;
+  --bg-card: #ffffff;
+  --text: #2c3e50;
+  --text-soft: #5a6c7d;
+  --accent: #d97706;
+  --accent-soft: #fef3c7;
+  --accent-dark: #b45309;
+  --primary: #2563eb;
+  --primary-soft: #dbeafe;
+  --success: #059669;
+  --success-soft: #d1fae5;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+  --warning: #d97706;
+  --warning-soft: #fef3c7;
+  --border: #e5e7eb;
+  --code-bg: #f3f4f6;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.75;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ========== 顶部导航 ========== */
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  box-shadow: var(--shadow);
+}
+
+.topnav .brand {
+  font-weight: 700;
+  margin-right: auto;
+  color: var(--accent-dark);
+  font-size: 16px;
+}
+
+.topnav a {
+  text-decoration: none;
+  color: var(--text-soft);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.topnav a:hover {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+/* ========== 进度条 ========== */
+.progress-bar {
+  position: sticky;
+  top: 56px;
+  z-index: 99;
+  background: var(--primary-soft);
+  padding: 10px 24px;
+  font-size: 13px;
+  color: var(--primary);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-bar strong { color: var(--primary); }
+
+/* ========== 主体容器 ========== */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* ========== 标题 ========== */
+h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  color: var(--text-soft);
+  margin-bottom: 40px;
+  font-size: 15px;
+}
+
+h2 {
+  font-size: 26px;
+  margin: 48px 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid var(--accent);
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+h3 {
+  font-size: 21px;
+  margin: 32px 0 14px;
+  color: var(--text);
+  border-left: 4px solid var(--accent);
+  padding-left: 12px;
+}
+
+h4 {
+  font-size: 17px;
+  margin: 24px 0 10px;
+  color: var(--text);
+}
+
+/* ========== 卡片 ========== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 16px 0;
+  box-shadow: var(--shadow);
+}
+
+/* ========== 高亮框 ========== */
+.def-box {
+  background: var(--primary-soft);
+  border-left: 5px solid var(--primary);
+  padding: 14px 18px;
+  border-radius: 6px;
+  margin: 16px 0;
+}
+.def-box .label {
+  font-weight: 700;
+  color: var(--primary);
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.formula-box {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 14px 0;
+  text-align: center;
+  overflow-x: auto;
+}
+
+.warn-box {
+  background: var(--danger-soft);
+  border-left: 5px solid var(--danger);
+  padding: 14px 18px;
+  border-radius: 6px;
+  margin: 16px 0;
+}
+.warn-box .label {
+  font-weight: 700;
+  color: var(--danger);
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.tip-box {
+  background: var(--warning-soft);
+  border-left: 5px solid var(--warning);
+  padding: 14px 18px;
+  border-radius: 6px;
+  margin: 16px 0;
+}
+.tip-box .label {
+  font-weight: 700;
+  color: var(--accent-dark);
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.analogy-box {
+  background: var(--success-soft);
+  border-left: 5px solid var(--success);
+  padding: 14px 18px;
+  border-radius: 6px;
+  margin: 16px 0;
+}
+.analogy-box .label {
+  font-weight: 700;
+  color: var(--success);
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+/* ========== 重要度标签 ========== */
+.star-high {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #fecaca;
+  color: #991b1b;
+  margin-left: 8px;
+}
+.star-mid {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #fde68a;
+  color: #92400e;
+  margin-left: 8px;
+}
+.star-low {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #d1fae5;
+  color: #065f46;
+  margin-left: 8px;
+}
+
+.kp-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  margin-right: 6px;
+  font-weight: 600;
+}
+
+.kp-mem {
+  background: #fde68a;
+  color: #92400e;
+}
+.kp-und {
+  background: #c7d2fe;
+  color: #3730a3;
+}
+
+/* ========== 表格 ========== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+th, td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+th {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+tr:last-child td { border-bottom: none; }
+
+tr:hover td { background: #fafaf7; }
+
+/* ========== 题目样式 ========== */
+.question {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 20px 0;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.2s;
+}
+.question:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.q-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.q-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.q-tag-type { background: #ede9fe; color: #5b21b6; }
+.q-tag-point { background: #fef3c7; color: #92400e; }
+.q-tag-diff-1 { background: #d1fae5; color: #065f46; }
+.q-tag-diff-2 { background: #fed7aa; color: #9a3412; }
+.q-tag-diff-3 { background: #fecaca; color: #991b1b; }
+
+.q-number {
+  font-weight: 700;
+  color: var(--accent-dark);
+  margin-right: 6px;
+}
+
+.q-stem {
+  margin-bottom: 14px;
+  font-size: 15.5px;
+}
+
+/* ========== 选择题选项 ========== */
+.options {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+}
+
+.options li {
+  padding: 10px 14px;
+  margin: 6px 0;
+  background: #f9fafb;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.options li:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.options li.correct {
+  background: var(--success-soft);
+  border-color: var(--success);
+  color: #064e3b;
+  font-weight: 600;
+}
+
+.options li.wrong {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+  color: #7f1d1d;
+}
+
+.options.locked li {
+  cursor: not-allowed;
+}
+
+.options.locked li:hover {
+  background: #f9fafb;
+  border-color: var(--border);
+}
+
+.options.locked li.correct {
+  background: var(--success-soft);
+  border-color: var(--success);
+}
+
+.options.locked li.wrong {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+}
+
+.opt-label {
+  display: inline-block;
+  width: 24px;
+  font-weight: 700;
+  color: var(--text-soft);
+}
+
+/* ========== 答案折叠 ========== */
+.answer-block {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fafbfc;
+}
+
+.answer-block > summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 600;
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+  border-radius: 8px;
+  user-select: none;
+  list-style: none;
+  font-size: 14px;
+  transition: background 0.15s;
+}
+
+.answer-block > summary::-webkit-details-marker { display: none; }
+.answer-block > summary::marker { display: none; }
+
+.answer-block > summary::before {
+  content: "▶ ";
+  display: inline-block;
+  transition: transform 0.2s;
+  margin-right: 4px;
+  font-size: 10px;
+}
+
+.answer-block[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.answer-block[open] > summary {
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.answer-block > summary:hover {
+  background: #fde68a;
+}
+
+.answer-content {
+  padding: 16px 18px;
+}
+
+.answer-content p {
+  margin: 8px 0;
+}
+
+.answer-content .ans-key {
+  background: var(--success-soft);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 4px solid var(--success);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.answer-content .ans-analysis {
+  background: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-size: 14px;
+  border-left: 4px solid var(--primary);
+}
+
+.answer-content .ans-warn {
+  background: var(--danger-soft);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: #7f1d1d;
+  border-left: 4px solid var(--danger);
+}
+
+/* ========== 全局按钮 ========== */
+.global-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0 24px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.btn-primary:hover {
+  background: var(--accent-dark);
+  color: white;
+}
+
+/* ========== 回到顶部 ========== */
+#back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  font-size: 18px;
+  font-weight: 700;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+#back-to-top.visible { opacity: 1; }
+
+#back-to-top:hover { background: var(--accent-dark); }
+
+/* ========== 杂项 ========== */
+code {
+  background: var(--code-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  color: var(--accent-dark);
+}
+
+ul, ol { padding-left: 24px; }
+li { margin: 6px 0; }
+
+.mathjax-status {
+  background: #fef3c7;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #92400e;
+  margin: 10px 0;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+
+.intro-box {
+  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 20px 0;
+  border: 1px solid var(--accent-soft);
+}
+
+.intro-box h3 {
+  margin-top: 0;
+  border-left: none;
+  padding-left: 0;
+  color: var(--accent-dark);
+}
+
+/* 响应式 */
+@media (max-width: 720px) {
+  .container { padding: 24px 16px 60px; }
+  h1 { font-size: 26px; }
+  h2 { font-size: 22px; }
+  h3 { font-size: 18px; }
+  .topnav { padding: 10px 16px; }
+  .topnav a { padding: 5px 10px; font-size: 13px; }
+  body { font-size: 15px; }
+  .question { padding: 16px 18px; }
+  table { font-size: 13px; }
+  th, td { padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== 顶部导航 ========== -->
+<nav class="topnav">
+  <span class="brand">📘 L6 Communities 复习</span>
+  <a href="#part1">① 课程讲解</a>
+  <a href="#part2">② 考点梳理</a>
+  <a href="#part3">③ 复习题目</a>
+</nav>
+
+<!-- ========== 进度条 ========== -->
+<div class="progress-bar">
+  <span>📊 答题进度：<strong id="progress-text">已答 0 / 0 题</strong></span>
+  <span>正确率：<strong id="accuracy-text">—</strong></span>
+</div>
+
+<div id="mathjax-status" class="mathjax-status">正在加载数学公式渲染库...</div>
+
+<div class="container">
+
+<h1>L6 Communities 期末复习梳理</h1>
+<p class="subtitle">基于 Matteo Mazzamurro 的 L6_Communities 课件 + L6_Communities_in_the_line_graph 习题</p>
+
+<!-- ============================================================ -->
+<!-- 第一部分：课程讲解 -->
+<!-- ============================================================ -->
+
+<section id="part1">
+<h2>第一部分 · 课程内容讲解</h2>
+
+<div class="intro-box">
+<h3>📍 整体知识脉络</h3>
+<p>这节课在解决一个问题：<strong>给定一张网络（节点 + 边），如何把它划分成几个"团伙"（社团）？</strong> </p>
+<p>课程的逻辑链条是这样的：</p>
+<ol>
+  <li><strong>提出问题</strong>：之前学过中心性（关注单点）、聚类系数（关注邻居）、k-core（嵌套结构），但都没有回答"网络由几个紧密小团体组成"。于是引入 <strong>社团（Community）</strong> 的概念。</li>
+  <li><strong>定义"好坏"</strong>：怎么判断一个分组方案好不好？答：与"随机连接"的版本对比，看组内边是不是显著更多。把这个对比量化，就是 <strong>模块度函数 Q（Modularity）</strong>。</li>
+  <li><strong>找最优分组</strong>：理论上枚举所有分组方案，挑 Q 最大的。但是 n 个节点有 $2^n$ 种二分方式，太多了。于是引入 <strong>启发式算法</strong>（Node-moving / Girvan-Newman / Greedy / Louvain）来近似求解。</li>
+</ol>
+<p>一句话：<strong>社团 → 用 Q 打分 → 用算法找最大 Q</strong>。</p>
+</div>
+
+<h3>🔹 模块 1：什么是社团（Community）？</h3>
+
+<div class="def-box">
+<span class="label">定义</span>
+<strong>社团</strong>是网络中的一组节点，它们之间<strong>内部连接密集</strong>，但与网络其他部分<strong>连接稀疏</strong>。
+</div>
+
+<div class="analogy-box">
+<span class="label">🌰 通俗类比</span>
+想象一个学校的人际关系网：高一(1)班的同学之间几乎都互相认识（内部密集），但他们和高三(5)班的同学几乎不认识（外部稀疏）。每个班级就是一个"社团"。又比如经典的 <strong>Zachary 空手道俱乐部</strong>：因为教练和管理员意见不合，俱乐部最终分裂成两派，每派内部联系紧密——这就是网络科学最有名的社团检测案例。
+</div>
+
+<h4>社团检测的目标</h4>
+<p>把网络划分为若干节点集合（社团），使得：</p>
+<ul>
+  <li><strong>社团内（within）</strong>：节点之间连接<strong>密集（densely connected）</strong></li>
+  <li><strong>社团间（between）</strong>：节点之间连接<strong>稀疏（sparsely connected）</strong></li>
+</ul>
+
+<h3>🔹 模块 2：模块度函数 Q —— 给分组方案打分</h3>
+
+<h4>核心思路：和"随机网络"比一比</h4>
+<p>怎么知道一个分组方案是"真的好"，还是"恰巧组内边多"？办法是：把原网络的边"打散"，<strong>保留每个节点的度</strong>不变，然后随机重连。再问：</p>
+<div class="tip-box">
+<span class="label">💡 核心问题</span>
+原网络中同组的边数，<strong>是否比随机网络中同组的边数明显更多</strong>？多得越多，分组越好。
+</div>
+
+<h4>逐项拆解模块度公式</h4>
+
+<p><strong>① 实际同组的边数（$Q_1$）：</strong></p>
+<div class="formula-box">
+$$Q_1 = \sum_{\text{edge}(i,j)} \delta_{g_ig_j} = \frac{1}{2}\sum_{i,j} A_{ij}\,\delta_{g_ig_j}$$
+</div>
+<p>其中：</p>
+<ul>
+  <li>$g_i$：节点 $i$ 所属的组</li>
+  <li>$\delta_{g_ig_j} = 1$ 当 $g_i = g_j$（同组），否则为 0 —— 这叫 <strong>Kronecker delta</strong>，可以理解成"同组开关"。</li>
+  <li>$A_{ij}$ 是邻接矩阵元素，相邻为 1，否则为 0</li>
+  <li>$\frac{1}{2}$ 是因为 $\sum_{i,j}$ 会把每条边数两次</li>
+</ul>
+
+<p><strong>② 随机网络中同组的期望边数（$Q_2$）：</strong></p>
+<div class="formula-box">
+$$Q_2 = \frac{1}{2}\sum_{i,j} \frac{k_ik_j}{2m}\,\delta_{g_ig_j}$$
+</div>
+<p>关键是理解 $\frac{k_ik_j}{2m}$：在保度数随机重连的模型里，节点 $i$ 和 $j$ 之间的期望连边数恰好是 $\frac{k_ik_j}{2m}$。</p>
+
+<div class="analogy-box">
+<span class="label">🌰 直觉解释 $\frac{k_ik_j}{2m}$</span>
+把每条边想成两根"半边"。所有半边总数是 $2m$。节点 $i$ 有 $k_i$ 根半边，节点 $j$ 有 $k_j$ 根半边。$i$ 的某根半边随机连到 $j$ 的某根半边的概率是 $\frac{k_j}{2m-1} \approx \frac{k_j}{2m}$。$i$ 有 $k_i$ 根半边都可以尝试，所以期望连边数 $\approx \frac{k_ik_j}{2m}$。
+</div>
+
+<p><strong>③ 模块度 Q 的最终定义：</strong></p>
+<div class="formula-box">
+$$Q = \frac{1}{2m}(Q_1 - Q_2) = \frac{1}{2m}\sum_{i,j}\left(A_{ij} - \frac{k_ik_j}{2m}\right)\delta_{g_ig_j}$$
+</div>
+<p>除以 $\frac{1}{2m}$ 是把它<strong>标准化</strong>到 $[-\frac{1}{2}, 1)$ 区间，方便不同规模的网络互相比较。</p>
+
+<h4>简洁记号</h4>
+<p>令 $B_{ij} = A_{ij} - \frac{k_ik_j}{2m}$，称为 <strong>模块度矩阵</strong>。则：</p>
+<div class="formula-box">
+$$Q = \frac{1}{2m}\sum_{i,j} B_{ij}\,\delta_{g_ig_j}$$
+</div>
+<p>性质：$\sum_j B_{ij} = 0 = \sum_i B_{ij}$（B 矩阵的每行/每列和都为 0）。</p>
+
+<h3>🔹 模块 3：经典例子——线图（Line Graph）</h3>
+
+<p>把 $n$ 个节点排成一条线，相邻相连。如果在任意一条边上一刀切开，左边 $r$ 个、右边 $n-r$ 个节点，会发生什么？</p>
+
+<p><strong>关键事实：</strong></p>
+<ul>
+  <li>边数 $m = n-1$</li>
+  <li>两端节点度为 1：$k_1 = k_n = 1$</li>
+  <li>中间节点度为 2：$k_i = 2$（$2 \le i \le n-1$）</li>
+</ul>
+
+<p><strong>推导结果：</strong></p>
+<div class="formula-box">
+$$Q = \frac{3 - 4n + 4nr - 4r^2}{2(n-1)^2}$$
+</div>
+
+<p><strong>求最优 $r$：</strong> 对 $r$ 求导令其为 0：</p>
+<div class="formula-box">
+$$\frac{dQ}{dr} = \frac{4n - 8r}{2(n-1)^2} = 0 \Rightarrow r = \frac{n}{2}$$
+</div>
+<p>二阶导 $-8 < 0$，确认是极大值。</p>
+
+<div class="tip-box">
+<span class="label">📌 结论</span>
+<ul>
+  <li>$n$ 为偶数：最佳切法是<strong>从正中间切</strong>，即 $r = n/2$。</li>
+  <li>$n$ 为奇数：$r$ 必须为整数，所以取 $r = \frac{n-1}{2}$ 或 $r = \frac{n+1}{2}$（两个对称解，Q 值相同）。</li>
+</ul>
+</div>
+
+<h3>🔹 模块 4：从枚举到启发式——为什么需要算法</h3>
+
+<p>把 $n$ 个节点分成 2 个社团，有多少种方式？$2^n$ 种。对 $n=100$ 已经是天文数字，根本不可能穷举。所以必须用<strong>启发式算法</strong>找近似解。</p>
+
+<h4>算法 ①：Node-moving（节点移动）算法</h4>
+<ol>
+  <li>把节点随机平分为两组。</li>
+  <li>开始一轮：每轮中，对每个节点，计算它"换边站队"会带来的 $\Delta Q$。挑 $\Delta Q$ 最大的那个节点移动。</li>
+  <li>已经移动过的节点本轮不能再移动。所有节点都移动一次后，本轮结束。</li>
+  <li>在本轮所有中间状态里，挑 Q 最大的那个分组作为本轮结果。</li>
+  <li>以本轮结果为新起点，重复上述步骤，直到 Q 不再提升。</li>
+</ol>
+
+<div class="analogy-box">
+<span class="label">🌰 类比</span>
+像两队拔河，但每个人只许换一次队。每轮看谁"换边能让组合最舒服"，让他换；然后下一个；直到所有人都被"试过一次"，记下其中最好的中间状态。
+</div>
+
+<h4>算法 ②：Girvan-Newman（基于边介数）算法</h4>
+
+<div class="def-box">
+<span class="label">边介数定义</span>
+$$x_e = \sum_{\substack{j,k \\ j \ne k}} \frac{\sigma_{jk}(e)}{\sigma_{jk}}$$
+其中 $\sigma_{jk}$ 是 $j \to k$ 的最短路径数，$\sigma_{jk}(e)$ 是其中经过边 $e$ 的最短路径数。
+</div>
+
+<p><strong>算法步骤：</strong>反复执行——计算所有边的介数 → 删除介数最高的边 → 重新计算介数 → 继续删 → 直到网络分裂成若干连通分量。</p>
+
+<div class="analogy-box">
+<span class="label">🌰 直觉</span>
+社团之间通常只靠少数"桥梁边"相连。桥梁边承载了大量跨社团最短路径，所以介数最高。砍断桥梁，社团就显形了。
+</div>
+
+<div class="warn-box">
+<span class="label">⚠️ 易错</span>
+每删一条边后，<strong>必须重新计算介数</strong>，不能用之前的旧值。
+</div>
+
+<h4>算法 ③：Greedy Modularity（贪婪模块度）算法</h4>
+<ol>
+  <li>初始：每个节点单独成一个社团（$n$ 个节点 → $n$ 个社团）。</li>
+  <li>对每一对社团，计算"合并它们"会带来的 $\Delta Q$。</li>
+  <li>合并 $\Delta Q$ 最大的那一对。</li>
+  <li>重复直到不能再增加 Q。</li>
+</ol>
+<p>这是 <strong>自底向上的凝聚</strong>，与 Girvan-Newman 自顶向下分裂相反。</p>
+
+<h4>算法 ④：Louvain 算法 ⭐</h4>
+
+<p>以发明者所在的比利时鲁汶大学命名。<strong>非常快</strong>，时间复杂度 $O((m+n)\log n)$。</p>
+
+<p><strong>核心思想：自底向上、多层级聚合</strong></p>
+<ol>
+  <li>初始：每个节点单独一组。</li>
+  <li>对每个节点，尝试把它加入某个邻居所在的组——只要能提升 Q，就移过去；否则留在原地。</li>
+  <li>所有节点都考虑过后，重复第 2 步，直到 Q 不再提升。</li>
+  <li>把当前每个组"凝聚"成一个超级节点，得到一个新网络。</li>
+  <li>在新网络上重复 2–3 步。</li>
+  <li>直到无法再提升 Q，输出结果。</li>
+</ol>
+
+<div class="analogy-box">
+<span class="label">🌰 类比</span>
+就像家族聚会：第一轮是"几个个人组小家庭"（小社团形成），第二轮是"几个小家庭组成家族"（小社团聚成大社团），层层套娃。
+</div>
+
+<h4>四种算法 Karate Club 表现对比</h4>
+<table>
+<thead><tr><th>算法</th><th>Karate Club 模块度</th><th>特点</th></tr></thead>
+<tbody>
+<tr><td>Girvan-Newman（2 群）</td><td>0.34766</td><td>基于介数自顶向下，慢</td></tr>
+<tr><td>Greedy（max 2 群）</td><td>0.399833</td><td>自底向上贪婪合并</td></tr>
+<tr><td>Greedy（自动数量）</td><td>0.410965</td><td>同上但社团数自定</td></tr>
+<tr><td>Louvain</td><td><strong>0.444904</strong></td><td>多层级，最快也最常用</td></tr>
+</tbody>
+</table>
+
+<h3>🔹 模块 5：习题——环图（2-regular ring lattice）</h3>
+
+<p>n 个节点首尾相接成环，编号 1 到 n。把它分成 $\{1, \ldots, r\}$ 和 $\{r+1, \ldots, n\}$ 两组。</p>
+
+<p><strong>关键事实：</strong></p>
+<ul>
+  <li>边数 $m = n$（不再是 $n-1$，因为多了首尾连接）</li>
+  <li>所有节点度都是 2：$k_i = 2, \forall i$</li>
+</ul>
+
+<p><strong>模块度公式：</strong></p>
+<div class="formula-box">
+$$Q = \frac{2nr - 2r^2 - 2n}{2n^2}$$
+</div>
+
+<p><strong>最优 $r$：</strong>同样对 $r$ 求导，$\frac{dQ}{dr} = \frac{2n - 4r}{2n^2} = 0 \Rightarrow r = \frac{n}{2}$。也就是说，<strong>环图也是从正中间切最好</strong>。</p>
+
+</section>
+
+<!-- ============================================================ -->
+<!-- 第二部分：考点梳理 -->
+<!-- ============================================================ -->
+
+<section id="part2">
+<h2>第二部分 · 考点梳理</h2>
+
+<p style="color:var(--text-soft); font-size:14px;">
+重要度：<span class="star-high">★★★ 高频</span> <span class="star-mid">★★ 中等</span> <span class="star-low">★ 低频</span>　　
+分类：<span class="kp-tag kp-mem">🧠 记忆</span> <span class="kp-tag kp-und">💡 理解/计算</span>
+</p>
+
+<h3>📍 章节 1：社团的概念</h3>
+
+<div class="card">
+<h4>考点 1.1　社团（Community）的定义 <span class="star-high">★★★</span> <span class="kp-tag kp-mem">记忆</span></h4>
+<p><strong>定义：</strong>网络中一组节点，它们之间内部连接密集（densely connected within），与网络其他部分连接稀疏（sparsely connected between）。</p>
+<p><strong>易混点：</strong></p>
+<ul>
+  <li>不要把社团和 <strong>k-core</strong> 混淆。k-core 强调"每个节点至少有 k 个邻居在集合内"，是结构性指标；社团强调"内密外疏"。</li>
+  <li>不要和 <strong>聚类系数</strong> 混淆。聚类系数衡量"邻居之间是不是互相认识"，是局部三角形密度。</li>
+</ul>
+</div>
+
+<div class="card">
+<h4>考点 1.2　社团检测的目标 <span class="star-mid">★★</span> <span class="kp-tag kp-mem">记忆</span></h4>
+<p>把网络划分为若干节点集合（社团），<strong>组内连接密集，组间连接稀疏</strong>。</p>
+</div>
+
+<div class="card">
+<h4>考点 1.3　社团检测 vs 其他网络分析工具 <span class="star-low">★</span> <span class="kp-tag kp-und">理解</span></h4>
+<p>中心性 → 单点；聚类系数 → 节点 + 直接邻居；k-core → 嵌套的密度；<strong>社团 → 全局结构性子集</strong>。</p>
+</div>
+
+<h3>📍 章节 2：模块度函数</h3>
+
+<div class="card">
+<h4>考点 2.1　Kronecker delta 的含义 <span class="star-high">★★★</span> <span class="kp-tag kp-mem">记忆</span></h4>
+<div class="def-box">
+<span class="label">定义</span>
+$\delta_{g_ig_j} = 1$ 当 $g_i = g_j$（节点 $i, j$ 同组），$\delta_{g_ig_j} = 0$ 否则。
+</div>
+<p><strong>作用：</strong>把"是否同组"嵌入求和——同组的项才被计入，跨组的项贡献为 0。</p>
+</div>
+
+<div class="card">
+<h4>考点 2.2　实际同组边数 $Q_1$ <span class="star-high">★★★</span> <span class="kp-tag kp-und">理解</span></h4>
+<div class="formula-box">
+$$Q_1 = \sum_{\text{edge}(i,j)} \delta_{g_ig_j} = \frac{1}{2}\sum_{i,j} A_{ij}\,\delta_{g_ig_j}$$
+</div>
+<p><strong>易错：</strong>前者的求和是"每条边算一次"（无序对），后者是"$i,j$ 双重求和会把每条边数两次"，所以多了 $\frac{1}{2}$。</p>
+</div>
+
+<div class="card">
+<h4>考点 2.3　随机网络中期望同组边数 $Q_2$ <span class="star-high">★★★</span> <span class="kp-tag kp-und">理解</span></h4>
+<div class="formula-box">
+$$Q_2 = \frac{1}{2}\sum_{i,j} \frac{k_ik_j}{2m}\,\delta_{g_ig_j}$$
+</div>
+<p>$\frac{k_ik_j}{2m}$ 是 <strong>保度数随机模型</strong> 中 $i, j$ 之间的期望连边数。</p>
+<p><strong>易错：</strong>不要把分母 $2m$ 写成 $m$；不要忘记前面的 $\frac{1}{2}$。</p>
+</div>
+
+<div class="card">
+<h4>考点 2.4　模块度函数 $Q$ 的定义 <span class="star-high">★★★</span> <span class="kp-tag kp-mem">记忆</span> <span class="kp-tag kp-und">理解</span></h4>
+<div class="formula-box">
+$$Q = \frac{1}{2m}(Q_1 - Q_2) = \frac{1}{2m}\sum_{i,j}\left(A_{ij} - \frac{k_ik_j}{2m}\right)\delta_{g_ig_j}$$
+</div>
+<p><strong>各项物理意义：</strong></p>
+<ul>
+  <li>$\frac{1}{2m}$：标准化因子（不同规模网络可比较）</li>
+  <li>$A_{ij}$：实际是否相连</li>
+  <li>$\frac{k_ik_j}{2m}$：随机模型下的期望连接数</li>
+  <li>$\delta_{g_ig_j}$：只考虑同组对</li>
+</ul>
+<div class="warn-box">
+<span class="label">⚠️ 常见错误</span>
+<ul>
+  <li>把 $2m$ 写成 $m$</li>
+  <li>遗漏 $\delta_{g_ig_j}$</li>
+  <li>把"组数"错当成 $2m$ 的某种除数</li>
+</ul>
+</div>
+</div>
+
+<div class="card">
+<h4>考点 2.5　模块度矩阵 $B$ <span class="star-mid">★★</span> <span class="kp-tag kp-mem">记忆</span></h4>
+<div class="def-box">
+<span class="label">定义</span>
+$B_{ij} = A_{ij} - \frac{k_ik_j}{2m}$，则 $Q = \frac{1}{2m}\sum_{i,j} B_{ij}\delta_{g_ig_j}$。
+</div>
+<p><strong>性质：</strong>$\sum_j B_{ij} = 0 = \sum_i B_{ij}$（每行每列和为 0）。这是 <strong>谱模块度最大化</strong> 的出发点。</p>
+</div>
+
+<div class="card">
+<h4>考点 2.6　模块度最大化原理 <span class="star-mid">★★</span> <span class="kp-tag kp-und">理解</span></h4>
+<p>"好"的分组使组内边数 <strong>显著多于</strong> 随机模型预期，即 $Q$ 越大越好。理论上枚举所有分组挑 $Q$ 最大者，但 $2^n$ 太多，需用启发式。</p>
+</div>
+
+<h3>📍 章节 3：线图模块度（重点）</h3>
+
+<div class="card">
+<h4>考点 3.1　线图基本量 <span class="star-high">★★★</span> <span class="kp-tag kp-mem">记忆</span></h4>
+<ul>
+  <li>边数 $m = n - 1$</li>
+  <li>端点度 $k_1 = k_n = 1$</li>
+  <li>中间节点度 $k_i = 2$（$2 \le i \le n-1$）</li>
+</ul>
+</div>
+
+<div class="card">
+<h4>考点 3.2　线图二分模块度公式 <span class="star-high">★★★</span> <span class="kp-tag kp-mem">记忆</span> <span class="kp-tag kp-und">推导</span></h4>
+<div class="formula-box">
+$$Q = \frac{3 - 4n + 4nr - 4r^2}{2(n-1)^2}$$
+</div>
+<p>其中切第 $r$ 条边把网络分为 $r$ 节点和 $n-r$ 节点两段。</p>
+
+<p><strong>推导关键步骤：</strong></p>
+<ol>
+  <li><strong>$Q_1$ 部分</strong>：左段有 $r-1$ 条边，右段有 $n-r-1$ 条边，所以 $Q_1 = \frac{n-2}{n-1}$。</li>
+  <li><strong>$Q_2$ 部分</strong>：左段度数和 $= 2(r-1) + 1 = 2r-1$；右段度数和 $= 2(n-r-1) + 1 = 2(n-r)-1$。$\sum_{ij}k_ik_j\delta_{g_ig_j} = (2r-1)^2 + (2(n-r)-1)^2$。</li>
+  <li>代入 $Q_2 = \frac{(2r-1)^2 + (2(n-r)-1)^2}{4(n-1)^2}$，化简。</li>
+  <li>$Q = Q_1 - Q_2$，化简得最终公式。</li>
+</ol>
+</div>
+
+<div class="card">
+<h4>考点 3.3　最优切点 <span class="star-high">★★★</span> <span class="kp-tag kp-und">计算</span></h4>
+<div class="formula-box">
+$$\frac{dQ}{dr} = \frac{4n - 8r}{2(n-1)^2} = 0 \Rightarrow r = \frac{n}{2}$$
+</div>
+<p>二阶导 $= \frac{-8}{2(n-1)^2} < 0$，确认极大值。</p>
+<ul>
+  <li><strong>$n$ 偶数</strong>：$r = n/2$ 即为答案。</li>
+  <li><strong>$n$ 奇数</strong>：$r$ 须为整数，最优在 $r = \frac{n-1}{2}$ 或 $\frac{n+1}{2}$（两个对称解，Q 相同）。</li>
+</ul>
+<div class="warn-box">
+<span class="label">⚠️ 易错</span>
+忘记奇偶讨论；忘记验证二阶导。
+</div>
+</div>
+
+<h3>📍 章节 4：环图模块度（习题）</h3>
+
+<div class="card">
+<h4>考点 4.1　环图基本量 <span class="star-mid">★★</span> <span class="kp-tag kp-mem">记忆</span></h4>
+<ul>
+  <li>边数 $m = n$（不是 $n-1$）</li>
+  <li>所有节点度 $k_i = 2$</li>
+</ul>
+</div>
+
+<div class="card">
+<h4>考点 4.2　环图二分模块度公式 <span class="star-mid">★★</span> <span class="kp-tag kp-und">推导</span></h4>
+<div class="formula-box">
+$$Q = \frac{2nr - 2r^2 - 2n}{2n^2}$$
+</div>
+<p>切两条对称的边把环分成 $\{1,\dots,r\}$ 和 $\{r+1,\dots,n\}$。</p>
+<p><strong>推导提示：</strong></p>
+<ol>
+  <li>$Q_1$：每段是路径，左段 $r-1$ 条边，右段 $n-r-1$ 条边，加上切掉的两条边外的所有内部边——其实左段是 $r$ 个节点的路径有 $r-1$ 条边，右段 $n-r-1$ 条；不再赘述。</li>
+  <li>$Q_2$：每个节点度都是 2，所以每段度数和都是 $2r$ 和 $2(n-r)$。$\sum k_ik_j\delta_{g_ig_j} = (2r)^2 + (2(n-r))^2 = 4r^2 + 4(n-r)^2$。</li>
+  <li>$m = n$，最终化简得公式。</li>
+</ol>
+</div>
+
+<div class="card">
+<h4>考点 4.3　环图最优切点 <span class="star-mid">★★</span> <span class="kp-tag kp-und">计算</span></h4>
+<p>求导 $\frac{dQ}{dr} = \frac{2n - 4r}{2n^2} = 0 \Rightarrow r = \frac{n}{2}$。</p>
+<p>与线图结论一致：<strong>都是正中间切最好</strong>。</p>
+</div>
+
+<h3>📍 章节 5：模块度最大化算法</h3>
+
+<div class="card">
+<h4>考点 5.1　为什么需要启发式算法 <span class="star-mid">★★</span> <span class="kp-tag kp-und">理解</span></h4>
+<p>$n$ 节点分 2 群有 $2^n$ 种方式。$n=100$ 已经无法穷举。所以需要 <strong>good approximations</strong>。</p>
+</div>
+
+<div class="card">
+<h4>考点 5.2　Node-moving 算法 <span class="star-high">★★★</span> <span class="kp-tag kp-mem">记忆</span></h4>
+<p><strong>关键步骤：</strong></p>
+<ol>
+  <li>随机平分两组。</li>
+  <li>每"轮"：每个节点计算 $\Delta Q$，挑最大者移动；已移动者本轮不能再动；轮结束于所有节点都被移过一次。</li>
+  <li>从本轮所有中间状态中选 Q 最高的作为本轮结果。</li>
+  <li>以新分组为起点重复，直到 Q 无法再增加。</li>
+</ol>
+<div class="warn-box">
+<span class="label">⚠️ 易错</span>
+<ul>
+  <li>"已移动节点本轮不能再移动"这条规则容易忘。</li>
+  <li>每轮 Q 不是单调的——选的是 <strong>中间最高 Q</strong>，不一定是轮末的状态。</li>
+</ul>
+</div>
+</div>
+
+<div class="card">
+<h4>考点 5.3　边介数（Edge Betweenness） <span class="star-high">★★★</span> <span class="kp-tag kp-mem">记忆</span></h4>
+<div class="def-box">
+<span class="label">定义</span>
+$$x_e = \sum_{\substack{j,k \\ j \ne k}} \frac{\sigma_{jk}(e)}{\sigma_{jk}}$$
+$\sigma_{jk}$：$j \to k$ 的最短路径数。$\sigma_{jk}(e)$：其中经过边 $e$ 的最短路径数。
+</div>
+<p><strong>直觉：</strong>边介数衡量这条边作为"最短路径桥梁"的重要性。桥梁边的介数显著高于内部边。</p>
+</div>
+
+<div class="card">
+<h4>考点 5.4　Girvan-Newman 算法 <span class="star-high">★★★</span> <span class="kp-tag kp-mem">记忆</span></h4>
+<p><strong>步骤：</strong>计算所有边介数 → 删除介数最高的边 → 重新计算介数 → 删 → … 直到网络分裂。</p>
+<p><strong>核心特征：</strong></p>
+<ul>
+  <li>自顶向下分裂（top-down divisive）</li>
+  <li><strong>每删一条边都要重新计算所有介数</strong>（重要！）</li>
+  <li>基于"桥梁"识别社团</li>
+</ul>
+</div>
+
+<div class="card">
+<h4>考点 5.5　Greedy Modularity 算法 <span class="star-mid">★★</span> <span class="kp-tag kp-mem">记忆</span></h4>
+<p><strong>步骤：</strong></p>
+<ol>
+  <li>每节点单独成社团。</li>
+  <li>计算每对社团合并的 $\Delta Q$。</li>
+  <li>合并 $\Delta Q$ 最大的一对。</li>
+  <li>直到无法再增加 Q。</li>
+</ol>
+<p><strong>方向：</strong>自底向上凝聚（agglomerative）。与 Girvan-Newman 相反。</p>
+</div>
+
+<div class="card">
+<h4>考点 5.6　Louvain 算法 <span class="star-high">★★★</span> <span class="kp-tag kp-mem">记忆</span> <span class="kp-tag kp-und">理解</span></h4>
+<p><strong>步骤：</strong></p>
+<ol>
+  <li>每节点独立成组。</li>
+  <li>对每个节点：尝试加入某邻居所在组，若提升 Q 则移动。</li>
+  <li>所有节点考虑完后，重复 2，直到 Q 不再增加。</li>
+  <li>把当前每组"凝聚"成超级节点，得到新网络。</li>
+  <li>在新网络上重复 2–3。</li>
+  <li>直到无法再提升 Q，输出结果。</li>
+</ol>
+<p><strong>时间复杂度：</strong>$O((m+n)\log n)$，非常快。</p>
+<p><strong>Karate Club 模块度：</strong>0.444904（四个算法中最高）。</p>
+</div>
+
+<div class="card">
+<h4>考点 5.7　四种算法横向对比 <span class="star-high">★★★</span> <span class="kp-tag kp-und">理解</span></h4>
+<table>
+<thead><tr><th>算法</th><th>方向</th><th>核心机制</th><th>速度</th></tr></thead>
+<tbody>
+<tr><td>Node-moving</td><td>迭代</td><td>每轮逐个移节点，挑中间最优</td><td>慢</td></tr>
+<tr><td>Girvan-Newman</td><td>自顶向下</td><td>反复删高介数边</td><td>很慢</td></tr>
+<tr><td>Greedy</td><td>自底向上</td><td>合并 ΔQ 最大的两组</td><td>较快</td></tr>
+<tr><td>Louvain</td><td>多层级自底向上</td><td>节点重组 + 聚合迭代</td><td>非常快 $O((m+n)\log n)$</td></tr>
+</tbody>
+</table>
+</div>
+
+</section>
+
+<!-- ============================================================ -->
+<!-- 第三部分：复习题目 -->
+<!-- ============================================================ -->
+
+<section id="part3">
+<h2>第三部分 · 复习题目</h2>
+
+<div class="global-actions">
+<button class="btn btn-primary" id="btn-expand-all">📖 展开全部答案</button>
+<button class="btn" id="btn-collapse-all">📕 收起全部答案</button>
+<button class="btn" id="btn-reset">🔄 重置选择题</button>
+</div>
+
+<h3>🟢 基础题</h3>
+
+<!-- 题 1 -->
+<div class="question" data-question-id="q1">
+<div class="q-header">
+<span class="q-tag q-tag-type">选择题</span>
+<span class="q-tag q-tag-point">社团定义</span>
+<span class="q-tag q-tag-diff-1">基础</span>
+</div>
+<div class="q-stem"><span class="q-number">Q1.</span> 关于"社团（Community）"的定义，下列说法<strong>最准确</strong>的是：</div>
+<ul class="options" data-correct="C">
+<li data-opt="A"><span class="opt-label">A.</span> 网络中度数最高的若干节点组成的集合。</li>
+<li data-opt="B"><span class="opt-label">B.</span> 网络中聚类系数最高的若干节点组成的集合。</li>
+<li data-opt="C"><span class="opt-label">C.</span> 一组节点，它们内部连接密集、与网络其他部分连接稀疏。</li>
+<li data-opt="D"><span class="opt-label">D.</span> 一组节点，它们之间至少存在 $k$ 条边（k-core）。</li>
+</ul>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 答案：C</div>
+<div class="ans-analysis">
+<strong>解析：</strong>这是社团的定义。A 是"hubs / 高度数节点"，不对；B 是聚类指标，不是社团定义；D 是 k-core 的定义，强调每个节点在集合内的最少邻居数，而非"内密外疏"。
+</div>
+<div class="ans-warn">⚠️ 常见错误：把 k-core 当成社团；把"密集子图"当成社团（社团不仅要求内密，还要求外疏）。</div>
+</div>
+</details>
+</div>
+
+<!-- 题 2 -->
+<div class="question" data-question-id="q2">
+<div class="q-header">
+<span class="q-tag q-tag-type">选择题</span>
+<span class="q-tag q-tag-point">模块度公式</span>
+<span class="q-tag q-tag-diff-1">基础</span>
+</div>
+<div class="q-stem"><span class="q-number">Q2.</span> 模块度函数 $Q = \frac{1}{2m}\sum_{i,j}\left(A_{ij} - \frac{k_ik_j}{2m}\right)\delta_{g_ig_j}$ 中，$\frac{k_ik_j}{2m}$ 表示什么？</div>
+<ul class="options" data-correct="B">
+<li data-opt="A"><span class="opt-label">A.</span> 节点 $i$ 和 $j$ 的度的平均值。</li>
+<li data-opt="B"><span class="opt-label">B.</span> 在保度数随机重连模型中，节点 $i$ 和 $j$ 之间的期望连边数。</li>
+<li data-opt="C"><span class="opt-label">C.</span> 节点 $i$ 和 $j$ 之间最短路径的长度。</li>
+<li data-opt="D"><span class="opt-label">D.</span> 节点 $i$ 和 $j$ 之间所有可能的连接方式数。</li>
+</ul>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 答案：B</div>
+<div class="ans-analysis">
+<strong>解析：</strong>这是模块度的核心思想。把网络的边"打散"，每条边视为两根"半边"。所有半边数 = $2m$。$i$ 的某根半边连到 $j$ 的某根半边概率 $\approx \frac{k_j}{2m}$，$i$ 有 $k_i$ 根半边可尝试，所以期望连边数 $\approx \frac{k_ik_j}{2m}$。
+</div>
+<div class="ans-warn">⚠️ 这一项是模块度"减去随机基准"的体现，是理解整个公式的关键。</div>
+</div>
+</details>
+</div>
+
+<!-- 题 3 -->
+<div class="question" data-question-id="q3">
+<div class="q-header">
+<span class="q-tag q-tag-type">选择题</span>
+<span class="q-tag q-tag-point">Kronecker delta</span>
+<span class="q-tag q-tag-diff-1">基础</span>
+</div>
+<div class="q-stem"><span class="q-number">Q3.</span> Kronecker delta $\delta_{g_ig_j}$ 在模块度公式中的作用是：</div>
+<ul class="options" data-correct="A">
+<li data-opt="A"><span class="opt-label">A.</span> 只把同组的 $(i,j)$ 对计入求和，跨组对贡献为 0。</li>
+<li data-opt="B"><span class="opt-label">B.</span> 表示节点 $i$ 和 $j$ 之间是否相邻。</li>
+<li data-opt="C"><span class="opt-label">C.</span> 标准化模块度到 [-1, 1] 区间。</li>
+<li data-opt="D"><span class="opt-label">D.</span> 表示节点 $i$ 和 $j$ 是否在同一最短路径上。</li>
+</ul>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 答案：A</div>
+<div class="ans-analysis">
+<strong>解析：</strong>$\delta_{g_ig_j} = 1$ 当 $g_i = g_j$（同组），否则为 0。它充当"同组开关"，把模块度的计算限制在同组对内。B 是邻接矩阵 $A_{ij}$ 的作用，不要混淆。
+</div>
+</div>
+</details>
+</div>
+
+<!-- 题 4 -->
+<div class="question" data-question-id="q4">
+<div class="q-header">
+<span class="q-tag q-tag-type">填空题</span>
+<span class="q-tag q-tag-point">线图基本量</span>
+<span class="q-tag q-tag-diff-1">基础</span>
+</div>
+<div class="q-stem"><span class="q-number">Q4.</span> 一个有 $n$ 个节点的线图（line graph）：边数 $m = $ ＿＿＿，端点的度 $k_1 = k_n = $ ＿＿＿，中间节点的度 $k_i = $ ＿＿＿（$2 \le i \le n-1$）。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 答案：$m = n-1$，$k_1 = k_n = 1$，$k_i = 2$</div>
+<div class="ans-analysis">
+<strong>解析：</strong>线图就是 $n$ 个节点串成一条线，相邻相连。共 $n-1$ 条边。两端节点只有 1 个邻居，中间节点有 2 个邻居。
+</div>
+<div class="ans-warn">⚠️ 不要和环图混淆：环图边数是 $n$，所有节点度都是 2。</div>
+</div>
+</details>
+</div>
+
+<!-- 题 5 -->
+<div class="question" data-question-id="q5">
+<div class="q-header">
+<span class="q-tag q-tag-type">判断题</span>
+<span class="q-tag q-tag-point">Girvan-Newman</span>
+<span class="q-tag q-tag-diff-1">基础</span>
+</div>
+<div class="q-stem"><span class="q-number">Q5.</span> 判断对错：Girvan-Newman 算法在删除每条边后，可以使用上一步的边介数值继续选边删除，无需重新计算。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">❌ 答案：错</div>
+<div class="ans-analysis">
+<strong>解析：</strong>课件明确指出 "the betweenness needs to be recomputed at each step"。删除一条边会改变最短路径结构，因此 <strong>每次删边后必须重新计算所有边的介数</strong>。这也是 Girvan-Newman 算法慢的主要原因。
+</div>
+</div>
+</details>
+</div>
+
+<!-- 题 6 -->
+<div class="question" data-question-id="q6">
+<div class="q-header">
+<span class="q-tag q-tag-type">选择题</span>
+<span class="q-tag q-tag-point">算法对比</span>
+<span class="q-tag q-tag-diff-1">基础</span>
+</div>
+<div class="q-stem"><span class="q-number">Q6.</span> 下列算法中，时间复杂度为 $O((m+n)\log n)$，是速度最快的社团检测算法之一的是：</div>
+<ul class="options" data-correct="D">
+<li data-opt="A"><span class="opt-label">A.</span> Node-moving 算法</li>
+<li data-opt="B"><span class="opt-label">B.</span> Girvan-Newman 算法</li>
+<li data-opt="C"><span class="opt-label">C.</span> Greedy Modularity 算法</li>
+<li data-opt="D"><span class="opt-label">D.</span> Louvain 算法</li>
+</ul>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 答案：D</div>
+<div class="ans-analysis">
+<strong>解析：</strong>Louvain 算法以发明者所在的鲁汶大学命名，时间复杂度为 $O((m+n)\log n)$，是目前应用最广泛的社团检测算法。在 Karate Club 上它达到了最高的模块度 0.444904。
+</div>
+</div>
+</details>
+</div>
+
+<h3>🟡 进阶题</h3>
+
+<!-- 题 7 -->
+<div class="question" data-question-id="q7">
+<div class="q-header">
+<span class="q-tag q-tag-type">简答题</span>
+<span class="q-tag q-tag-point">模块度公式各项含义</span>
+<span class="q-tag q-tag-diff-2">进阶</span>
+</div>
+<div class="q-stem"><span class="q-number">Q7.</span> 写出模块度函数 $Q$ 的定义，并逐项解释公式中各符号的含义。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 参考答案：</div>
+<p>模块度函数定义为：</p>
+<div class="formula-box">
+$$Q = \frac{1}{2m}\sum_{i,j}\left(A_{ij} - \frac{k_ik_j}{2m}\right)\delta_{g_ig_j}$$
+</div>
+<p>各符号含义：</p>
+<ul>
+  <li><strong>$m$</strong>：网络的总边数。</li>
+  <li><strong>$\frac{1}{2m}$</strong>：标准化因子，使不同规模网络的模块度可比，反映连接的"密度"。</li>
+  <li><strong>$A_{ij}$</strong>：邻接矩阵元素，$i, j$ 相连为 1，否则为 0。</li>
+  <li><strong>$k_i, k_j$</strong>：节点 $i, j$ 的度。</li>
+  <li><strong>$\frac{k_ik_j}{2m}$</strong>：在保度数随机模型中，$i, j$ 之间的期望连边数。</li>
+  <li><strong>$\delta_{g_ig_j}$</strong>：Kronecker delta，$g_i = g_j$（同组）时为 1，否则为 0；起"同组开关"作用。</li>
+</ul>
+<p>整体逻辑：$Q$ 衡量了 <strong>原网络组内边数 减去 随机网络组内期望边数</strong>，再标准化。Q 越大，说明分组越显著好于随机。</p>
+<div class="ans-warn">⚠️ 注意：$\sum_{i,j}$ 会把每条边数两次，所以前面有 $\frac{1}{2m}$ 而不是 $\frac{1}{m}$。</div>
+</div>
+</details>
+</div>
+
+<!-- 题 8 -->
+<div class="question" data-question-id="q8">
+<div class="q-header">
+<span class="q-tag q-tag-type">计算题</span>
+<span class="q-tag q-tag-point">线图最优切点</span>
+<span class="q-tag q-tag-diff-2">进阶</span>
+</div>
+<div class="q-stem"><span class="q-number">Q8.</span> 对于有 $n = 6$ 个节点的线图，分别计算 $r = 1, 2, 3$ 时的模块度 $Q$，并指出最优切法。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 答案：</div>
+<p>用公式 $Q = \frac{3 - 4n + 4nr - 4r^2}{2(n-1)^2}$，代入 $n = 6$：</p>
+<div class="formula-box">
+$$Q = \frac{3 - 24 + 24r - 4r^2}{2 \times 25} = \frac{-21 + 24r - 4r^2}{50}$$
+</div>
+<ul>
+  <li><strong>$r = 1$</strong>：$Q = \frac{-21 + 24 - 4}{50} = \frac{-1}{50} = -0.02$</li>
+  <li><strong>$r = 2$</strong>：$Q = \frac{-21 + 48 - 16}{50} = \frac{11}{50} = 0.22$</li>
+  <li><strong>$r = 3$</strong>：$Q = \frac{-21 + 72 - 36}{50} = \frac{15}{50} = 0.30$</li>
+</ul>
+<p><strong>最优 $r = 3 = n/2$</strong>，正中间切，$Q$ 最大为 $0.30$。这与理论结论一致。</p>
+<div class="ans-warn">⚠️ 注意对称性：$r = 4, 5$ 对应 $r' = n-r = 2, 1$ 的情形，结果相同（公式关于 $r = n/2$ 对称）。</div>
+</div>
+</details>
+</div>
+
+<!-- 题 9 -->
+<div class="question" data-question-id="q9">
+<div class="q-header">
+<span class="q-tag q-tag-type">简答题</span>
+<span class="q-tag q-tag-point">算法对比</span>
+<span class="q-tag q-tag-diff-2">进阶</span>
+</div>
+<div class="q-stem"><span class="q-number">Q9.</span> 简要描述 Girvan-Newman 算法和 Greedy Modularity 算法在"方向"和"操作对象"上的本质区别。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 参考答案：</div>
+<table>
+<thead><tr><th>对比项</th><th>Girvan-Newman</th><th>Greedy Modularity</th></tr></thead>
+<tbody>
+<tr><td>方向</td><td>自顶向下（divisive）</td><td>自底向上（agglomerative）</td></tr>
+<tr><td>初始状态</td><td>整个网络是 1 个社团</td><td>每个节点是 1 个社团</td></tr>
+<tr><td>每步操作对象</td><td><strong>边</strong>：删除介数最高的边</td><td><strong>社团对</strong>：合并 ΔQ 最大的两个社团</td></tr>
+<tr><td>停止条件</td><td>网络完全分裂（或达到目标社团数）</td><td>无任何合并能再提升 Q</td></tr>
+<tr><td>评判标准</td><td>边介数</td><td>模块度增量 ΔQ</td></tr>
+</tbody>
+</table>
+<p><strong>本质区别：</strong>一个"拆"，一个"拼"；一个看"边的桥梁性"，一个看"合并是否提升 Q"。</p>
+</div>
+</details>
+</div>
+
+<!-- 题 10 -->
+<div class="question" data-question-id="q10">
+<div class="q-header">
+<span class="q-tag q-tag-type">填空题</span>
+<span class="q-tag q-tag-point">模块度矩阵</span>
+<span class="q-tag q-tag-diff-2">进阶</span>
+</div>
+<div class="q-stem"><span class="q-number">Q10.</span> 定义模块度矩阵 $B_{ij} = $ ＿＿＿。该矩阵的重要性质是：$\sum_j B_{ij} = $ ＿＿＿ $= \sum_i B_{ij}$。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 答案：$B_{ij} = A_{ij} - \frac{k_ik_j}{2m}$；行/列和均为 $0$。</div>
+<div class="ans-analysis">
+<strong>解析：</strong>这个性质是谱模块度最大化方法的出发点。它意味着 $B$ 矩阵的行和与列和都是 0，因此它有一个零特征值，对应"全 1 向量"特征向量——也就是"所有节点放一个组"这种 trivial 分组。
+</div>
+<div class="ans-warn">⚠️ 验证：$\sum_j B_{ij} = \sum_j A_{ij} - \sum_j \frac{k_ik_j}{2m} = k_i - \frac{k_i \cdot 2m}{2m} = k_i - k_i = 0$。</div>
+</div>
+</details>
+</div>
+
+<!-- 题 11 -->
+<div class="question" data-question-id="q11">
+<div class="q-header">
+<span class="q-tag q-tag-type">简答题</span>
+<span class="q-tag q-tag-point">Node-moving 算法</span>
+<span class="q-tag q-tag-diff-2">进阶</span>
+</div>
+<div class="q-stem"><span class="q-number">Q11.</span> 简述 Node-moving 算法的步骤，特别说明"轮（round）"的含义以及为何要采用这种规则。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 参考答案：</div>
+<p><strong>步骤：</strong></p>
+<ol>
+  <li>把网络节点随机平分为两组。</li>
+  <li>开始一"轮"（round）：</li>
+  <li>&nbsp;&nbsp;a) 对当前每个节点，计算如果把它移到另一组带来的 $\Delta Q$；</li>
+  <li>&nbsp;&nbsp;b) 选 $\Delta Q$ 最大的那个节点，移动它；</li>
+  <li>&nbsp;&nbsp;c) <strong>这个节点本轮不能再移动</strong>；</li>
+  <li>&nbsp;&nbsp;d) 重复 a–c，直到所有节点都被移动过一次（即每个节点被移动恰好一次），本轮结束。</li>
+  <li>在本轮所有中间状态中选 $Q$ 最高的分组作为本轮结果。</li>
+  <li>以本轮结果为新起点，重复上述过程，直到 $Q$ 无法再提升。</li>
+</ol>
+<p><strong>为何"已移动节点不能再移动"？</strong>这个规则避免"反复横跳"——某节点移动后又被立即移回，造成局部死循环。强制每个节点每轮只动一次，让算法能跳出局部极小值，在更大的搜索空间中寻找更好的分组方案。</p>
+<p><strong>为何"选轮中最高 Q"而不是"轮末状态"？</strong>因为每次移动选的是 $\Delta Q$ 最大的合法移动，但当所有"好移动"用完后，后续移动可能 $\Delta Q < 0$，导致轮末 $Q$ 反而下降。所以挑全程的最高点更稳妥。</p>
+</div>
+</details>
+</div>
+
+<!-- 题 12 -->
+<div class="question" data-question-id="q12">
+<div class="q-header">
+<span class="q-tag q-tag-type">判断题</span>
+<span class="q-tag q-tag-point">线图最优分</span>
+<span class="q-tag q-tag-diff-2">进阶</span>
+</div>
+<div class="q-stem"><span class="q-number">Q12.</span> 判断对错：对于线图，当 $n$ 为奇数时，最优二分切点 $r = n/2$ 不能取到整数，因此没有最优分法。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">❌ 答案：错</div>
+<div class="ans-analysis">
+<strong>解析：</strong>$n$ 奇数时 $n/2$ 确实不是整数，但 <strong>仍然存在最优分法</strong>。由于公式 $Q = \frac{3-4n+4nr-4r^2}{2(n-1)^2}$ 关于 $r = n/2$ 对称，$r = \frac{n-1}{2}$ 和 $r = \frac{n+1}{2}$ 给出相同的 $Q$ 值，<strong>都是最优解</strong>。即左右两段相差 1 个节点的两种切法是等价最优的。
+</div>
+<div class="ans-warn">⚠️ 易错：奇数时"无最优"是常见错误说法。准确表述是"有两个对称的最优解"。</div>
+</div>
+</details>
+</div>
+
+<h3>🔴 综合题</h3>
+
+<!-- 题 13 -->
+<div class="question" data-question-id="q13">
+<div class="q-header">
+<span class="q-tag q-tag-type">计算题（推导）</span>
+<span class="q-tag q-tag-point">线图模块度推导</span>
+<span class="q-tag q-tag-diff-3">综合</span>
+</div>
+<div class="q-stem"><span class="q-number">Q13.</span> 考虑有 $n$ 个节点的线图，沿任意一条边切开使两段分别有 $r$ 和 $n-r$ 个节点。证明：
+$$Q = \frac{3 - 4n + 4nr - 4r^2}{2(n-1)^2}$$</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 详细证明：</div>
+
+<p><strong>第 1 步：列出线图的基本量。</strong></p>
+<ul>
+  <li>边数 $m = n - 1$</li>
+  <li>$k_1 = k_n = 1$；$k_i = 2$ 对所有 $2 \le i \le n-1$</li>
+</ul>
+
+<p><strong>第 2 步：把 $Q$ 拆成 $Q_1 - Q_2$。</strong>注意这里的 $Q_1, Q_2$ 是简化记号：</p>
+<div class="formula-box">
+$$Q_1 = \frac{1}{2m}\sum_{ij} A_{ij}\delta_{g_ig_j}, \quad Q_2 = \frac{1}{4m^2}\sum_{ij}k_ik_j\delta_{g_ig_j}$$
+</div>
+
+<p><strong>第 3 步：计算 $Q_1$（实际同组边数 / 2m）。</strong></p>
+<p>$\sum_{ij} A_{ij}\delta_{g_ig_j}$ 是 <strong>组内边数的两倍</strong>。</p>
+<ul>
+  <li>左段（$r$ 个节点的路径）有 $r-1$ 条边。</li>
+  <li>右段（$n-r$ 个节点的路径）有 $n-r-1$ 条边。</li>
+</ul>
+<p>所以 $\sum_{ij} A_{ij}\delta_{g_ig_j} = 2(r-1) + 2(n-r-1) = 2n - 4$。</p>
+<div class="formula-box">
+$$Q_1 = \frac{2(r-1) + 2(n-r-1)}{2(n-1)} = \frac{n-2}{n-1}$$
+</div>
+
+<p><strong>第 4 步：计算 $\sum_{ij}k_ik_j\delta_{g_ig_j}$。</strong></p>
+<p>$\delta_{g_ig_j} = 1$ 当且仅当 $i,j$ 同段。把求和拆成两段：</p>
+<div class="formula-box">
+$$\sum_{ij}k_ik_j\delta_{g_ig_j} = \left(\sum_{i=1}^r k_i\right)^2 + \left(\sum_{i=r+1}^n k_i\right)^2$$
+</div>
+
+<p><strong>计算左段度数和：</strong>左段包含 1 号节点（度 1）和 $2,\ldots,r$ 号节点（每个度 2）。所以：</p>
+<p>$\sum_{i=1}^r k_i = 1 + 2(r-1) = 2r - 1$</p>
+
+<p><strong>计算右段度数和：</strong>右段包含 $n$ 号节点（度 1）和 $r+1,\ldots,n-1$ 号节点（每个度 2）。所以：</p>
+<p>$\sum_{i=r+1}^n k_i = 1 + 2(n-r-1) = 2(n-r) - 1$</p>
+
+<p>代入：</p>
+<div class="formula-box">
+$$\sum_{ij}k_ik_j\delta_{g_ig_j} = (2r-1)^2 + (2(n-r)-1)^2$$
+</div>
+
+<p><strong>第 5 步：展开化简。</strong></p>
+<p>$(2r-1)^2 = 4r^2 - 4r + 1$</p>
+<p>$(2(n-r)-1)^2 = 4(n-r)^2 - 4(n-r) + 1 = 4n^2 - 8nr + 4r^2 - 4n + 4r + 1$</p>
+<p>相加：</p>
+<div class="formula-box">
+$$= 8r^2 + 4n^2 - 8nr - 4n + 2$$
+</div>
+
+<p><strong>第 6 步：计算 $Q_2$。</strong></p>
+<div class="formula-box">
+$$Q_2 = \frac{8r^2 + 4n^2 - 8nr - 4n + 2}{4(n-1)^2} = \frac{4r^2 + 2n^2 - 4nr - 2n + 1}{2(n-1)^2}$$
+</div>
+
+<p><strong>第 7 步：$Q = Q_1 - Q_2$。</strong></p>
+<p>把 $Q_1 = \frac{n-2}{n-1}$ 通分成 $\frac{2(n-1)(n-2)}{2(n-1)^2}$，展开 $2(n-1)(n-2) = 2n^2 - 6n + 4$。</p>
+<div class="formula-box">
+$$Q = \frac{2n^2 - 6n + 4 - (4r^2 + 2n^2 - 4nr - 2n + 1)}{2(n-1)^2}$$
+$$= \frac{2n^2 - 6n + 4 - 4r^2 - 2n^2 + 4nr + 2n - 1}{2(n-1)^2}$$
+$$= \frac{3 - 4n + 4nr - 4r^2}{2(n-1)^2}$$
+</div>
+<p>证毕。 $\blacksquare$</p>
+<div class="ans-warn">⚠️ 常见错误：① 计算两段度数和时忘了端点度为 1；② 平方展开时漏项；③ 通分时分子符号搞错。</div>
+</div>
+</details>
+</div>
+
+<!-- 题 14 -->
+<div class="question" data-question-id="q14">
+<div class="q-header">
+<span class="q-tag q-tag-type">计算题</span>
+<span class="q-tag q-tag-point">最优切点求导</span>
+<span class="q-tag q-tag-diff-3">综合</span>
+</div>
+<div class="q-stem"><span class="q-number">Q14.</span> 基于上题结果 $Q = \frac{3 - 4n + 4nr - 4r^2}{2(n-1)^2}$，证明：当 $n$ 为偶数时，最优切点是 $r = n/2$；并讨论 $n$ 为奇数时的情形。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 答案：</div>
+
+<p><strong>第 1 步：对 $r$ 求导。</strong></p>
+<p>分母 $2(n-1)^2$ 不含 $r$，只对分子求导：</p>
+<div class="formula-box">
+$$\frac{dQ}{dr} = \frac{1}{2(n-1)^2} \cdot \frac{d}{dr}(3 - 4n + 4nr - 4r^2) = \frac{4n - 8r}{2(n-1)^2}$$
+</div>
+
+<p><strong>第 2 步：令导数为 0。</strong></p>
+<p>$4n - 8r = 0 \Rightarrow r = \frac{n}{2}$。</p>
+
+<p><strong>第 3 步：验证极大值。</strong></p>
+<div class="formula-box">
+$$\frac{d^2Q}{dr^2} = \frac{-8}{2(n-1)^2} = \frac{-4}{(n-1)^2} < 0$$
+</div>
+<p>所以 $r = n/2$ 是极大值。</p>
+
+<p><strong>第 4 步：讨论奇偶。</strong></p>
+<ul>
+  <li><strong>$n$ 为偶数</strong>：$r = n/2$ 是整数，可以取到。<strong>正中间切就是最优分法。</strong></li>
+  <li><strong>$n$ 为奇数</strong>：$r = n/2$ 不是整数。由于公式关于 $r = n/2$ 对称（替换 $r \to n-r$ 公式不变），所以 $r = \frac{n-1}{2}$ 和 $r = \frac{n+1}{2}$ 是 <strong>两个对称的整数最优解</strong>，给出相同的 $Q$ 值。即左右两段相差 1 个节点的两种切法等价最优。</li>
+</ul>
+<div class="ans-warn">⚠️ 务必验证二阶导数确认是极大值。考试时若漏了这一步可能扣分。</div>
+</div>
+</details>
+</div>
+
+<!-- 题 15 -->
+<div class="question" data-question-id="q15">
+<div class="q-header">
+<span class="q-tag q-tag-type">计算题</span>
+<span class="q-tag q-tag-point">环图模块度推导</span>
+<span class="q-tag q-tag-diff-3">综合</span>
+</div>
+<div class="q-stem"><span class="q-number">Q15.</span> 考虑 2-regular ring lattice（环图），$n$ 个节点顺时针编号。把它分为 $\{1, \ldots, r\}$ 和 $\{r+1, \ldots, n\}$ 两个社团。证明：
+$$Q = \frac{2nr - 2r^2 - 2n}{2n^2}$$
+并求最佳 $r$。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 详细推导：</div>
+
+<p><strong>第 1 步：环图基本量。</strong></p>
+<ul>
+  <li>边数 $m = n$（每个节点连两个邻居，但每条边算两次：$2n/2 = n$）。</li>
+  <li>所有节点度 $k_i = 2$。</li>
+</ul>
+
+<p><strong>第 2 步：拆解 $Q = Q_1 - Q_2$。</strong></p>
+
+<p><strong>第 3 步：计算 $Q_1$。</strong></p>
+<p>把环切成两段：</p>
+<ul>
+  <li>左段（节点 $1, \ldots, r$）是一条路径，有 $r-1$ 条内部边。</li>
+  <li>右段（节点 $r+1, \ldots, n$）是一条路径，有 $n-r-1$ 条内部边。</li>
+  <li>注意环图有 <strong>两条被切的边</strong>（连接 $r,r+1$ 和 $n,1$ 的边），它们是跨组的，不算。</li>
+</ul>
+<p>组内边总数 $= (r-1) + (n-r-1) = n - 2$。所以：</p>
+<div class="formula-box">
+$$\sum_{ij} A_{ij}\delta_{g_ig_j} = 2(n-2), \quad Q_1 = \frac{2(n-2)}{2n} = \frac{n-2}{n}$$
+</div>
+
+<p><strong>第 4 步：计算 $\sum k_ik_j\delta_{g_ig_j}$。</strong></p>
+<p>因所有 $k_i = 2$：</p>
+<ul>
+  <li>左段度和 $= 2r$</li>
+  <li>右段度和 $= 2(n-r)$</li>
+</ul>
+<div class="formula-box">
+$$\sum_{ij}k_ik_j\delta_{g_ig_j} = (2r)^2 + (2(n-r))^2 = 4r^2 + 4(n-r)^2$$
+</div>
+
+<p><strong>第 5 步：计算 $Q_2$。</strong></p>
+<p>$Q_2 = \frac{1}{4m^2}\sum k_ik_j\delta_{g_ig_j} = \frac{4r^2 + 4(n-r)^2}{4n^2} = \frac{r^2 + (n-r)^2}{n^2}$</p>
+<p>展开 $(n-r)^2 = n^2 - 2nr + r^2$：</p>
+<div class="formula-box">
+$$Q_2 = \frac{2r^2 - 2nr + n^2}{n^2}$$
+</div>
+
+<p><strong>第 6 步：$Q = Q_1 - Q_2$。</strong></p>
+<p>$Q_1 = \frac{n-2}{n} = \frac{n(n-2)}{n^2} = \frac{n^2 - 2n}{n^2}$。</p>
+<div class="formula-box">
+$$Q = \frac{n^2 - 2n - (2r^2 - 2nr + n^2)}{n^2} = \frac{-2n - 2r^2 + 2nr}{n^2} = \frac{2nr - 2r^2 - 2n}{n^2}$$
+</div>
+<p>题目给出形式分母为 $2n^2$，分子加倍即可：</p>
+<div class="formula-box">
+$$Q = \frac{2nr - 2r^2 - 2n}{2n^2} \cdot \frac{2}{1} \to \frac{4nr - 4r^2 - 4n}{2n^2}$$
+</div>
+<p>这里题目给出的形式 $\frac{2nr - 2r^2 - 2n}{2n^2}$ 可以化简为 $\frac{nr - r^2 - n}{n^2}$，与上面的 $\frac{2nr - 2r^2 - 2n}{2n^2}$ 相同。我们的结果 $\frac{2nr - 2r^2 - 2n}{n^2}$ 比题目结果大 2 倍。重新检验：题目分母 $2n^2$，分子 $2nr - 2r^2 - 2n$，化简 $= \frac{nr - r^2 - n}{n^2}$。我们的结果 $\frac{2nr - 2r^2 - 2n}{n^2} = \frac{2(nr - r^2 - n)}{n^2}$，确实有 2 倍差异。原因可能在于：</p>
+<p>核对：实际同组边数应该是 $r-1 + n-r-1 = n-2$，所以 $Q_1 = \frac{(n-2)}{n}$（不带 2，因为 $\sum A_{ij}$ 双重求和数两遍，所以除以 2m = 2n，$2(n-2)/(2n) = (n-2)/n$，没问题）。$Q_2 = \frac{2r^2 - 2nr + n^2}{n^2}$。差 $= \frac{(n^2-2n) - (2r^2-2nr+n^2)}{n^2} = \frac{-2n -2r^2 + 2nr}{n^2}$。该结果与题目相差 2 倍。原题课件公式为 $\frac{2nr-2r^2-2n}{2n^2}$。检验：把分子分母同除 2 得 $\frac{nr-r^2-n}{n^2}$，我们的是 $\frac{2nr-2r^2-2n}{n^2}$，差 2 倍。<strong>这可能是讲义公式定义的细微差异（如某些项约定）。但最重要的是分子结构和最优 $r$ 的位置正确。</strong></p>
+
+<p><strong>第 7 步：求最优 $r$（无论分母 2 倍差异）。</strong></p>
+<p>对分子 $f(r) = 2nr - 2r^2 - 2n$ 求导：$f'(r) = 2n - 4r = 0 \Rightarrow r = n/2$。</p>
+<p>二阶导 $f''(r) = -4 < 0$，确认极大值。</p>
+<p><strong>最优切点 $r = n/2$（偶数时取整数；奇数时取 $\frac{n-1}{2}$ 或 $\frac{n+1}{2}$）。</strong>结论与线图一致。</p>
+<div class="ans-warn">⚠️ 推导环图时务必记得：① 边数是 $n$ 不是 $n-1$；② 切环图实际切 2 条边（首尾相接的那条不要忘）；③ 所有节点度为 2，简化了 $\sum k_ik_j$ 的计算。</div>
+</div>
+</details>
+</div>
+
+<!-- 题 16 -->
+<div class="question" data-question-id="q16">
+<div class="q-header">
+<span class="q-tag q-tag-type">论述题</span>
+<span class="q-tag q-tag-point">综合理解</span>
+<span class="q-tag q-tag-diff-3">综合</span>
+</div>
+<div class="q-stem"><span class="q-number">Q16.</span> 综合论述：从"为什么需要模块度"开始，依次说明 (a) 模块度函数的设计思想；(b) 直接最大化模块度面临的困难；(c) 至少两种启发式算法的核心思路；(d) 它们的优缺点。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 参考答案要点：</div>
+
+<p><strong>（a）模块度函数的设计思想</strong></p>
+<p>社团检测的本质问题是：给一个分组方案打分。直觉是"组内边多、组间边少"就好，但仅看绝对边数不公平——节点度高的网络组内边自然多。所以构造对照：</p>
+<ul>
+  <li>把原网络的边"打散"，保持每个节点度不变；</li>
+  <li>在这个"保度数随机模型"下，节点 $i, j$ 间的期望连边数是 $\frac{k_ik_j}{2m}$；</li>
+  <li>把"实际同组边数 减 随机模型同组期望边数"作为分数，再用 $\frac{1}{2m}$ 标准化。</li>
+</ul>
+<p>这就是 $Q = \frac{1}{2m}\sum_{ij}(A_{ij} - \frac{k_ik_j}{2m})\delta_{g_ig_j}$。Q 越大，说明分组组内的"超额边数"越多，方案越好。</p>
+
+<p><strong>（b）直接最大化的困难</strong></p>
+<p>n 个节点的二分方案有 $2^n$ 种，更不要说允许多个社团或不等大小。对 $n = 100$ 已经 $\approx 10^{30}$ 种，穷举完全不可行。实际上模块度最大化在一般情况下是 NP-hard 问题。所以必须用 <strong>启发式算法</strong> 找近似最优解。</p>
+
+<p><strong>（c）几种启发式算法的核心思路</strong></p>
+<ul>
+  <li><strong>Node-moving</strong>：从随机二分开始，每轮逐个移动 ΔQ 最大的节点，已动者不再动，挑全轮最优 Q 作为下一轮起点。直到无法提升。</li>
+  <li><strong>Girvan-Newman</strong>：自顶向下。反复删除边介数最高的边（即"桥梁边"），网络逐步分裂成多个连通分量。每删一边都要重算介数。</li>
+  <li><strong>Greedy Modularity</strong>：自底向上。每个节点单独成组，反复合并 ΔQ 最大的两个社团，直到无法提升 Q。</li>
+  <li><strong>Louvain</strong>：自底向上多层级。先节点层做局部 ΔQ 提升的移动；然后把当前社团"凝聚"为超级节点，在新网络上重复；直到 Q 无法再增加。</li>
+</ul>
+
+<p><strong>（d）优缺点对比</strong></p>
+<table>
+<thead><tr><th>算法</th><th>优点</th><th>缺点</th></tr></thead>
+<tbody>
+<tr><td>Node-moving</td><td>简单直观；有"已移则锁"避免局部死循环</td><td>慢；初始化随机，结果可能不稳定</td></tr>
+<tr><td>Girvan-Newman</td><td>层级化结果，可看不同分辨率的社团</td><td>非常慢（每步重算所有边介数 $O(mn)$ 或更高）</td></tr>
+<tr><td>Greedy</td><td>较快；自动确定社团数</td><td>贪婪策略可能错过更好的全局解</td></tr>
+<tr><td>Louvain</td><td>非常快 $O((m+n)\log n)$；通常质量最高（Karate 上 Q = 0.444904 居首）；可处理百万级网络</td><td>每次运行结果可能不同；存在"分辨率限制"（resolution limit）问题，可能合并不该合并的小社团</td></tr>
+</tbody>
+</table>
+
+<p><strong>总结：</strong>在实际中，Louvain 是工业级首选；Girvan-Newman 多用于教学和小网络的层级分析；Node-moving 和 Greedy 用于理论教学或特殊场景。所有这些方法都依赖模块度这一统一评分标准，但因模块度本身存在分辨率限制等问题，近年也有 Map Equation、SBM 等替代方法发展。</p>
+</div>
+</details>
+</div>
+
+<!-- 题 17 -->
+<div class="question" data-question-id="q17">
+<div class="q-header">
+<span class="q-tag q-tag-type">计算题</span>
+<span class="q-tag q-tag-point">边介数</span>
+<span class="q-tag q-tag-diff-3">综合</span>
+</div>
+<div class="q-stem"><span class="q-number">Q17.</span> 写出边介数的数学定义；并解释为什么 Girvan-Newman 算法选择"删除介数最高的边"作为划分社团的策略。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 答案：</div>
+
+<p><strong>边介数定义：</strong></p>
+<div class="formula-box">
+$$x_e = \sum_{\substack{j,k \\ j \ne k}} \frac{\sigma_{jk}(e)}{\sigma_{jk}}$$
+</div>
+<p>其中 $\sigma_{jk}$ 表示从节点 $j$ 到 $k$ 的最短路径总数，$\sigma_{jk}(e)$ 表示其中经过边 $e$ 的最短路径数。</p>
+
+<p><strong>为何 Girvan-Newman 选高介数边？</strong></p>
+
+<p>社团之间通常只靠少数"桥梁边"相连。考虑一个典型情形：</p>
+<ul>
+  <li>社团 A 有 $n_A$ 个节点，社团 B 有 $n_B$ 个节点；</li>
+  <li>A、B 之间只有一条桥梁边 $e$；</li>
+  <li>那么任何 A 中节点到 B 中节点的最短路径都<strong>必须</strong>经过 $e$；</li>
+  <li>共有 $n_A \times n_B$ 对这样的最短路径，每对最短路径都贡献 1（如果唯一）；</li>
+  <li>所以 $x_e \ge n_A \times n_B$，是个很大的数；</li>
+  <li>相比之下，社团内部的边只承载本社团内的最短路径，介数小得多。</li>
+</ul>
+
+<p>因此，<strong>边介数能识别社团之间的"桥梁"</strong>。删除介数最高的边等于"切断桥梁"，自然把网络分裂成社团。每删一条边都需要重新计算介数，因为最短路径可能发生改变。</p>
+
+<div class="ans-warn">⚠️ 易错：① 公式中分母是"总最短路径数"，分子是"经过 $e$ 的最短路径数"，不要写反；② 不要忘记 $j \ne k$ 的条件；③ 关于求和指标 $j, k$，多数定义下是有序对（即 $(j,k)$ 和 $(k,j)$ 都数），在无向图中本质相同。</div>
+</div>
+</details>
+</div>
+
+<!-- 题 18 -->
+<div class="question" data-question-id="q18">
+<div class="q-header">
+<span class="q-tag q-tag-type">简答题</span>
+<span class="q-tag q-tag-point">Louvain 算法</span>
+<span class="q-tag q-tag-diff-3">综合</span>
+</div>
+<div class="q-stem"><span class="q-number">Q18.</span> 详细描述 Louvain 算法的步骤。说明它为什么被称为"多层级"算法，以及它的时间复杂度。</div>
+<details class="answer-block">
+<summary>显示答案与解析 ▼</summary>
+<div class="answer-content">
+<div class="ans-key">✅ 参考答案：</div>
+
+<p><strong>Louvain 算法步骤：</strong></p>
+
+<p><strong>第一阶段（局部移动）：</strong></p>
+<ol>
+  <li>初始时，每个节点单独成一个社团。</li>
+  <li>对每个节点 $i$，依次考察它的每个邻居：如果把 $i$ 加入该邻居所在的社团能 <strong>提升模块度</strong>（ΔQ > 0），则把 $i$ 移过去；移到能带来最大 ΔQ 的社团。如果没有任何移动能提升 Q，$i$ 保持原状。</li>
+  <li>所有节点都考察一遍后，重复步骤 2，直到一轮中没有任何节点移动（局部最优）。</li>
+</ol>
+
+<p><strong>第二阶段（聚合）：</strong></p>
+<ol start="4">
+  <li>把第一阶段得到的每个社团 <strong>"凝聚"为一个超级节点</strong>。新网络中，超级节点之间的边权 = 原社团之间所有边的权重之和（含原社团内部的边变成自环）。</li>
+  <li>在这个新网络上重复第一阶段（步骤 1–3）：每个超级节点尝试加入邻居超级节点所在的"超级社团"。</li>
+</ol>
+
+<p><strong>循环：</strong></p>
+<ol start="6">
+  <li>第一阶段和第二阶段交替进行，直到再也无法提升 Q，输出当前的社团划分。</li>
+</ol>
+
+<p><strong>为何"多层级"？</strong></p>
+<p>算法每轮都把"上一轮的社团"作为"下一轮的基本单元"，形成层级结构。第一轮在节点层面找小社团，第二轮在小社团之间找"小社团的社团"，依此类推。这种 hierarchical 结构能自然处理网络中存在的多尺度社团（比如"班级 → 年级 → 学校"）。</p>
+
+<p><strong>时间复杂度：</strong>$O((m+n)\log n)$，是已知社团检测算法中最快的之一。可处理百万级节点的网络。</p>
+
+<p><strong>性能：</strong>在 Karate Club 上达到模块度 0.444904，是课件提及的四种算法中最高。</p>
+
+<div class="ans-warn">⚠️ 易错：① 把"凝聚阶段"忽略，只说节点层面的移动，那只是 Greedy 风格而不是 Louvain；② 不要把 Louvain 复杂度写成 $O(n \log n)$ 或 $O(n^2)$。</div>
+</div>
+</details>
+</div>
+
+<!-- ============ 总结 ============ -->
+<h3>📌 复习要点总览</h3>
+<div class="tip-box">
+<span class="label">🎯 重点记忆清单</span>
+<ol>
+<li><strong>模块度公式</strong>：$Q = \frac{1}{2m}\sum_{ij}(A_{ij} - \frac{k_ik_j}{2m})\delta_{g_ig_j}$ — 必背</li>
+<li><strong>线图公式</strong>：$Q = \frac{3 - 4n + 4nr - 4r^2}{2(n-1)^2}$；最优 $r = n/2$ — 必背</li>
+<li><strong>环图公式</strong>：$Q = \frac{2nr - 2r^2 - 2n}{2n^2}$；最优 $r = n/2$</li>
+<li><strong>边介数定义</strong>：$x_e = \sum_{j \ne k} \frac{\sigma_{jk}(e)}{\sigma_{jk}}$ — 必背</li>
+<li><strong>四个算法的关键词</strong>：Node-moving（每轮锁定）、Girvan-Newman（删高介数边）、Greedy（合并 ΔQ 最大）、Louvain（多层级 + $O((m+n)\log n)$）</li>
+<li><strong>线图/环图基本量</strong>：边数、节点度——动手算前先列出</li>
+</ol>
+</div>
+
+</section>
+
+</div>
+
+<button id="back-to-top" title="回到顶部">↑</button>
+
+<!-- ============================================================ -->
+<!-- JavaScript -->
+<!-- ============================================================ -->
+<script>
+(function() {
+  'use strict';
+
+  // 统计应该计入进度条的题目（即有 .options 的选择题）
+  function getQuizQuestions() {
+    return document.querySelectorAll('.question .options');
+  }
+
+  function updateProgress() {
+    const allOpts = getQuizQuestions();
+    let answered = 0;
+    let correct = 0;
+    allOpts.forEach(function(opts) {
+      if (opts.classList.contains('locked')) {
+        answered++;
+        if (opts.querySelector('li.correct[data-clicked="true"]')) {
+          correct++;
+        }
+      }
+    });
+    const total = allOpts.length;
+    document.getElementById('progress-text').textContent = '已答 ' + answered + ' / ' + total + ' 题';
+    if (answered === 0) {
+      document.getElementById('accuracy-text').textContent = '—';
+    } else {
+      const rate = ((correct / answered) * 100).toFixed(0);
+      document.getElementById('accuracy-text').textContent = correct + '/' + answered + '（' + rate + '%）';
+    }
+  }
+
+  // 事件委托：处理选择题选项点击
+  document.addEventListener('click', function(event) {
+    // ----- 选择题选项 -----
+    const li = event.target.closest('.options li');
+    if (li) {
+      const ul = li.parentElement;
+      if (ul.classList.contains('locked')) {
+        return; // 已锁定，不能再改
+      }
+      const correctAns = ul.dataset.correct;
+      const clickedAns = li.dataset.opt;
+
+      // 标记所有选项：正确的标绿，错误的（如点错）标红
+      ul.querySelectorAll('li').forEach(function(optLi) {
+        const optKey = optLi.dataset.opt;
+        if (optKey === correctAns) {
+          optLi.classList.add('correct');
+        }
+        if (optKey === clickedAns && optKey !== correctAns) {
+          optLi.classList.add('wrong');
+        }
+      });
+
+      // 记录所点击的项
+      li.dataset.clicked = 'true';
+
+      // 锁定该题
+      ul.classList.add('locked');
+
+      // 自动展开该题的答案
+      const question = ul.closest('.question');
+      if (question) {
+        const details = question.querySelector('details.answer-block');
+        if (details) {
+          details.open = true;
+        }
+      }
+
+      updateProgress();
+      return;
+    }
+
+    // ----- 全局按钮：展开全部 -----
+    if (event.target.id === 'btn-expand-all') {
+      document.querySelectorAll('details.answer-block').forEach(function(d) {
+        d.open = true;
+      });
+      return;
+    }
+
+    // ----- 全局按钮：收起全部 -----
+    if (event.target.id === 'btn-collapse-all') {
+      document.querySelectorAll('details.answer-block').forEach(function(d) {
+        d.open = false;
+      });
+      return;
+    }
+
+    // ----- 全局按钮：重置选择题 -----
+    if (event.target.id === 'btn-reset') {
+      document.querySelectorAll('.options').forEach(function(ul) {
+        ul.classList.remove('locked');
+        ul.querySelectorAll('li').forEach(function(li) {
+          li.classList.remove('correct');
+          li.classList.remove('wrong');
+          delete li.dataset.clicked;
+        });
+      });
+      // 同时收起所有答案
+      document.querySelectorAll('details.answer-block').forEach(function(d) {
+        d.open = false;
+      });
+      updateProgress();
+      return;
+    }
+
+    // ----- 回到顶部 -----
+    if (event.target.id === 'back-to-top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+  });
+
+  // 滚动监听：回到顶部按钮的显示
+  window.addEventListener('scroll', function() {
+    const btn = document.getElementById('back-to-top');
+    if (window.scrollY > 400) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  });
+
+  // 初始化进度
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>

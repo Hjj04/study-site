@@ -1,0 +1,2029 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L13 空间与时间网络 期末复习</title>
+
+<!-- MathJax 配置 + CDN -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+  // 监控 MathJax 加载，1.5 秒后未加载成功则提示
+  setTimeout(function() {
+    if (typeof MathJax === 'undefined' || !MathJax.startup) {
+      var banner = document.getElementById('mathjax-warning');
+      if (banner) banner.style.display = 'block';
+    }
+  }, 1500);
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+  :root {
+    --bg: #f8f6f1;
+    --paper: #ffffff;
+    --ink: #2a2a2a;
+    --ink-soft: #555;
+    --accent: #d97706;        /* 橙色，呼应课件颜色 */
+    --accent-soft: #fef3c7;
+    --primary: #1e40af;
+    --primary-soft: #e0e7ff;
+    --success: #16a34a;
+    --success-soft: #dcfce7;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+    --warning: #ca8a04;
+    --warning-soft: #fef9c3;
+    --border: #e5e0d3;
+    --border-strong: #c9c2af;
+    --code-bg: #f3eee0;
+    --shadow: 0 2px 8px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+                 "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* ============ 顶部标题 ============ */
+  header.site-header {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    color: #fff;
+    padding: 36px 24px 28px;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+  }
+  header.site-header h1 {
+    margin: 0 0 8px;
+    font-size: 1.85rem;
+    letter-spacing: 0.5px;
+  }
+  header.site-header .subtitle {
+    margin: 0;
+    opacity: 0.92;
+    font-size: 1rem;
+  }
+
+  /* ============ 导航栏 ============ */
+  nav.toc {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  nav.toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0 16px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  nav.toc a {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 999px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  nav.toc a:hover {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+  }
+
+  /* ============ 主体容器 ============ */
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  /* ============ MathJax 警告 ============ */
+  #mathjax-warning {
+    display: none;
+    margin: 16px 0;
+    padding: 12px 16px;
+    background: var(--warning-soft);
+    border-left: 4px solid var(--warning);
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+
+  /* ============ 章节卡片 ============ */
+  section.chapter {
+    background: var(--paper);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  section.chapter h2 {
+    color: var(--primary);
+    font-size: 1.6rem;
+    margin: 0 0 8px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section.chapter h2 .badge {
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.85rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  section.chapter h3 {
+    color: var(--ink);
+    font-size: 1.2rem;
+    margin: 28px 0 10px;
+    padding-left: 12px;
+    border-left: 4px solid var(--accent);
+  }
+  section.chapter h4 {
+    color: var(--ink);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+  section.chapter p {
+    margin: 10px 0;
+  }
+  section.chapter ul, section.chapter ol {
+    padding-left: 24px;
+  }
+  section.chapter li {
+    margin: 6px 0;
+  }
+
+  /* ============ 高亮框 ============ */
+  .definition {
+    background: var(--primary-soft);
+    border-left: 4px solid var(--primary);
+    padding: 14px 18px;
+    margin: 14px 0;
+    border-radius: 6px;
+  }
+  .definition::before {
+    content: "📘 定义";
+    display: block;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 6px;
+  }
+  .theorem {
+    background: var(--accent-soft);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    margin: 14px 0;
+    border-radius: 6px;
+  }
+  .theorem::before {
+    content: "📐 定理 / 公式";
+    display: block;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .warning-box {
+    background: var(--danger-soft);
+    border-left: 4px solid var(--danger);
+    padding: 14px 18px;
+    margin: 14px 0;
+    border-radius: 6px;
+  }
+  .warning-box::before {
+    content: "⚠️ 易错点";
+    display: block;
+    font-weight: 700;
+    color: var(--danger);
+    margin-bottom: 6px;
+  }
+  .tip-box {
+    background: var(--success-soft);
+    border-left: 4px solid var(--success);
+    padding: 14px 18px;
+    margin: 14px 0;
+    border-radius: 6px;
+  }
+  .tip-box::before {
+    content: "💡 直观理解";
+    display: block;
+    font-weight: 700;
+    color: var(--success);
+    margin-bottom: 6px;
+  }
+  .analogy-box {
+    background: #fef3c7;
+    border-left: 4px solid #d97706;
+    padding: 14px 18px;
+    margin: 14px 0;
+    border-radius: 6px;
+    font-style: italic;
+  }
+  .analogy-box::before {
+    content: "🌟 类比";
+    display: block;
+    font-weight: 700;
+    font-style: normal;
+    color: #d97706;
+    margin-bottom: 6px;
+  }
+
+  /* ============ 知识点卡片 ============ */
+  .kp-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 14px 0;
+    background: #fdfcf8;
+  }
+  .kp-card .kp-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .kp-card .kp-title {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1.05rem;
+  }
+  .star-rating {
+    color: var(--accent);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .star-rating.high { color: #dc2626; }
+  .star-rating.mid { color: #d97706; }
+  .star-rating.low { color: #6b7280; }
+  .type-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-left: 6px;
+    font-weight: 600;
+  }
+  .type-tag.memory { background: #fce7f3; color: #be185d; }
+  .type-tag.understand { background: #dbeafe; color: #1e40af; }
+  .type-tag.calc { background: #ecfccb; color: #4d7c0f; }
+
+  /* ============ 表格 ============ */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.95rem;
+  }
+  th, td {
+    border: 1px solid var(--border-strong);
+    padding: 10px 12px;
+    text-align: left;
+  }
+  th {
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 700;
+  }
+  tr:nth-child(even) td {
+    background: #fafaf5;
+  }
+
+  /* ============ 题目样式 ============ */
+  .question {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin: 18px 0;
+    box-shadow: var(--shadow);
+  }
+  .question .q-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+  }
+  .q-meta span {
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .meta-type { background: var(--primary-soft); color: var(--primary); }
+  .meta-kp { background: var(--accent-soft); color: var(--accent); }
+  .meta-diff-easy { background: #dcfce7; color: #166534; }
+  .meta-diff-med { background: #fef3c7; color: #92400e; }
+  .meta-diff-hard { background: #fee2e2; color: #991b1b; }
+  .q-stem {
+    margin: 8px 0 14px;
+    font-weight: 500;
+  }
+  .q-stem strong {
+    color: var(--primary);
+  }
+
+  /* ============ 选择题选项 ============ */
+  .options {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0;
+  }
+  .options li.option {
+    border: 1.5px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 8px 0;
+    cursor: pointer;
+    transition: all 0.18s;
+    user-select: none;
+    background: #fff;
+  }
+  .options li.option:hover:not(.locked) {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+  }
+  .options li.option.correct {
+    background: var(--success-soft);
+    border-color: var(--success);
+    color: #14532d;
+    font-weight: 600;
+  }
+  .options li.option.wrong {
+    background: var(--danger-soft);
+    border-color: var(--danger);
+    color: #7f1d1d;
+    font-weight: 600;
+  }
+  .options li.option.locked {
+    cursor: default;
+  }
+  .opt-label {
+    display: inline-block;
+    width: 22px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* ============ 答案折叠 (核心：使用原生 details) ============ */
+  details.answer-block {
+    margin-top: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fafaf5;
+    overflow: hidden;
+  }
+  details.answer-block > summary {
+    cursor: pointer;
+    padding: 10px 16px;
+    background: linear-gradient(90deg, #f8e8c8 0%, #fdfcf8 100%);
+    font-weight: 700;
+    color: var(--accent);
+    user-select: none;
+    list-style: none;
+    transition: background 0.15s;
+  }
+  details.answer-block > summary::-webkit-details-marker { display: none; }
+  details.answer-block > summary:hover {
+    background: linear-gradient(90deg, #fcd9a0 0%, #fbf5e3 100%);
+  }
+  details.answer-block > summary::before {
+    content: "▶ ";
+    display: inline-block;
+    transition: transform 0.2s;
+  }
+  details.answer-block[open] > summary::before {
+    transform: rotate(90deg);
+  }
+  details.answer-block .answer-content {
+    padding: 14px 18px;
+    background: #fff;
+    border-top: 1px solid var(--border);
+  }
+  .answer-content h5 {
+    margin: 12px 0 6px;
+    color: var(--primary);
+    font-size: 1rem;
+  }
+  .answer-content h5:first-child { margin-top: 0; }
+
+  /* ============ 全局控制按钮 ============ */
+  .global-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 18px 0;
+    align-items: center;
+  }
+  button.btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1.5px solid var(--primary);
+    background: #fff;
+    color: var(--primary);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.92rem;
+    transition: all 0.15s;
+  }
+  button.btn:hover {
+    background: var(--primary);
+    color: #fff;
+  }
+  button.btn.secondary {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  button.btn.secondary:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* ============ 进度统计 ============ */
+  .progress-stats {
+    background: var(--primary-soft);
+    border: 1px solid var(--primary);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 0.95rem;
+  }
+  .progress-stats strong {
+    color: var(--primary);
+    font-size: 1.05rem;
+  }
+
+  /* ============ 回到顶部 ============ */
+  #back-to-top {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+    z-index: 100;
+  }
+  #back-to-top.show {
+    opacity: 0.9;
+    pointer-events: auto;
+  }
+  #back-to-top:hover {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  /* ============ SVG 内嵌图示 ============ */
+  .svg-container {
+    text-align: center;
+    margin: 16px 0;
+  }
+  .svg-container svg {
+    max-width: 100%;
+    height: auto;
+  }
+  .svg-caption {
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  /* ============ 代码 / 公式行 ============ */
+  code {
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.92em;
+  }
+
+  /* ============ 响应式 ============ */
+  @media (max-width: 720px) {
+    header.site-header h1 { font-size: 1.4rem; }
+    main { padding: 20px 12px 60px; }
+    section.chapter { padding: 20px 18px; }
+    section.chapter h2 { font-size: 1.3rem; }
+    section.chapter h3 { font-size: 1.1rem; }
+    nav.toc a { padding: 6px 12px; font-size: 0.9rem; }
+    .question { padding: 16px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>L13 空间与时间网络 · 期末复习</h1>
+  <p class="subtitle">Spatial and Temporal Networks — 课程讲解 / 考点梳理 / 习题演练</p>
+</header>
+
+<nav class="toc">
+  <ul>
+    <li><a href="#part1">📖 课程讲解</a></li>
+    <li><a href="#part2">📋 考点梳理</a></li>
+    <li><a href="#part3">📝 复习题</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div id="mathjax-warning">
+    ⚠️ MathJax 加载失败。数学公式可能显示为原始 LaTeX 代码（如 <code>$n - m + f = 2$</code>），但其余内容仍可正常阅读。可尝试刷新页面或检查网络。
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 第一部分：课程讲解                              -->
+  <!-- ============================================ -->
+  <section class="chapter" id="part1">
+    <h2><span class="badge">第一部分</span> 课程讲解</h2>
+
+    <h3>0. 整体知识脉络</h3>
+    <p>这门课前面几讲已经讲了：</p>
+    <ul>
+      <li><strong>L1–L3：</strong>网络的例子与度量指标（degree、path、clustering 等）</li>
+      <li><strong>L4–L6：</strong>节点群组（community 等）</li>
+      <li><strong>L7–L10：</strong>随机网络模型（ER、配置模型等）</li>
+    </ul>
+    <p>从 <strong>L13 开始进入一个新主题</strong>：分析<strong>真实世界</strong>的网络与过程。
+    现实中的网络往往不像随机图那样自由——它们要么<strong>嵌入在空间中</strong>（道路、铁路、航线），
+    要么<strong>随时间演化</strong>（电话联系、社交互动），或两者兼具。
+    因此，我们需要一套<strong>专门的度量、可视化方法和模型</strong>来研究它们。</p>
+
+    <div class="analogy-box">
+      把它想象成"地图 + 时刻表"：之前的网络像是一张抽象关系图，现在我们要在它上面叠加 GPS 坐标（空间）和时间戳（时间）。
+      这两件事一旦加入，许多原本随心所欲的连接就受到了"距离成本"和"先后顺序"的约束。
+    </div>
+
+    <h4>本讲将解决的四个核心问题</h4>
+    <ol>
+      <li>什么是空间网络 / 时间网络？</li>
+      <li>用什么指标分析它们？</li>
+      <li>有哪些空间模型可供比较？</li>
+      <li>怎样为真实系统构建空间 / 时间网络模型？</li>
+    </ol>
+
+    <!-- ------ 1. 空间网络 ------ -->
+    <h3>1. 空间网络 (Spatial Networks)</h3>
+
+    <div class="definition">
+      <strong>空间网络</strong>是指满足以下两个条件的网络：
+      <ul>
+        <li>节点和边都有<strong>空间位置</strong></li>
+        <li>网络结构受空间<strong>影响或约束</strong></li>
+      </ul>
+      通常，连接两个节点会有一个<strong>"代价"</strong>，与它们之间的距离有关。
+    </div>
+
+    <p><strong>典型例子：</strong>道路网、铁路网、航线网、真菌根系。</p>
+
+    <h4>反思：是不是所有网络都是空间网络？</h4>
+    <p>看似如此，但<strong>不是</strong>。是否把网络建模为"空间网络"，取决于<strong>研究问题是否真的关心距离</strong>。</p>
+    <div class="analogy-box">
+      朋友关系网：现实中朋友常常住得近——但理论上你也可以有地球另一端的朋友。
+      如果你研究"距离对友谊建立的影响"，可以用空间网络；否则空间技术对友谊网就没什么意义。
+      空间网络的工具，主要为<strong>空间约束严格</strong>的网络（如道路）而设计。
+    </div>
+
+    <!-- ------ 2. 平面网络 ------ -->
+    <h3>2. 平面网络 (Planar Networks)</h3>
+
+    <div class="definition">
+      <strong>平面网络</strong>：可以画在平面上，<strong>使所有边互不相交</strong>的网络。
+      <br>注意关键词是 "<strong>can be drawn</strong>"——只要存在<strong>一种</strong>不交叉画法即可，不要求初始画法不交叉。
+    </div>
+
+    <div class="svg-container">
+      <svg viewBox="0 0 600 160" xmlns="http://www.w3.org/2000/svg">
+        <!-- 平面图示意 -->
+        <g transform="translate(70,80)">
+          <line x1="0" y1="-40" x2="40" y2="0" stroke="#333" stroke-width="2"/>
+          <line x1="40" y1="0" x2="0" y2="40" stroke="#333" stroke-width="2"/>
+          <line x1="0" y1="40" x2="-40" y2="0" stroke="#333" stroke-width="2"/>
+          <line x1="-40" y1="0" x2="0" y2="-40" stroke="#333" stroke-width="2"/>
+          <line x1="-40" y1="0" x2="40" y2="0" stroke="#333" stroke-width="2"/>
+          <circle cx="0" cy="-40" r="6" fill="#fb923c"/>
+          <circle cx="40" cy="0" r="6" fill="#fb923c"/>
+          <circle cx="0" cy="40" r="6" fill="#fb923c"/>
+          <circle cx="-40" cy="0" r="6" fill="#fb923c"/>
+          <text x="0" y="70" text-anchor="middle" font-size="13">平面</text>
+        </g>
+        <g transform="translate(220,80)">
+          <line x1="-30" y1="-40" x2="30" y2="-40" stroke="#333" stroke-width="2"/>
+          <line x1="30" y1="-40" x2="30" y2="40" stroke="#333" stroke-width="2"/>
+          <line x1="30" y1="40" x2="-30" y2="40" stroke="#333" stroke-width="2"/>
+          <line x1="-30" y1="40" x2="-30" y2="-40" stroke="#333" stroke-width="2"/>
+          <line x1="-30" y1="-40" x2="30" y2="40" stroke="#333" stroke-width="2"/>
+          <line x1="30" y1="-40" x2="-30" y2="40" stroke="#333" stroke-width="2"/>
+          <circle cx="-30" cy="-40" r="6" fill="#fb923c"/>
+          <circle cx="30" cy="-40" r="6" fill="#fb923c"/>
+          <circle cx="30" cy="40" r="6" fill="#fb923c"/>
+          <circle cx="-30" cy="40" r="6" fill="#fb923c"/>
+          <text x="0" y="70" text-anchor="middle" font-size="13">仍是平面（可重画）</text>
+        </g>
+        <g transform="translate(420,80)">
+          <line x1="-50" y1="-40" x2="50" y2="-40" stroke="#dc2626" stroke-width="2"/>
+          <line x1="50" y1="-40" x2="0" y2="40" stroke="#dc2626" stroke-width="2"/>
+          <line x1="0" y1="40" x2="-100" y2="-10" stroke="#dc2626" stroke-width="2"/>
+          <line x1="-100" y1="-10" x2="50" y2="20" stroke="#dc2626" stroke-width="2"/>
+          <line x1="50" y1="20" x2="-50" y2="-40" stroke="#dc2626" stroke-width="2"/>
+          <circle cx="-50" cy="-40" r="6" fill="#fb923c"/>
+          <circle cx="50" cy="-40" r="6" fill="#fb923c"/>
+          <circle cx="0" cy="40" r="6" fill="#fb923c"/>
+          <circle cx="-100" cy="-10" r="6" fill="#fb923c"/>
+          <circle cx="50" cy="20" r="6" fill="#fb923c"/>
+          <text x="-25" y="70" text-anchor="middle" font-size="13">K₅：非平面</text>
+        </g>
+      </svg>
+      <div class="svg-caption">左/中：平面（可不交叉画）；右：K₅，无论如何画都会有边相交</div>
+    </div>
+
+    <h4>2.1 Kuratowski 定理</h4>
+    <div class="theorem">
+      网络是<strong>非平面</strong>的，当且仅当它包含 $K_5$（5 节点完全图）或 $K_{3,3}$（3+3 节点完全二部图）作为子网络。
+    </div>
+
+    <h4>2.2 真实世界的平面网络</h4>
+    <p>几乎没有完全平面的真实网络：飞机航线显然不平面；公路有立交桥技术上也不平面。
+    但在很多应用中，<strong>路网可以近似为平面网络</strong>。</p>
+
+    <h4>2.3 欧拉公式 (Euler's Formula)</h4>
+    <div class="theorem">
+      设 $n$ = 节点数，$m$ = 边数，$f$ = 面数（被边围成的平面区域，<strong>包括外部那个"无界面"</strong>）。则：
+      $$n - m + f = 2$$
+      若不计外部面 $f^* = f - 1$，则：
+      $$n - m + f^* = 1$$
+    </div>
+
+    <div class="tip-box">
+      <strong>证明思路（伸缩到生成树）：</strong>令 $N = n - m + f$。
+      每去掉一条形成环路的边，$m$ 和 $f$ 都减 1，所以 $N$ 不变。
+      一直去到只剩一棵生成树：$f = 1$，$m = n - 1$，于是 $N = n - (n-1) + 1 = 2$。
+      把边一条条加回来，$N$ 始终是 2。
+    </div>
+
+    <h4>2.4 平面图平均度的上界</h4>
+    <div class="theorem">
+      平面图的<strong>平均度</strong>满足：
+      $$\langle k \rangle \leq 6$$
+    </div>
+    <div class="tip-box">
+      <strong>证明思路：</strong>每个面至少由 3 条边围成，每条边最多被 2 个面共享，所以 $3f \leq 2m$。
+      代入欧拉公式 $f = 2 + m - n$ 得 $2m \geq 3(2+m-n) = 6 + 3m - 3n$，
+      整理出 $m \leq 3n - 6$。再用 $\langle k \rangle = 2m/n$ 即得 $\langle k \rangle \leq 6 - 12/n \leq 6$。
+    </div>
+
+    <h4>2.5 极大平面网络 (Maximal Planar)</h4>
+    <div class="definition">
+      <strong>极大平面网络</strong>：再加<strong>任何一条边</strong>都会变成非平面。
+      此时上述不等式取等号：
+      $$m_{\max} = 3n - 6, \quad f_{\max} = 2n - 4, \quad f^*_{\max} = 2n - 5$$
+    </div>
+    <p><strong>例：</strong>$n=4$ → $m_{\max}=6$，$f_{\max}=4$（即四面体的展开图）。</p>
+
+    <!-- ------ 3. 空间网络度量 ------ -->
+    <h3>3. 空间网络的度量指标</h3>
+
+    <h4>3.1 γ 指数（Gamma Index, Kansky 1963）</h4>
+    <div class="theorem">
+      $$\gamma = \frac{m}{m_{\max}} = \frac{m}{3n - 6}$$
+      边数与平面图最大可能边数之比，衡量平面网络的"<strong>边密度</strong>"。
+    </div>
+
+    <h4>3.2 α 指数（Alpha Index / Meshedness, Buhl 2006）</h4>
+    <div class="theorem">
+      $$\alpha = \frac{f^*}{f^*_{\max}} = \frac{m - n + 1}{2n - 5}$$
+      有界面数与最大可能有界面数之比。
+      $\alpha \in [0, 1]$：树时为 0，极大连接平面网时为 1。
+    </div>
+    <div class="analogy-box">
+      γ 看的是"<strong>有多少边</strong>"，α 看的是"<strong>有多少环</strong>"。环越多，绕路选择越多，网络越密。
+    </div>
+
+    <h4>3.3 加权中心性</h4>
+    <p>空间网络的边 $(i,j)$ 自带<strong>长度</strong> $l_{ij}$。设 $L_{ij}$ 为按"总长度"算的最短路径长度。</p>
+    <div class="theorem">
+      <strong>加权 Closeness 中心性：</strong>
+      $$c_i = \sum_j \frac{n}{L_{ij}}$$
+      <strong>加权 Betweenness 中心性：</strong>用"最短长度路径"代替"最少跳数路径"重新计算。
+    </div>
+
+    <h4>3.4 绕行率指数 (Detour Index)</h4>
+    <p>设 $L_{ij}$ = 沿网络的最短距离，$d_{ij}$ = 两点间的<strong>直线（欧氏）距离</strong>。</p>
+    <div class="theorem">
+      $$Q_{ij} = \frac{L_{ij}}{d_{ij}} \quad,\quad
+        Q_i = \frac{1}{n-1}\sum_j Q_{ij} \quad,\quad
+        Q = \frac{1}{n(n-1)}\sum_{i \neq j} Q_{ij}$$
+      $Q$ 衡量空间网络的<strong>效率</strong>：与"所有节点都用直线连接"的理想情况相比，绕了多少路。
+      $Q$ 越接近 1，越接近直连理想网。
+    </div>
+    <div class="warning-box">
+      $Q$ 是<strong>"沿网络的路径长度 / 直线距离"</strong>，比值 ≥ 1。
+      不要把分子分母弄反，也不要忘记 $d_{ij}$ 是<strong>欧氏直线距离</strong>而非另一条网络距离。
+    </div>
+
+    <!-- ------ 4. 几何网络模型 ------ -->
+    <h3>4. 几何网络模型 (Geometric Network Models)</h3>
+    <p>这些模型的共同点：是否连接两个节点，由它们空间位置间的<strong>几何关系</strong>决定。</p>
+
+    <h4>4.1 $k$-最近邻图 ($k$-NN)</h4>
+    <p>每个节点连向距离它最近的 $k$ 个邻居（$k$ 固定）。</p>
+    <div class="warning-box">
+      "我把 A 连到了我的最近邻 B" 不代表 "B 也只把 A 当成它的最近邻"——k-NN 图通常是<strong>有向</strong>或不对称的；
+      画无向图时一般约定"任一方向有就连"。
+    </div>
+
+    <h4>4.2 阈值图 / 圆盘图 (Disc / Threshold Graph)</h4>
+    <p>两节点距离 < 一个固定阈值时相连。</p>
+    <p><strong>关键点：</strong>这里的"距离"不必是地理距离，只要是<strong>合法度量</strong>即可。
+    课件举例：1851 / 1881 年英国与威尔士城市间，若火车通行时间 < 1 小时则连边。</p>
+
+    <h4>4.3 Delaunay 三角剖分</h4>
+    <div class="definition">
+      连接三个节点 $p_1, p_2, p_3$ 形成三角形，<strong>当且仅当</strong>
+      过这三点的<strong>外接圆内部不含任何其他节点</strong>。
+    </div>
+
+    <h4>4.4 Gabriel 图 (Gabriel & Sokal, 1969)</h4>
+    <div class="definition">
+      连接两节点，<strong>当且仅当</strong>以它们连线为<strong>直径</strong>的圆内不含其他节点。
+    </div>
+
+    <h4>4.5 相对邻域图 (Relative Neighbourhood Graph, RNG)</h4>
+    <div class="definition">
+      连接两节点 $u, v$，<strong>当且仅当</strong>不存在第三点比 $u, v$ 二者距离都更近的节点。
+      （即两个分别以 $u$、$v$ 为圆心、$d(u,v)$ 为半径的圆的<strong>交集</strong>不含其他节点。）
+    </div>
+
+    <h4>4.6 最小生成树 (Minimum Spanning Tree, MST)</h4>
+    <div class="definition">
+      连接所有节点的、<strong>总边长最小</strong>的树。
+    </div>
+    <div class="tip-box">
+      MST 是<strong>成本最低</strong>的连通方案，但<strong>鲁棒性差</strong>：
+      因为是树，任意一个节点失效就会让网络分裂。
+    </div>
+
+    <h4>4.7 几何模型间的关系</h4>
+    <div class="theorem">
+      <strong>RNG ⊆ GG ⊆ Delaunay</strong>：相对邻域图的边一定在 Gabriel 图中，Gabriel 图的边一定在 Delaunay 三角剖分中。
+    </div>
+    <div class="analogy-box">
+      RNG 的"禁区"是两个大圆的交集——它比 Gabriel 图的小圆禁区<strong>更大</strong>。
+      "禁区越大 → 越难连边 → 边越少"。
+      所以 RNG 边数最少（最稀疏），Delaunay 边数最多（最稠密）。
+    </div>
+
+    <!-- ------ 5. 一些好玩的应用 ------ -->
+    <h3>5. 应用举例</h3>
+
+    <h4>5.1 地铁线路图 (Line Graph of Metro)</h4>
+    <p>把<strong>每条线路</strong>当作一个节点，两条线路若共享站点则连边。
+    这样可直接读出"<strong>最多需要换乘几次</strong>"——即新网络中的直径（最大最短路径）。</p>
+
+    <h4>5.2 街道方向性 (Street Orientation)</h4>
+    <p>边除了"长度"外还有"<strong>方向、坡度</strong>"等属性。
+    Geoff Boeing 用 OSMnx 分析全球城市街道走向，画出"风玫瑰图"风格的方向分布。</p>
+
+    <!-- ------ 6. 时间网络 ------ -->
+    <h3>6. 时间网络 (Temporal Networks)</h3>
+
+    <div class="definition">
+      <strong>时间网络</strong>：节点和边都是<strong>瞬时</strong>的，只在某些<strong>明确定义的时间段</strong>内存在。
+    </div>
+    <p><strong>别名：</strong>dynamic networks（动态网络）、time-varying（时变）、growing networks（生长网络，特指节点/边只增不减的情况）。</p>
+
+    <h4>6.1 关键性质</h4>
+    <ul>
+      <li><strong>边出现的顺序和持续时长很重要</strong>（影响信息传播）</li>
+      <li>可视作<strong>多层网络</strong>：选定时间步长 Δt，按时间切片成多层</li>
+      <li><strong>时间分辨率</strong>选择至关重要（太粗 → 丢信息；太细 → 噪音）</li>
+    </ul>
+
+    <h4>6.2 投影 (Projection)</h4>
+    <div class="definition">
+      <strong>投影网络</strong>：所有曾出现过的节点和边的并集——一张"<strong>静态总图</strong>"。
+    </div>
+    <div class="warning-box">
+      投影<strong>不包含全部信息</strong>！投影中存在的路径，在时间网络里不一定可行。
+    </div>
+
+    <h4>6.3 时间尊重路径 (Time-Respecting Path)</h4>
+    <p>路径 $v_1 \to v_2 \to v_3$ 是"<strong>时间尊重</strong>"的，仅当 $v_2 \to v_3$ 这条边出现的时间<strong>不早于</strong> $v_1 \to v_2$ 出现的时间。</p>
+    <div class="analogy-box">
+      像传"小道消息"：A 周一告诉 B，B 周三告诉 C —— 可行。
+      但如果 B 周一就告诉了 C，再 A 周三告诉 B，那 C 不可能从 A 那里听到周三的最新八卦。
+    </div>
+
+    <h4>6.4 可达性 (Reachability)</h4>
+    <div class="definition">
+      <strong>有向网络可达性</strong>：节点 $i$ 出发，通过有向路径能到达的所有节点集合。
+      <br>
+      <strong>时间可达性</strong>：通过<strong>时间尊重</strong>的有向路径能到达的所有节点集合。
+    </div>
+
+    <h4>6.5 课件中的八卦例子</h4>
+    <p>A、B、C、D、E、F 一周内的相遇关系，由于<strong>具体时刻不明</strong>（A 与 C 周三相遇是早是晚不知道），
+    出现了两种<strong>不同结局</strong>：</p>
+    <ul>
+      <li>场景 1（A 先于 D 见 C）：八卦逐步传遍全员</li>
+      <li>场景 2（A 晚于 D 见 C）：E 和 F 周末都不知情</li>
+    </ul>
+    <p>这是<strong>网络理论中"不确定性"</strong>的典型例子。改用更细的时间步长可以让模型更精确，但<strong>不能消除</strong>由数据本身缺失带来的不确定性。</p>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 第二部分：考点梳理                              -->
+  <!-- ============================================ -->
+  <section class="chapter" id="part2">
+    <h2><span class="badge">第二部分</span> 考点梳理</h2>
+    <p>下表按"主题模块"组织所有考点，每条标注：重要程度（★★★ 高频 / ★★ 中等 / ★ 低频）和类型（记忆 / 理解 / 计算）。</p>
+
+    <h3>模块 A：空间网络基础</h3>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">A1. 空间网络的定义</span>
+        <span class="star-rating high">★★★ 高频</span>
+      </div>
+      <span class="type-tag memory">需记忆</span> <span class="type-tag understand">需理解</span>
+      <p><strong>定义：</strong>节点和边有空间位置 + 网络结构受空间影响或约束。连接两节点常有"距离相关的代价"。</p>
+      <p><strong>关注的对象：</strong>节点位置、路径轨迹、节点间距离、边的长度。</p>
+      <p><strong>易混淆：</strong>不是<em>所有</em>真实网络都该建模为空间网络。是否选空间模型，取决于<strong>研究问题是否真的关心距离</strong>（朋友关系网就是反例）。</p>
+    </div>
+
+    <h3>模块 B：平面网络</h3>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">B1. 平面网络的定义</span>
+        <span class="star-rating high">★★★ 高频</span>
+      </div>
+      <span class="type-tag memory">需记忆</span>
+      <p><strong>定义：</strong>存在一种画法使<strong>所有边不相交</strong>的网络。</p>
+      <p><strong>关键易错：</strong>"can be drawn" —— 初始画法有交叉<strong>不代表</strong>不平面，只要能重画就是平面。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">B2. Kuratowski 定理</span>
+        <span class="star-rating mid">★★ 中等</span>
+      </div>
+      <span class="type-tag memory">需记忆</span> <span class="type-tag understand">需理解</span>
+      <p><strong>定理：</strong>网络非平面 ⟺ 包含 $K_5$ 或 $K_{3,3}$ 作为子网络。</p>
+      <p><strong>常用判定结果：</strong>$K_5$（5 节点完全图）和 $K_{3,3}$（3+3 完全二部图）非平面，要记住。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">B3. 欧拉公式</span>
+        <span class="star-rating high">★★★ 高频</span>
+      </div>
+      <span class="type-tag memory">需记忆</span> <span class="type-tag calc">需计算</span>
+      <p><strong>公式：</strong>$n - m + f = 2$（$f$ 包含外部面）；$n - m + f^* = 1$（$f^*$ 不含外部面）。</p>
+      <p><strong>易错：</strong>$f$ 到底要不要加上外部那一个"无界面"是常考点。</p>
+      <p><strong>证明要会复述：</strong>不断去掉环边到树，$N$ 不变；树时 $N=2$。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">B4. 平面图平均度上界</span>
+        <span class="star-rating high">★★★ 高频</span>
+      </div>
+      <span class="type-tag memory">需记忆</span> <span class="type-tag understand">需理解</span>
+      <p><strong>结论：</strong>$\langle k \rangle \leq 6 - 12/n \leq 6$；以及 $m \leq 3n - 6$。</p>
+      <p><strong>证明要点：</strong>每个面至少 3 边、每边至多 2 面 → $3f \leq 2m$；代入欧拉公式即得。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">B5. 极大平面网络</span>
+        <span class="star-rating mid">★★ 中等</span>
+      </div>
+      <span class="type-tag memory">需记忆</span> <span class="type-tag calc">需计算</span>
+      <p><strong>定义：</strong>再加任一条边都会变非平面。</p>
+      <p><strong>关键公式（要会背）：</strong>$m_{\max}=3n-6$，$f_{\max}=2n-4$，$f^*_{\max}=2n-5$。</p>
+      <p><strong>易错：</strong>这些上界只有<strong>极大平面图</strong>才取等号，一般平面图<em>不</em>满足等号。</p>
+    </div>
+
+    <h3>模块 C：空间网络度量指标</h3>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">C1. γ 指数（Gamma Index）</span>
+        <span class="star-rating high">★★★ 高频</span>
+      </div>
+      <span class="type-tag memory">需记忆</span> <span class="type-tag calc">需计算</span>
+      <p><strong>公式：</strong>$\gamma = \dfrac{m}{3n-6}$</p>
+      <p><strong>意义：</strong>平面网络的"边密度"。范围 $[0, 1]$。</p>
+      <p><strong>来源：</strong>Kansky, 1963。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">C2. α 指数（Alpha Index / Meshedness）</span>
+        <span class="star-rating high">★★★ 高频</span>
+      </div>
+      <span class="type-tag memory">需记忆</span> <span class="type-tag calc">需计算</span>
+      <p><strong>公式：</strong>$\alpha = \dfrac{m-n+1}{2n-5}$</p>
+      <p><strong>意义：</strong>有界面数密度（"环密度"）。树时 $\alpha = 0$，极大连接平面网时 $\alpha = 1$。</p>
+      <p><strong>易混淆：</strong>γ 看边数比例；α 看环（有界面）比例。两者都衡量稠密程度但角度不同。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">C3. 加权中心性</span>
+        <span class="star-rating mid">★★ 中等</span>
+      </div>
+      <span class="type-tag understand">需理解</span> <span class="type-tag calc">需计算</span>
+      <p>用<strong>总路径长度</strong> $L_{ij}$（而不是"跳数"）作为路径成本，重新定义 closeness 与 betweenness。</p>
+      <p><strong>加权 Closeness：</strong>$c_i = \sum_j n/L_{ij}$</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">C4. 绕行率（Detour Index）</span>
+        <span class="star-rating high">★★★ 高频</span>
+      </div>
+      <span class="type-tag memory">需记忆</span> <span class="type-tag calc">需计算</span>
+      <p><strong>公式：</strong>$Q_{ij} = L_{ij}/d_{ij}$，$Q_i = \dfrac{1}{n-1}\sum_j Q_{ij}$，
+      $Q = \dfrac{1}{n(n-1)}\sum_{i\neq j} Q_{ij}$</p>
+      <p><strong>分子分母含义：</strong>分子 = 沿网络最短路径长度；分母 = 两点欧氏直线距离。</p>
+      <p><strong>意义：</strong>衡量空间网络相对"全部直连理想网络"的<strong>效率</strong>。$Q \geq 1$，越接近 1 越高效。</p>
+      <p><strong>易错：</strong>不要把分子分母弄反。</p>
+    </div>
+
+    <h3>模块 D：几何网络模型</h3>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">D1. $k$-最近邻图</span>
+        <span class="star-rating mid">★★ 中等</span>
+      </div>
+      <span class="type-tag understand">需理解</span>
+      <p>每个节点连接其 $k$ 个最近邻居。<strong>关系不对称</strong>：A 把 B 当近邻，B 不一定把 A 当近邻。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">D2. 阈值图 / 圆盘图</span>
+        <span class="star-rating mid">★★ 中等</span>
+      </div>
+      <span class="type-tag understand">需理解</span>
+      <p>距离 < 阈值则连边。"距离"可以是任意<strong>合法度量</strong>（如旅行时间、相似度），不限于地理距离。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">D3. Delaunay 三角剖分</span>
+        <span class="star-rating mid">★★ 中等</span>
+      </div>
+      <span class="type-tag memory">需记忆</span> <span class="type-tag understand">需理解</span>
+      <p><strong>规则：</strong>三个节点形成三角形 ⟺ 过这三点的外接圆<strong>内部不含其他节点</strong>。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">D4. Gabriel 图</span>
+        <span class="star-rating mid">★★ 中等</span>
+      </div>
+      <span class="type-tag memory">需记忆</span>
+      <p><strong>规则：</strong>两节点连边 ⟺ 以它们连线为<strong>直径</strong>的圆内不含其他节点。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">D5. 相对邻域图 (RNG)</span>
+        <span class="star-rating mid">★★ 中等</span>
+      </div>
+      <span class="type-tag memory">需记忆</span>
+      <p><strong>规则：</strong>两节点 $u,v$ 连边 ⟺ 不存在第三点同时比 $u,v$ 二者距离都近。</p>
+      <p><strong>等价表述：</strong>以 $u,v$ 为圆心、$d(u,v)$ 为半径的两圆<strong>交集</strong>内无其他节点。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">D6. 最小生成树 (MST)</span>
+        <span class="star-rating mid">★★ 中等</span>
+      </div>
+      <span class="type-tag understand">需理解</span>
+      <p>总边长最小的、连接所有节点的树。<strong>最经济但最不鲁棒</strong>（任一节点失效就分裂）。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">D7. 几何模型间的包含关系</span>
+        <span class="star-rating high">★★★ 高频</span>
+      </div>
+      <span class="type-tag understand">需理解</span>
+      <p><strong>关系：</strong>RNG ⊆ GG ⊆ Delaunay。</p>
+      <p><strong>直观：</strong>RNG 的"禁区"是大圆交集（更大），所以连边条件更严，边更少。</p>
+    </div>
+
+    <h3>模块 E：应用</h3>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">E1. 地铁线路图（Line Graph of Metro）</span>
+        <span class="star-rating low">★ 低频</span>
+      </div>
+      <span class="type-tag understand">需理解</span>
+      <p>每条线路当节点，共享站点的线路间连边。<strong>新网络的直径 = 最多换乘次数</strong>。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">E2. 街道方向性</span>
+        <span class="star-rating low">★ 低频</span>
+      </div>
+      <span class="type-tag understand">需理解</span>
+      <p>空间网络的边除长度外，还有方向、坡度等属性可分析。</p>
+    </div>
+
+    <h3>模块 F：时间网络</h3>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">F1. 时间网络的定义</span>
+        <span class="star-rating high">★★★ 高频</span>
+      </div>
+      <span class="type-tag memory">需记忆</span>
+      <p><strong>定义：</strong>节点和边只在某些明确定义的时间段中存在。</p>
+      <p><strong>别名：</strong>动态网络、时变网络、生长网络（仅增不减）。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">F2. 投影 (Projection)</span>
+        <span class="star-rating high">★★★ 高频</span>
+      </div>
+      <span class="type-tag memory">需记忆</span> <span class="type-tag understand">需理解</span>
+      <p><strong>定义：</strong>包含所有曾出现的节点和边的静态网络。</p>
+      <p><strong>关键限制：</strong>投影<strong>不能</strong>完全代表时间网络——投影中的路径不一定时间可行。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">F3. 时间尊重路径</span>
+        <span class="star-rating high">★★★ 高频</span>
+      </div>
+      <span class="type-tag understand">需理解</span>
+      <p><strong>定义：</strong>路径上相邻两条边的出现时间<strong>单调不减</strong>。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">F4. 可达性 vs 时间可达性</span>
+        <span class="star-rating high">★★★ 高频</span>
+      </div>
+      <span class="type-tag understand">需理解</span>
+      <p><strong>可达性：</strong>有向路径所能到的节点集。</p>
+      <p><strong>时间可达性：</strong>仅通过时间尊重路径所能到的节点集。</p>
+      <p><strong>关键点：</strong>边出现的<strong>顺序</strong>会改变可达节点集，进而影响信息传播。</p>
+    </div>
+
+    <div class="kp-card">
+      <div class="kp-head">
+        <span class="kp-title">F5. 不确定性 / 时间分辨率</span>
+        <span class="star-rating mid">★★ 中等</span>
+      </div>
+      <span class="type-tag understand">需理解</span>
+      <p>当事件发生在同一时间步内、但顺序未知时，可达性会出现多种<strong>可能结果</strong>。
+      细化时间步可以提高精度，但<strong>不能消除</strong>原始数据缺失导致的不确定性。</p>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 第三部分：复习题                                -->
+  <!-- ============================================ -->
+  <section class="chapter" id="part3">
+    <h2><span class="badge">第三部分</span> 复习题</h2>
+
+    <div class="global-controls">
+      <button class="btn" id="expand-all">展开全部答案</button>
+      <button class="btn secondary" id="collapse-all">收起全部答案</button>
+      <button class="btn" id="reset-all">重置所有题目</button>
+    </div>
+    <div class="progress-stats" id="progress-stats">
+      📊 已答选择题：<strong id="answered-count">0</strong> / <strong id="total-mcq">0</strong> ，
+      其中答对：<strong id="correct-count">0</strong> 题
+    </div>
+
+    <!-- ====== 选择题 ====== -->
+    <h3>一、选择题（共 8 题）</h3>
+
+    <!-- Q1 -->
+    <div class="question" data-qid="q1">
+      <div class="q-meta">
+        <span class="meta-type">[选择题]</span>
+        <span class="meta-kp">考点 A1：空间网络定义</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>1.</strong> 下列哪一项<strong>最准确</strong>地描述了空间网络？</div>
+      <ul class="options" data-correct="C">
+        <li class="option" data-key="A"><span class="opt-label">A.</span>所有节点都画在同一张地图上的网络</li>
+        <li class="option" data-key="B"><span class="opt-label">B.</span>节点之间所有连接都必须用直线表示的网络</li>
+        <li class="option" data-key="C"><span class="opt-label">C.</span>节点和边都有空间位置，且网络结构受空间影响或约束的网络</li>
+        <li class="option" data-key="D"><span class="opt-label">D.</span>嵌入在二维平面中、所有边均不相交的网络</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：C</h5>
+          <p><strong>解析：</strong>按课件定义，空间网络需满足两条：(1) 节点和边有空间位置；(2) 网络结构受空间影响或约束。</p>
+          <ul>
+            <li>A 不准确：仅"画在地图上"不一定意味着结构受空间约束。</li>
+            <li>B 错误：边只是有"位置"和"长度"，不一定是直线（如城市道路可绕弯）。</li>
+            <li>D 描述的是<strong>平面网络</strong>（planar），是不同概念。</li>
+          </ul>
+          <p><strong>易错提醒：</strong>"空间网络" ≠ "平面网络"。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question" data-qid="q2">
+      <div class="q-meta">
+        <span class="meta-type">[选择题]</span>
+        <span class="meta-kp">考点 B1, B2：平面网络</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>2.</strong> 关于平面网络，下列说法<strong>正确</strong>的是：</div>
+      <ul class="options" data-correct="D">
+        <li class="option" data-key="A"><span class="opt-label">A.</span>$K_5$ 是平面网络</li>
+        <li class="option" data-key="B"><span class="opt-label">B.</span>若初始画法有边相交，则该网络一定非平面</li>
+        <li class="option" data-key="C"><span class="opt-label">C.</span>$K_{3,3}$ 可以重新画成无交叉的形式，因此是平面网络</li>
+        <li class="option" data-key="D"><span class="opt-label">D.</span>飞机航线网络通常不能近似为平面网络</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：D</h5>
+          <p><strong>解析：</strong></p>
+          <ul>
+            <li>A 错：$K_5$ 是经典非平面图（Kuratowski 定理）。</li>
+            <li>B 错：平面性看"是否<strong>存在</strong>一种不相交画法"，初始画法有交叉不能下结论。</li>
+            <li>C 错：$K_{3,3}$ 也是经典非平面图。</li>
+            <li>D 正确：飞机航线显然有大量交叉，不能近似为平面图（不像道路网那样可以近似）。</li>
+          </ul>
+          <p><strong>易错提醒：</strong>$K_5$ 与 $K_{3,3}$ 是判定非平面的"特征子图"，要熟记。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question" data-qid="q3">
+      <div class="q-meta">
+        <span class="meta-type">[选择题]</span>
+        <span class="meta-kp">考点 B3, B4：欧拉公式与度上界</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>3.</strong> 欧拉公式 $n - m + f = 2$ 中的 $f$ 指：</div>
+      <ul class="options" data-correct="B">
+        <li class="option" data-key="A"><span class="opt-label">A.</span>网络中所有内部封闭区域的数量（不含外部面）</li>
+        <li class="option" data-key="B"><span class="opt-label">B.</span>平面被边分割成的所有区域数（包括外部无界面）</li>
+        <li class="option" data-key="C"><span class="opt-label">C.</span>所有三角形面的数量</li>
+        <li class="option" data-key="D"><span class="opt-label">D.</span>所有可走的环路数量</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：B</h5>
+          <p><strong>解析：</strong>$f$ 是平面被边分割出的所有面，<strong>包括</strong>那一片"包围在外面的"无界面。若不包括外部面，应使用 $f^* = f - 1$，对应公式 $n - m + f^* = 1$。</p>
+          <p><strong>易错提醒：</strong>是否包括外部面是常考的"陷阱"——做题前先看清题目用的是 $f$ 还是 $f^*$。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question" data-qid="q4">
+      <div class="q-meta">
+        <span class="meta-type">[选择题]</span>
+        <span class="meta-kp">考点 B5：极大平面网络</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>4.</strong> 一个含 $n=8$ 个节点的<strong>极大平面</strong>网络，其边数 $m_{\max}$ 和有界面数 $f^*_{\max}$ 分别为：</div>
+      <ul class="options" data-correct="C">
+        <li class="option" data-key="A"><span class="opt-label">A.</span>$m_{\max}=15,\ f^*_{\max}=10$</li>
+        <li class="option" data-key="B"><span class="opt-label">B.</span>$m_{\max}=20,\ f^*_{\max}=12$</li>
+        <li class="option" data-key="C"><span class="opt-label">C.</span>$m_{\max}=18,\ f^*_{\max}=11$</li>
+        <li class="option" data-key="D"><span class="opt-label">D.</span>$m_{\max}=14,\ f^*_{\max}=8$</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：C</h5>
+          <p><strong>解析：</strong>极大平面网络满足：</p>
+          <ul>
+            <li>$m_{\max} = 3n - 6 = 3 \times 8 - 6 = 18$</li>
+            <li>$f^*_{\max} = 2n - 5 = 2 \times 8 - 5 = 11$</li>
+            <li>（或 $f_{\max} = 2n - 4 = 12$ 含外部面）</li>
+          </ul>
+          <p><strong>易错提醒：</strong>分清 $f$ 和 $f^*$。本题问的是 $f^*$。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question" data-qid="q5">
+      <div class="q-meta">
+        <span class="meta-type">[选择题]</span>
+        <span class="meta-kp">考点 C1, C2：γ 与 α 指数</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>5.</strong> 关于 γ 指数和 α 指数，下列说法<strong>错误</strong>的是：</div>
+      <ul class="options" data-correct="D">
+        <li class="option" data-key="A"><span class="opt-label">A.</span>γ 指数衡量边数与最大可能边数之比</li>
+        <li class="option" data-key="B"><span class="opt-label">B.</span>对一棵树，α 指数为 0</li>
+        <li class="option" data-key="C"><span class="opt-label">C.</span>α 指数又称为 meshedness</li>
+        <li class="option" data-key="D"><span class="opt-label">D.</span>γ 和 α 指数均可用于任意网络，无须假设网络是平面图</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：D</h5>
+          <p><strong>解析：</strong>γ 和 α 指数的<strong>分母</strong>（$3n-6$、$2n-5$）来自平面图的<strong>极大边数 / 极大面数</strong>，这两个上界仅在平面图中成立。</p>
+          <p>因此严格地说，γ、α 指数是为<strong>平面网络（或可近似为平面的网络）</strong>设计的"密度指标"。对非平面网络（如完全图），公式仍能算，但含义会很奇怪（甚至会出现 $\gamma > 1$）。</p>
+          <ul>
+            <li>A 正确：是 γ 的定义。</li>
+            <li>B 正确：树只有 $n-1$ 条边、无环，$f^* = 0$，故 $\alpha = 0$。</li>
+            <li>C 正确：α 又叫 meshedness。</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q6 -->
+    <div class="question" data-qid="q6">
+      <div class="q-meta">
+        <span class="meta-type">[选择题]</span>
+        <span class="meta-kp">考点 D7：几何模型包含关系</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>6.</strong> 设 $E_\text{Del}$、$E_\text{GG}$、$E_\text{RNG}$ 分别是同一点集上的 Delaunay、Gabriel、相对邻域图的边集，则它们的包含关系为：</div>
+      <ul class="options" data-correct="A">
+        <li class="option" data-key="A"><span class="opt-label">A.</span>$E_\text{RNG} \subseteq E_\text{GG} \subseteq E_\text{Del}$</li>
+        <li class="option" data-key="B"><span class="opt-label">B.</span>$E_\text{Del} \subseteq E_\text{GG} \subseteq E_\text{RNG}$</li>
+        <li class="option" data-key="C"><span class="opt-label">C.</span>$E_\text{GG} \subseteq E_\text{RNG} \subseteq E_\text{Del}$</li>
+        <li class="option" data-key="D"><span class="opt-label">D.</span>三者互不包含</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：A</h5>
+          <p><strong>解析：</strong>RNG 的"禁区"（两大圆交集）比 GG 的"禁区"（小圆）<strong>更大</strong>，所以 RNG 中能保留的边更少。"禁区越大、边越少"，故 RNG ⊆ GG。同理 GG ⊆ Delaunay。</p>
+          <p><strong>记忆口诀：</strong>RNG 最稀，Delaunay 最稠，Gabriel 居中。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q7 -->
+    <div class="question" data-qid="q7">
+      <div class="q-meta">
+        <span class="meta-type">[选择题]</span>
+        <span class="meta-kp">考点 F2, F3：投影与时间尊重路径</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>7.</strong> 关于时间网络（temporal network），下列说法<strong>正确</strong>的是：</div>
+      <ul class="options" data-correct="B">
+        <li class="option" data-key="A"><span class="opt-label">A.</span>投影网络包含了原始时间网络的全部信息</li>
+        <li class="option" data-key="B"><span class="opt-label">B.</span>投影网络中存在的路径，未必是时间尊重路径</li>
+        <li class="option" data-key="C"><span class="opt-label">C.</span>边出现的顺序不影响信息传播</li>
+        <li class="option" data-key="D"><span class="opt-label">D.</span>选择越细的时间分辨率，结果就一定越确定</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：B</h5>
+          <p><strong>解析：</strong></p>
+          <ul>
+            <li>A 错：投影只保留了"哪些边曾经出现"，丢失了<strong>时间顺序</strong>，信息有损。</li>
+            <li>B 正确：经典反例——投影里看似可行的 $v_1 \to v_3 \to v_4$，若 $v_3 \to v_4$ 出现得比 $v_1 \to v_3$ 早，就不可行。</li>
+            <li>C 错：边出现顺序<strong>极大地</strong>影响信息传播。</li>
+            <li>D 错：细化时间分辨率有助于减少混淆，但<strong>不能消除</strong>来自数据本身缺失的不确定性（如八卦案例的 Wed 1 / Wed 2 仍然不知道）。</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q8 -->
+    <div class="question" data-qid="q8">
+      <div class="q-meta">
+        <span class="meta-type">[选择题]</span>
+        <span class="meta-kp">考点 C4：绕行率</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>8.</strong> 关于绕行率 $Q_{ij} = L_{ij}/d_{ij}$，下列说法<strong>错误</strong>的是：</div>
+      <ul class="options" data-correct="C">
+        <li class="option" data-key="A"><span class="opt-label">A.</span>$L_{ij}$ 是沿网络的最短路径长度</li>
+        <li class="option" data-key="B"><span class="opt-label">B.</span>$d_{ij}$ 是两点间的欧氏直线距离</li>
+        <li class="option" data-key="C"><span class="opt-label">C.</span>$Q_{ij}$ 可以小于 1，意味着走网络比走直线更快</li>
+        <li class="option" data-key="D"><span class="opt-label">D.</span>$Q_{ij}$ 越接近 1，说明网络越接近"全部直连"的理想形态</li>
+      </ul>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：C</h5>
+          <p><strong>解析：</strong>由于"任意两点间的直线距离"是最短的距离下界（三角不等式），所以网络上的最短路径长度<strong>不可能小于</strong>直线距离，故 $Q_{ij} \geq 1$ 恒成立。</p>
+          <p>其余选项均为正确表述。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ====== 填空题 ====== -->
+    <h3>二、填空题（共 5 题）</h3>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[填空题]</span>
+        <span class="meta-kp">考点 B3</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>9.</strong> 平面图欧拉公式（包含外部面）为：________；不含外部面时为：________。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：</h5>
+          <p>$n - m + f = 2$；$n - m + f^* = 1$。</p>
+          <p><strong>易错提醒：</strong>注意区分 $f$（含外部面）和 $f^*$（不含外部面）。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[填空题]</span>
+        <span class="meta-kp">考点 B5</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>10.</strong> 对于含 $n$ 个节点的极大平面网络，最大边数 $m_{\max} = $ ________，最大有界面数 $f^*_{\max} = $ ________。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：</h5>
+          <p>$m_{\max} = 3n - 6$；$f^*_{\max} = 2n - 5$。</p>
+          <p><strong>记忆：</strong>这些是平面图<strong>不等式</strong>取等号时的值；$f_{\max} = 2n - 4$（含外部面）。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[填空题]</span>
+        <span class="meta-kp">考点 C1, C2</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>11.</strong> 写出 γ 指数和 α 指数的公式：γ = ________，α = ________。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：</h5>
+          <p>$\gamma = \dfrac{m}{3n-6}$（边密度）；$\alpha = \dfrac{m-n+1}{2n-5}$（环密度 / meshedness）。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[填空题]</span>
+        <span class="meta-kp">考点 B4</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>12.</strong> 在平面图中，平均度满足 $\langle k \rangle \leq $ ________。证明的关键不等式是 $3f \leq $ ________。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：</h5>
+          <p>$\langle k \rangle \leq 6$；$3f \leq 2m$。</p>
+          <p><strong>说明：</strong>更严格的形式是 $\langle k \rangle \leq 6 - 12/n$。$3f \leq 2m$ 来自"每面至少 3 边 × 每边至多被 2 面共享"。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[填空题]</span>
+        <span class="meta-kp">考点 C4</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>13.</strong> 节点对 $(i,j)$ 的绕行率定义为 $Q_{ij} = $ ________ / ________，其取值范围为 ________。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：</h5>
+          <p>$Q_{ij} = L_{ij}/d_{ij}$（沿网络最短路径长度 / 欧氏直线距离），$Q_{ij} \geq 1$。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ====== 判断题 ====== -->
+    <h3>三、判断题（共 6 题）</h3>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[判断题]</span>
+        <span class="meta-kp">考点 A1</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>14.</strong> 由于所有真实网络都在物理世界中，因此都应建模为空间网络。（&nbsp;&nbsp;&nbsp;&nbsp;）</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：错 (×)</h5>
+          <p>是否建模为空间网络，取决于研究问题是否真的关心<strong>距离 / 空间约束</strong>。
+          典型反例：朋友关系网——朋友常住得近，但理论上跨越万里也能成为朋友。若研究问题与距离无关，用空间网络反而画蛇添足。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[判断题]</span>
+        <span class="meta-kp">考点 B2</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>15.</strong> 含有 $K_{3,3}$ 作为子图的网络一定是非平面的。（&nbsp;&nbsp;&nbsp;&nbsp;）</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：对 (√)</h5>
+          <p>Kuratowski 定理：网络非平面 ⟺ 包含 $K_5$ 或 $K_{3,3}$ 子网络。</p>
+          <p><strong>易错提醒：</strong>注意是"<strong>子网络</strong>（subnetwork）"——严格表述还涉及"细分（subdivision）"，但本课件层面，记住"含 $K_5$ 或 $K_{3,3}$ → 非平面"即可。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[判断题]</span>
+        <span class="meta-kp">考点 D6</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>16.</strong> 最小生成树（MST）是连通成本最低的网络，因此鲁棒性也最强。（&nbsp;&nbsp;&nbsp;&nbsp;）</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：错 (×)</h5>
+          <p>MST 是<strong>最经济</strong>的，但<strong>鲁棒性最差</strong>——它是一棵树，没有冗余路径。任意一个节点 / 边失效都会让网络分裂。</p>
+          <p>"低成本"与"高鲁棒性"恰好是<strong>相互冲突</strong>的设计目标。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[判断题]</span>
+        <span class="meta-kp">考点 D7</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>17.</strong> 在同一组点上，相对邻域图（RNG）的所有边都包含在 Gabriel 图中。（&nbsp;&nbsp;&nbsp;&nbsp;）</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：对 (√)</h5>
+          <p>RNG ⊆ GG。课件原话：RNG 的"禁区"（两大圆交集）比 GG 的"禁区"（小圆）更大；
+          只要 RNG 的更严格条件满足，GG 的更宽松条件自动满足，所以每条 RNG 的边也是 GG 的边。但反过来一般不成立。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[判断题]</span>
+        <span class="meta-kp">考点 F2</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>18.</strong> 在时间网络的投影中，所有路径都是时间尊重的。（&nbsp;&nbsp;&nbsp;&nbsp;）</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：错 (×)</h5>
+          <p>投影只是"边的并集"，不携带时间标签；它<strong>无法</strong>判断路径上的边出现顺序是否单调。
+          所以投影上的路径只在<strong>潜在意义上</strong>存在，未必"时间可行"。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[判断题]</span>
+        <span class="meta-kp">考点 C4</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>19.</strong> 平均绕行率 $Q$ 越大，说明空间网络越高效。（&nbsp;&nbsp;&nbsp;&nbsp;）</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>答案：错 (×)</h5>
+          <p>$Q$ 衡量的是"网络比直线绕了多远"。$Q$ <strong>越接近 1（越小）</strong>，越接近"理想直连网"，效率<strong>越高</strong>。$Q$ 越大说明绕路越多、效率越低。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ====== 计算题 ====== -->
+    <h3>四、计算题（共 6 题）</h3>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[计算题]</span>
+        <span class="meta-kp">考点 B3：欧拉公式</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>20.</strong> 一个连通平面网络含 $n = 12$ 个节点、$m = 25$ 条边。
+      请分别计算其面数 $f$（含外部面）和有界面数 $f^*$。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>解答：</h5>
+          <p>由欧拉公式 $n - m + f = 2$：
+          $$f = 2 - n + m = 2 - 12 + 25 = 15$$</p>
+          <p>有界面数：$f^* = f - 1 = 14$。</p>
+          <p>（也可直接用 $n - m + f^* = 1 \Rightarrow f^* = 1 - 12 + 25 = 14$。）</p>
+          <p><strong>验证可行性：</strong>$m_{\max} = 3 \times 12 - 6 = 30 \geq 25$，所以这样的平面图是可以存在的。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[计算题]</span>
+        <span class="meta-kp">考点 C1, C2</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>21.</strong> 对上一题中的平面网络（$n = 12,\ m = 25$，假设连通），计算其 γ 指数和 α 指数。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>解答：</h5>
+          <p>$$\gamma = \frac{m}{3n-6} = \frac{25}{3 \times 12 - 6} = \frac{25}{30} = \frac{5}{6} \approx 0.833$$</p>
+          <p>$$\alpha = \frac{m-n+1}{2n-5} = \frac{25 - 12 + 1}{2 \times 12 - 5} = \frac{14}{19} \approx 0.737$$</p>
+          <p><strong>解读：</strong>γ ≈ 0.83 说明边数已达"最大值"的 83%；α ≈ 0.74 说明有界面数已达"最大值"的 74%。两者均说明该网络较为稠密，介于树与极大平面图之间。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[计算题]</span>
+        <span class="meta-kp">考点 B5</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>22.</strong> 求 $n = 5$ 的极大平面网络的边数 $m_{\max}$、面数 $f_{\max}$、有界面数 $f^*_{\max}$。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>解答：</h5>
+          <ul>
+            <li>$m_{\max} = 3n - 6 = 3 \times 5 - 6 = 9$</li>
+            <li>$f_{\max} = 2n - 4 = 2 \times 5 - 4 = 6$</li>
+            <li>$f^*_{\max} = 2n - 5 = 2 \times 5 - 5 = 5$</li>
+          </ul>
+          <p><strong>验证欧拉公式：</strong>$n - m + f = 5 - 9 + 6 = 2$ ✓</p>
+          <p><strong>典型例子：</strong>三棱锥（四面体）的展开 + 增加一个节点形成的"五节点全三角剖分"。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[计算题]</span>
+        <span class="meta-kp">考点 C4：绕行率</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>23.</strong> 在某空间网络中，节点 $A$ 与 $B$ 的直线距离为 $d_{AB} = 5$ km，
+      但因为没有 $A$ 到 $B$ 的直接道路，沿网络最短路径长度为 $L_{AB} = 8$ km。
+      节点 $A$ 与 $C$ 的直线距离为 $d_{AC} = 10$ km，
+      沿网络最短路径长度为 $L_{AC} = 11$ km。计算 $Q_{AB}$、$Q_{AC}$ 与 $A$ 的绕行率 $Q_A$（假设网络只有 3 个节点）。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>解答：</h5>
+          <p>$$Q_{AB} = \frac{L_{AB}}{d_{AB}} = \frac{8}{5} = 1.6$$</p>
+          <p>$$Q_{AC} = \frac{L_{AC}}{d_{AC}} = \frac{11}{10} = 1.1$$</p>
+          <p>对节点 $A$：$Q_A = \dfrac{1}{n-1}\sum_{j \neq A} Q_{Aj} = \dfrac{1}{2}(Q_{AB} + Q_{AC}) = \dfrac{1.6 + 1.1}{2} = 1.35$</p>
+          <p><strong>解读：</strong>从 $A$ 出发到其他节点，平均需要绕直线距离 35% 的路。
+          节点 $B$ 那个方向的网络效率较低（$Q=1.6$），节点 $C$ 方向较高效（$Q=1.1$）。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[计算题/作图]</span>
+        <span class="meta-kp">考点 E1：地铁线路图</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>24.</strong> 某地铁系统共 5 条线路 $L_1, L_2, L_3, L_4, S_1$，相互共享站点情况如下：
+      <br>• $L_1$ 与 $L_2, L_3, L_4, S_1$ 均有共享站点（其中 $L_1$ 与 $L_4$ 有 2 个共享站点）
+      <br>• $L_2$ 与 $L_3, L_4$ 也有共享站点
+      <br>• $L_3$ 与 $L_4$ 有共享站点
+      <br>• $S_1$ 只与 $L_1$ 共享站点
+      <br>请构造其线路图（line graph），并回答：要从任意一条线路换乘到任意另一条线路，<strong>最多</strong>需要换乘几次？</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>解答：</h5>
+          <p><strong>邻接列表：</strong></p>
+          <ul>
+            <li>$L_1$: $L_2, L_3, L_4, L_4, S_1$（与 $L_4$ 有重边）</li>
+            <li>$L_2$: $L_1, L_3, L_4$</li>
+            <li>$L_3$: $L_1, L_2, L_4$</li>
+            <li>$L_4$: $L_1, L_1, L_2, L_3$</li>
+            <li>$S_1$: $L_1$</li>
+          </ul>
+          <p><strong>结构分析：</strong>$L_1, L_2, L_3, L_4$ 之间两两相连（构成 $K_4$）；$S_1$ 仅与 $L_1$ 相连，是"叶子"。</p>
+          <p><strong>最远换乘：</strong>从 $S_1$ 到 $L_2$、$L_3$ 或 $L_4$，必须走 $S_1 \to L_1 \to$ 目标，需要换乘 <strong>2 次</strong>（"换乘次数 = 路径上的边数")。</p>
+          <p><strong>易错提醒：</strong>"换乘次数"对应线路图中的<strong>路径长度</strong>，不是站点数。线路图的直径就是最大换乘数。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[计算题]</span>
+        <span class="meta-kp">考点 B3, C1</span>
+        <span class="meta-diff-hard">[综合]</span>
+      </div>
+      <div class="q-stem"><strong>25.</strong> 已知一个连通平面网络的 γ 指数为 0.6，节点数 $n = 20$。
+      （1）求边数 $m$；（2）求面数 $f$ 和有界面数 $f^*$；（3）若希望把它升级到 γ = 0.9，需要新增多少条边？（仍要求保持平面性）</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>解答：</h5>
+          <p><strong>(1) 求 $m$：</strong>$m_{\max} = 3n - 6 = 54$。由 $\gamma = m/m_{\max} = 0.6$：
+          $$m = 0.6 \times 54 = 32.4 \to \text{取整 } m = 32 \text{（约 32 条）}$$</p>
+          <p><strong>(2) 求面数：</strong>由 $f = 2 - n + m = 2 - 20 + 32 = 14$；$f^* = 13$。</p>
+          <p><strong>(3) 新增边数：</strong>新的 $m' = 0.9 \times 54 = 48.6 \to 49$（取整）。需要新增 $49 - 32 = 17$ 条。
+          且 $49 \leq 54$，新增后仍满足平面图最大边数约束，所以原则上可行（具体能否还要看哪些位置能加边而不破坏平面性）。</p>
+          <p><strong>易错提醒：</strong>γ 公式给出的 $m$ 通常不是整数，要按题意取整；说明工程实践中 γ 是一个连续度量，不要求对应整数边。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ====== 简答题 ====== -->
+    <h3>五、简答题（共 4 题）</h3>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[简答题]</span>
+        <span class="meta-kp">考点 A1</span>
+        <span class="meta-diff-easy">[基础]</span>
+      </div>
+      <div class="q-stem"><strong>26.</strong> 简述"为什么不是所有真实网络都应该建模为空间网络"？请举一个反例并解释。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>参考答案：</h5>
+          <p>"空间网络"工具的核心价值在于<strong>处理空间约束</strong>。当节点之间的连接受到空间 / 距离的<strong>强制性约束</strong>时（如道路必须连接相邻地块），空间网络的指标（绕行率、γ/α、几何模型）才能给出有意义的结论。</p>
+          <p>若网络中节点的连接<strong>不受空间限制</strong>，强行使用空间网络模型反而会引入"不存在的约束"，分析结果不仅没有信息量，还可能误导。</p>
+          <p><strong>反例：朋友关系网络。</strong>虽然朋友常常住得近（这是一个统计规律），但理论上人可以与全球任何地方的人成为朋友——网络结构没有"空间禁令"。如果研究的问题是"信息如何在朋友间传播"，使用普通的复杂网络指标（度分布、聚集系数等）就够了，引入"距离成本"反而是画蛇添足。
+          只有在研究问题<strong>本身关心距离</strong>（如"地理邻近性如何影响新朋友的产生概率"）时，空间网络才合适。</p>
+          <p><strong>评分要点：</strong>(1) 指出"空间网络工具是为<strong>有空间约束</strong>的系统设计的"；(2) 给出合理反例；(3) 联系研究问题本身。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[简答题]</span>
+        <span class="meta-kp">考点 C1, C2</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>27.</strong> 比较 γ 指数和 α 指数：它们各自衡量什么？取值范围？分母为何不同？</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>参考答案：</h5>
+          <p><strong>γ 指数 $= m/(3n-6)$：</strong>衡量"<strong>边密度</strong>"——实际边数与平面图最大可能边数之比。
+          范围 $[0, 1]$，0 表示无边（孤立节点），1 表示极大平面（已不能加更多边）。</p>
+          <p><strong>α 指数 $= (m-n+1)/(2n-5)$：</strong>又称 meshedness，衡量"<strong>环密度</strong>"——实际有界面数与平面图最大可能有界面数之比。
+          范围 $[0, 1]$，对树（无环）为 0；对极大连接平面网为 1。</p>
+          <p><strong>分母不同的原因：</strong>
+          γ 的"上界"是极大平面图的边数 $3n-6$；
+          α 的"上界"是极大平面图的有界面数 $2n-5$。
+          这两个值都来自欧拉公式与"每面 ≥ 3 边"约束，但它们度量的<strong>对象不同</strong>（边 vs 面）。</p>
+          <p><strong>对比要点：</strong>γ 看"<strong>有多少连接</strong>"；α 看"<strong>有多少冗余路径（环）</strong>"。
+          一个稀疏的网络可能 γ 很小但 α 也较小；一个稠密但接近树的"链状"网络 γ 会高但 α 仍低（环不多）。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[简答题]</span>
+        <span class="meta-kp">考点 D3, D4, D5, D7</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>28.</strong> 简述 Delaunay 三角剖分、Gabriel 图、相对邻域图（RNG）的连接规则，并解释它们之间的包含关系。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>参考答案：</h5>
+          <p><strong>Delaunay 三角剖分：</strong>三点 $p_1, p_2, p_3$ 形成三角形（即两两连边） ⟺ 这三点的<strong>外接圆内部</strong>不含其他节点。</p>
+          <p><strong>Gabriel 图：</strong>两节点 $u, v$ 连边 ⟺ 以 $\overline{uv}$ 为<strong>直径</strong>的圆内不含其他节点。</p>
+          <p><strong>相对邻域图：</strong>$u, v$ 连边 ⟺ 不存在第三点同时比 $u, v$ 二者距离都近。
+          等价于：以 $u$、$v$ 为圆心、$d(u,v)$ 为半径的两圆<strong>交集（透镜形区域）</strong>不含其他节点。</p>
+          <p><strong>包含关系：</strong>RNG ⊆ GG ⊆ Delaunay。
+          直观地，三种规则的"禁区"由小到大：Gabriel 是以连线为直径的小圆（最严的禁区中等）；
+          RNG 是两个大圆交集（禁区最大、最难连边）；
+          Delaunay 的约束最宽松。
+          所以 RNG 边数最少、Delaunay 边数最多，GG 居中。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[简答题]</span>
+        <span class="meta-kp">考点 F3, F4</span>
+        <span class="meta-diff-med">[中等]</span>
+      </div>
+      <div class="q-stem"><strong>29.</strong> 在时间网络中，为什么"投影"会丢失信息？请用一个例子说明"投影中的路径未必是时间尊重路径"。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>参考答案：</h5>
+          <p><strong>投影丢失信息的原因：</strong>投影只保留"哪些边曾出现"，<strong>抹掉了时间戳</strong>。因此投影中相邻两条边的出现顺序信息丢失，无法判断真实网络中的传播是否可行。</p>
+          <p><strong>例子（课件原例）：</strong>设有 4 个节点 $v_1, v_2, v_3, v_4$。时间序列：
+          $t=0$ 时 $v_1 \to v_2$；$t=1$ 时 $v_3 \to v_4$；$t=2$ 时 $v_2 \to v_4$ 与 $v_1 \to v_3$ 都出现。</p>
+          <p>投影中可以看到从 $v_1$ 到 $v_4$ 有两条路径：经 $v_2$（即 $v_1 \to v_2 \to v_4$）和经 $v_3$（即 $v_1 \to v_3 \to v_4$）。</p>
+          <p>但<strong>时间网络</strong>中：</p>
+          <ul>
+            <li>$v_1 \to v_2 \to v_4$：第一段在 $t=0$，第二段在 $t=2$，单调递增，<strong>时间尊重</strong>。</li>
+            <li>$v_1 \to v_3 \to v_4$：第一段（$v_1 \to v_3$）发生在 $t=2$，而第二段（$v_3 \to v_4$）发生在 $t=1$——<strong>第二段比第一段早！</strong>所以这条路径<strong>不时间尊重</strong>，信息无法这样传递。</li>
+          </ul>
+          <p><strong>结论：</strong>投影把"潜在可达性"与"实际可达性"混在一起，研究信息传播时必须用<strong>时间可达性</strong>而不是投影上的可达性。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ====== 综合 / 论述题 ====== -->
+    <h3>六、综合 / 论述题（共 3 题）</h3>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[论述题]</span>
+        <span class="meta-kp">考点 B3, B4</span>
+        <span class="meta-diff-hard">[综合]</span>
+      </div>
+      <div class="q-stem"><strong>30.</strong> 完整推导：连通平面图的平均度 $\langle k \rangle \leq 6$。请说清每一步的依据。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>证明：</h5>
+          <p><strong>步骤 1：每个面至少由 3 条边围成。</strong>
+          因为面是闭合区域，至少需要一个由 3 条边构成的三角形（即使是平行边或自环，简单图中也满足这一约束）。
+          于是面被边围成的次数总和 $\geq 3f$。</p>
+          <p><strong>步骤 2：每条边至多被 2 个面共享。</strong>
+          一条边在平面上把局部区域分成两侧，每侧最多对应一个面。所以面边对的总和 $\leq 2m$。</p>
+          <p><strong>步骤 3：合并得 $3f \leq 2m$。</strong>
+          这是因为"面边对总数"既等于按面计的 $\geq 3f$，又等于按边计的 $\leq 2m$。</p>
+          <p><strong>步骤 4：代入欧拉公式 $n - m + f = 2$，即 $f = 2 + m - n$。</strong>
+          $$3(2 + m - n) \leq 2m \Rightarrow 6 + 3m - 3n \leq 2m \Rightarrow m \leq 3n - 6$$</p>
+          <p><strong>步骤 5：换算成平均度。</strong>由握手定理，$\sum_i k_i = 2m$，所以 $\langle k \rangle = 2m/n$。
+          $$\langle k \rangle = \frac{2m}{n} \leq \frac{2(3n-6)}{n} = 6 - \frac{12}{n} \leq 6$$</p>
+          <p><strong>结论：</strong>连通平面图的平均度上界为 6，且随节点数增大而趋近 6。</p>
+          <p><strong>易错提醒：</strong>这个证明默认"简单图"（无自环、无多重边）；自环和多重边会改变"每面 ≥ 3 边"的假设。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[综合题]</span>
+        <span class="meta-kp">考点 F1, F3, F4, F5</span>
+        <span class="meta-diff-hard">[综合]</span>
+      </div>
+      <div class="q-stem"><strong>31.</strong> 一周内 4 个人 A、B、C、D 的相遇情况：A 周一见 B；B 周二见 C；C 周三见 D；A 周四见 D。
+      <br>(1) 把这些相遇画成时间网络（节点 A、B、C、D，按周一到周四 4 个时间步）。
+      <br>(2) 若 A 周一前知道一条秘密，并把秘密告诉每个他见到的人，秘密会传播到谁？
+      <br>(3) 画出该网络的投影，并指出投影中是否存在"看起来通但实际不可行"的传播路径。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>解答：</h5>
+          <p><strong>(1) 时间网络（按时间切片）：</strong></p>
+          <ul>
+            <li>$t=1$（周一）：边 $A$–$B$</li>
+            <li>$t=2$（周二）：边 $B$–$C$</li>
+            <li>$t=3$（周三）：边 $C$–$D$</li>
+            <li>$t=4$（周四）：边 $A$–$D$</li>
+          </ul>
+          <p><strong>(2) 秘密传播：</strong></p>
+          <ul>
+            <li>$t=1$：A 告诉 B → 知情者 = {A, B}</li>
+            <li>$t=2$：B 告诉 C → 知情者 = {A, B, C}</li>
+            <li>$t=3$：C 告诉 D → 知情者 = {A, B, C, D}</li>
+            <li>$t=4$：A 告诉 D（D 已知）。</li>
+          </ul>
+          <p>所以<strong>所有 4 人都知道了秘密</strong>。这条链 $A \to B \to C \to D$ 时间严格递增，是<strong>时间尊重路径</strong>。</p>
+          <p><strong>(3) 投影：</strong>4 条边：$A$–$B$、$B$–$C$、$C$–$D$、$A$–$D$。这是一个 4 节点的环（"四边形"）。</p>
+          <p><strong>投影中存在但实际不可行的路径：</strong>例如 $D \to A \to B \to C$（即"信息从 D 反向传到 C"）。
+          投影上 $D$–$A$、$A$–$B$、$B$–$C$ 都存在，看似 D 可以把信息传给 C。但时间网络上：$D$ 通过 $A$–$D$ 才能影响 $A$，发生在周四（$t=4$）；
+          而 $A$–$B$ 在 $t=1$、$B$–$C$ 在 $t=2$，<strong>都早于 $t=4$</strong>。所以信息无法从 $D$ 在第 4 步后回传给 $C$（除非有未来的边）。</p>
+          <p><strong>结论：</strong>投影的"可达性"高估了真正的时间可达性。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="question">
+      <div class="q-meta">
+        <span class="meta-type">[综合题]</span>
+        <span class="meta-kp">考点 D1–D7：几何模型综合</span>
+        <span class="meta-diff-hard">[综合]</span>
+      </div>
+      <div class="q-stem"><strong>32.</strong> 假设你在为某地<strong>设计应急通信基站</strong>。你已有 100 个候选基站的地理坐标，现在要在它们之间架设通信链路。
+      请讨论：你会优先考虑下列哪种几何模型来生成连接方案？为什么？至少分析 3 种模型的优缺点。</div>
+      <details class="answer-block">
+        <summary>显示答案与解析 ▼</summary>
+        <div class="answer-content">
+          <h5>参考答案：</h5>
+          <p>本题考察对几种几何模型<strong>优缺点</strong>的综合理解。"最佳"答案取决于权衡<strong>成本</strong>和<strong>鲁棒性</strong>，下面分析三种典型选择：</p>
+
+          <p><strong>① 最小生成树（MST）：</strong></p>
+          <ul>
+            <li>优点：总链路长度最小、施工与维护成本最低。</li>
+            <li>缺点：<strong>不鲁棒</strong>。任意一个基站故障就会使一部分节点失去通信。
+            应急场景对鲁棒性要求很高，所以 MST 不适合作为主方案。</li>
+          </ul>
+
+          <p><strong>② $k$-最近邻图（如 $k=3$）：</strong></p>
+          <ul>
+            <li>优点：每个节点都有多个连接，鲁棒性较好；实现简单。</li>
+            <li>缺点：可能<strong>全局连通性差</strong>（有可能形成多个孤立簇）；且边数随 $k$ 线性增长，成本可观。</li>
+          </ul>
+
+          <p><strong>③ Gabriel 图：</strong></p>
+          <ul>
+            <li>优点：连接规则有<strong>明确几何意义</strong>，得到的图<strong>是平面图且通常连通</strong>，
+            介于 RNG 和 Delaunay 之间，既不过于稀疏也不过于稠密；能保留近邻关系。</li>
+            <li>缺点：实现稍复杂；某些区域链路仍可能过密。</li>
+          </ul>
+
+          <p><strong>推荐方案：</strong>实际工程中，通常以 <strong>Gabriel 图或 Delaunay 三角剖分</strong>作为<strong>基础结构</strong>，再叠加<strong>MST 保底</strong>，以兼顾鲁棒性和成本；
+          也可以在 Gabriel 图基础上加上几条"长距离捷径"链路，形成"<strong>小世界</strong>"结构以缩短整体通信延迟。</p>
+
+          <p><strong>评分要点：</strong>(1) 至少给出 3 种模型；(2) 每种说明优缺点；(3) 联系应用情境（鲁棒性 / 成本 / 连通性）；(4) 有合理的权衡讨论。</p>
+        </div>
+      </details>
+    </div>
+
+  </section>
+</main>
+
+<button id="back-to-top" aria-label="回到顶部">↑</button>
+
+<!-- ============================================ -->
+<!-- 所有 JS 在此处统一处理 - 不使用任何内联 onclick     -->
+<!-- ============================================ -->
+<script>
+(function() {
+  'use strict';
+
+  // ===== 1. 选择题：事件委托 =====
+  document.addEventListener('click', function(event) {
+    // 1.1 选项点击
+    var optionEl = event.target.closest('li.option');
+    if (optionEl) {
+      var ul = optionEl.closest('ul.options');
+      var questionEl = optionEl.closest('.question');
+      if (!ul || !questionEl) return;
+      // 锁定：已答过的不可再改
+      if (ul.dataset.answered === 'true') return;
+
+      var key = optionEl.dataset.key;
+      var correctKey = ul.dataset.correct;
+
+      // 给所有兄弟添加锁定标记
+      var siblings = ul.querySelectorAll('li.option');
+      siblings.forEach(function(li) {
+        li.classList.add('locked');
+        if (li.dataset.key === correctKey) {
+          li.classList.add('correct');
+        }
+      });
+      if (key !== correctKey) {
+        optionEl.classList.add('wrong');
+      }
+
+      ul.dataset.answered = 'true';
+      ul.dataset.userPick = key;
+      ul.dataset.isCorrect = (key === correctKey) ? 'yes' : 'no';
+
+      // 自动展开答案
+      var details = questionEl.querySelector('details.answer-block');
+      if (details) details.open = true;
+
+      updateProgress();
+      return;
+    }
+
+    // 1.2 展开/收起/重置全局按钮
+    if (event.target.id === 'expand-all') {
+      var allDetails = document.querySelectorAll('details.answer-block');
+      allDetails.forEach(function(d) { d.open = true; });
+      return;
+    }
+    if (event.target.id === 'collapse-all') {
+      var allDetails2 = document.querySelectorAll('details.answer-block');
+      allDetails2.forEach(function(d) { d.open = false; });
+      return;
+    }
+    if (event.target.id === 'reset-all') {
+      // 清除所有选择题的作答状态
+      var mcqs = document.querySelectorAll('ul.options');
+      mcqs.forEach(function(ul) {
+        ul.dataset.answered = 'false';
+        delete ul.dataset.userPick;
+        delete ul.dataset.isCorrect;
+        var lis = ul.querySelectorAll('li.option');
+        lis.forEach(function(li) {
+          li.classList.remove('correct', 'wrong', 'locked');
+        });
+      });
+      // 收起所有答案
+      var ds = document.querySelectorAll('details.answer-block');
+      ds.forEach(function(d) { d.open = false; });
+      updateProgress();
+      return;
+    }
+
+    // 1.3 回到顶部
+    if (event.target.id === 'back-to-top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+  });
+
+  // ===== 2. 进度统计 =====
+  function updateProgress() {
+    var mcqs = document.querySelectorAll('ul.options');
+    var total = mcqs.length;
+    var answered = 0, correct = 0;
+    mcqs.forEach(function(ul) {
+      if (ul.dataset.answered === 'true') {
+        answered++;
+        if (ul.dataset.isCorrect === 'yes') correct++;
+      }
+    });
+    var totalEl = document.getElementById('total-mcq');
+    var ansEl = document.getElementById('answered-count');
+    var corEl = document.getElementById('correct-count');
+    if (totalEl) totalEl.textContent = total;
+    if (ansEl) ansEl.textContent = answered;
+    if (corEl) corEl.textContent = correct;
+  }
+
+  // ===== 3. 回到顶部按钮显隐 =====
+  var btnTop = document.getElementById('back-to-top');
+  window.addEventListener('scroll', function() {
+    if (!btnTop) return;
+    if (window.scrollY > 400) {
+      btnTop.classList.add('show');
+    } else {
+      btnTop.classList.remove('show');
+    }
+  }, { passive: true });
+
+  // ===== 4. 初始化进度 =====
+  // DOM 已就绪（脚本在 body 末尾）：直接初始化
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>

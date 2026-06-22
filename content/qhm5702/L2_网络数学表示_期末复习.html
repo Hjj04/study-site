@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L2 网络的数学表示 - 期末复习</title>
+<!-- MathJax CDN -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true
+  },
+  svg: { fontCache: 'global' },
+  startup: {
+    ready: () => {
+      MathJax.startup.defaultReady();
+      document.getElementById('mathjax-status').style.display = 'none';
+    }
+  }
+};
+</script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+  onerror="document.getElementById('mathjax-status').textContent='⚠️ 数学公式渲染库加载失败，公式将以源代码显示，但不影响阅读其他内容。';document.getElementById('mathjax-status').style.background='#fff3cd';document.getElementById('mathjax-status').style.color='#856404';"></script>
+
+<style>
+  /* ============== 基础重置与变量 ============== */
+  :root {
+    --primary: #2c3e50;
+    --accent: #e67e22;
+    --accent-light: #f39c12;
+    --bg: #fdfcf8;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --text-soft: #5a6c7d;
+    --border: #e8e0d4;
+    --highlight: #fff8e7;
+    --warning-bg: #fdf2e9;
+    --warning-border: #e67e22;
+    --tip-bg: #e8f4f8;
+    --tip-border: #3498db;
+    --formula-bg: #f4f1ea;
+    --correct: #27ae60;
+    --correct-bg: #d5f4e6;
+    --wrong: #c0392b;
+    --wrong-bg: #fadbd8;
+    --shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+    --shadow-lg: 0 6px 20px rgba(44, 62, 80, 0.12);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 70px; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    line-height: 1.75;
+    color: var(--text);
+    background: var(--bg);
+    font-size: 16px;
+  }
+
+  /* ============== 顶部导航 ============== */
+  .topnav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--primary);
+    color: white;
+    padding: 0.7rem 1rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .topnav .brand {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .topnav .brand::before {
+    content: "📊";
+    font-size: 1.3rem;
+  }
+  .topnav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+  }
+  .topnav a {
+    color: white;
+    text-decoration: none;
+    padding: 0.35rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+  }
+  .topnav a:hover { background: rgba(255,255,255,0.15); }
+
+  /* ============== 容器 ============== */
+  .container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 1.5rem 1.2rem 4rem;
+  }
+
+  /* ============== 头部 ============== */
+  header.hero {
+    text-align: center;
+    padding: 2rem 1rem 1.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 3px solid var(--accent);
+  }
+  header.hero h1 {
+    margin: 0 0 0.5rem;
+    font-size: 2rem;
+    color: var(--primary);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  header.hero .subtitle {
+    color: var(--text-soft);
+    font-size: 1rem;
+    margin: 0;
+  }
+  header.hero .meta {
+    display: inline-block;
+    margin-top: 0.7rem;
+    padding: 0.25rem 0.8rem;
+    background: var(--accent);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  /* ============== 节标题 ============== */
+  .section {
+    background: var(--card);
+    margin-bottom: 2rem;
+    padding: 1.8rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    border-left: 5px solid var(--accent);
+  }
+  .section h2 {
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 1.55rem;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section h2 .num {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 32px;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .section h3 {
+    color: var(--primary);
+    margin-top: 1.8rem;
+    font-size: 1.2rem;
+    border-left: 4px solid var(--accent-light);
+    padding-left: 0.7rem;
+  }
+  .section h4 {
+    color: var(--accent);
+    margin-top: 1.2rem;
+    font-size: 1.05rem;
+  }
+
+  /* ============== 重点框 ============== */
+  .definition {
+    background: var(--highlight);
+    border-left: 4px solid var(--accent);
+    padding: 0.8rem 1rem;
+    margin: 0.8rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .definition::before {
+    content: "📖 定义";
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+  }
+  .formula {
+    background: var(--formula-bg);
+    padding: 0.9rem 1rem;
+    border-radius: 6px;
+    margin: 0.8rem 0;
+    overflow-x: auto;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .warning {
+    background: var(--warning-bg);
+    border-left: 4px solid var(--warning-border);
+    padding: 0.8rem 1rem;
+    margin: 0.8rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .warning::before {
+    content: "⚠️ 易错点";
+    font-weight: 700;
+    color: var(--warning-border);
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+  }
+  .tip {
+    background: var(--tip-bg);
+    border-left: 4px solid var(--tip-border);
+    padding: 0.8rem 1rem;
+    margin: 0.8rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip::before {
+    content: "💡 类比/直觉";
+    font-weight: 700;
+    color: var(--tip-border);
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+  }
+  .example {
+    background: #f0f7ed;
+    border-left: 4px solid #27ae60;
+    padding: 0.8rem 1rem;
+    margin: 0.8rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .example::before {
+    content: "🔍 例子";
+    font-weight: 700;
+    color: #27ae60;
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+  }
+
+  /* ============== 考点条目 ============== */
+  .knowledge-item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1rem;
+    background: #fefcf8;
+    transition: box-shadow 0.2s;
+  }
+  .knowledge-item:hover { box-shadow: var(--shadow); }
+  .knowledge-title {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .stars {
+    font-size: 0.85rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .stars-3 { background: #fadbd8; color: #c0392b; }
+  .stars-2 { background: #fdebd0; color: #b9770e; }
+  .stars-1 { background: #d6eaf8; color: #2874a6; }
+  .tag {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    background: var(--border);
+    color: var(--text-soft);
+    border-radius: 10px;
+    font-size: 0.75rem;
+    margin-right: 0.3rem;
+    font-weight: 600;
+  }
+  .tag-memory { background: #fce4d6; color: #d35400; }
+  .tag-compute { background: #d4e6f1; color: #1f618d; }
+
+  /* ============== 复习题 ============== */
+  .question-block {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.2rem;
+    margin-bottom: 1.2rem;
+    background: var(--card);
+    box-shadow: var(--shadow);
+  }
+  .q-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .q-meta {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .q-type {
+    background: var(--primary);
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .q-diff {
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .q-diff-easy { background: #d5f4e6; color: #27ae60; }
+  .q-diff-mid { background: #fdebd0; color: #b9770e; }
+  .q-diff-hard { background: #fadbd8; color: #c0392b; }
+  .q-points {
+    background: var(--border);
+    color: var(--text-soft);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .q-number {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1.05rem;
+  }
+  .q-stem {
+    margin: 0.6rem 0 1rem;
+    line-height: 1.7;
+  }
+
+  /* ============== 选项 ============== */
+  .options {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 1rem;
+  }
+  .options li {
+    padding: 0.6rem 0.9rem;
+    margin: 0.4rem 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #fafafa;
+  }
+  .options li:hover { background: var(--highlight); border-color: var(--accent-light); }
+  .options li.locked { cursor: default; }
+  .options li.locked:hover { background: #fafafa; }
+  .options li.selected-correct {
+    background: var(--correct-bg) !important;
+    border-color: var(--correct);
+    color: #1e6f3f;
+    font-weight: 600;
+  }
+  .options li.selected-wrong {
+    background: var(--wrong-bg) !important;
+    border-color: var(--wrong);
+    color: #8b2622;
+    font-weight: 600;
+  }
+  .options li.show-correct {
+    background: var(--correct-bg) !important;
+    border-color: var(--correct);
+    color: #1e6f3f;
+  }
+  .opt-label {
+    font-weight: 700;
+    margin-right: 0.5rem;
+    color: var(--accent);
+  }
+  .options li.selected-correct .opt-label,
+  .options li.show-correct .opt-label { color: var(--correct); }
+  .options li.selected-wrong .opt-label { color: var(--wrong); }
+
+  /* ============== 答案折叠（关键：原生 details/summary） ============== */
+  details.answer-block {
+    margin-top: 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  details.answer-block summary {
+    cursor: pointer;
+    padding: 0.6rem 1rem;
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+    list-style: none;
+    user-select: none;
+    transition: background 0.2s;
+  }
+  details.answer-block summary:hover { background: var(--accent-light); }
+  details.answer-block summary::-webkit-details-marker { display: none; }
+  details.answer-block summary::before {
+    content: "▶";
+    display: inline-block;
+    margin-right: 0.5rem;
+    transition: transform 0.2s;
+  }
+  details.answer-block[open] summary::before { transform: rotate(90deg); }
+  details.answer-block .answer-content {
+    padding: 1rem 1.2rem;
+    background: #fffbf5;
+    border-top: 1px solid var(--border);
+  }
+  details.answer-block .answer-content h5 {
+    margin: 0.5rem 0 0.3rem;
+    color: var(--accent);
+    font-size: 0.95rem;
+  }
+  details.answer-block .answer-content h5:first-child { margin-top: 0; }
+
+  /* ============== 控制条 ============== */
+  .controls {
+    background: var(--primary);
+    color: white;
+    padding: 0.9rem 1.2rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    box-shadow: var(--shadow);
+  }
+  .controls button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  .controls button:hover { background: var(--accent-light); }
+  .controls .stats {
+    font-size: 0.9rem;
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+  }
+  .controls .stats span strong { color: var(--accent-light); font-size: 1.05rem; }
+
+  /* ============== 表格 ============== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.8rem 0;
+    font-size: 0.92rem;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.7rem;
+    text-align: left;
+  }
+  th {
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+  }
+  tr:nth-child(even) { background: #faf8f3; }
+
+  /* ============== 矩阵显示 ============== */
+  .matrix {
+    display: inline-block;
+    padding: 0.4rem 0.6rem;
+    font-family: "Cambria Math", "Times New Roman", serif;
+    font-size: 1.05rem;
+    background: white;
+    border-left: 2px solid var(--text);
+    border-right: 2px solid var(--text);
+    margin: 0.3rem;
+    vertical-align: middle;
+  }
+  .matrix table { border: none; box-shadow: none; margin: 0; background: transparent; }
+  .matrix td { border: none; padding: 0.1rem 0.4rem; text-align: center; background: transparent; }
+
+  /* ============== 回到顶部 ============== */
+  #back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    display: none;
+    z-index: 99;
+    transition: background 0.2s, transform 0.2s;
+  }
+  #back-to-top:hover { background: var(--accent-light); transform: translateY(-3px); }
+  #back-to-top.show { display: block; }
+
+  /* ============== MathJax 状态 ============== */
+  #mathjax-status {
+    position: fixed;
+    bottom: 90px;
+    right: 30px;
+    background: var(--tip-bg);
+    color: var(--tip-border);
+    padding: 0.5rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    z-index: 98;
+    max-width: 300px;
+    box-shadow: var(--shadow);
+  }
+
+  /* ============== 知识地图 ============== */
+  .mindmap {
+    background: linear-gradient(135deg, #faf6ec 0%, #fff 100%);
+    padding: 1.2rem;
+    border-radius: 10px;
+    margin: 1.2rem 0;
+    border: 1px dashed var(--accent-light);
+  }
+  .mindmap h4 { margin-top: 0; color: var(--accent); }
+
+  /* ============== 响应式 ============== */
+  @media (max-width: 768px) {
+    body { font-size: 15px; }
+    .container { padding: 1rem 0.8rem 3rem; }
+    .section { padding: 1.2rem; }
+    header.hero h1 { font-size: 1.5rem; }
+    .topnav { padding: 0.5rem 0.8rem; }
+    .topnav a { font-size: 0.8rem; padding: 0.3rem 0.6rem; }
+    .controls { flex-direction: column; align-items: stretch; }
+    .controls .stats { justify-content: space-between; }
+    table { font-size: 0.85rem; }
+    #back-to-top { width: 42px; height: 42px; bottom: 20px; right: 20px; }
+  }
+
+  /* ============== 强调样式 ============== */
+  strong.key { color: var(--accent); }
+  code {
+    background: var(--formula-bg);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.92rem;
+    color: var(--primary);
+  }
+  ul.tight li { margin-bottom: 0.3rem; }
+</style>
+</head>
+<body>
+
+<!-- ============== 顶部导航 ============== -->
+<nav class="topnav">
+  <div class="brand">L2 网络数学表示</div>
+  <ul>
+    <li><a href="#section-overview">总览</a></li>
+    <li><a href="#section-lecture">📚 讲解</a></li>
+    <li><a href="#section-points">🎯 考点</a></li>
+    <li><a href="#section-quiz">📝 复习题</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+<!-- ============== Hero ============== -->
+<header class="hero" id="section-overview">
+  <h1>L2: 网络的数学表示</h1>
+  <p class="subtitle">Mathematical Representation of Networks · 期末复习指南</p>
+  <span class="meta">网络科学 Network Science</span>
+</header>
+
+<!-- ============================================================== -->
+<!-- ============== 第一部分：课程讲解 ================================ -->
+<!-- ============================================================== -->
+<section class="section" id="section-lecture">
+  <h2><span class="num">1</span>课程内容讲解</h2>
+
+  <!-- ===== 知识脉络 ===== -->
+  <div class="mindmap">
+    <h4>🗺️ 整体知识脉络</h4>
+    <p>本章要解决的核心问题是：<strong>如何用数学语言精确描述一个网络？</strong></p>
+    <p>网络科学研究"复杂系统中元素之间的关系"。但只画图是不够的——我们需要可计算、可分析的数学对象。本章围绕三个层次展开：</p>
+    <ol class="tight">
+      <li><strong>第一层：网络的"长相"分类</strong>——网络有无方向？是否有重边/自环？是否带权重？是否分两类节点（二分网络）？</li>
+      <li><strong>第二层：网络的"骨架"度量</strong>——度、平均度、密度、路径长度、直径、连通分量等。回答"网络稠密吗？连通吗？两点之间多远？"</li>
+      <li><strong>第三层：网络的"矩阵"表示</strong>——邻接矩阵 A、关联矩阵 B、拉普拉斯矩阵 L。把网络变成矩阵，就能用线性代数来分析它。</li>
+    </ol>
+    <p>最后还讲了<strong>高效存储</strong>（边列表、字典）——因为现实网络节点很多，邻接矩阵会非常稀疏，浪费空间。</p>
+    <p><strong>逻辑关系</strong>：定义网络 → 区分类型 → 用矩阵编码 → 用矩阵计算各种性质（如 $A^r_{ij}$ 给出长度为 $r$ 的游走数） → 推广到分量、谱性质。</p>
+  </div>
+
+  <!-- ===== 模块 1：网络类型 ===== -->
+  <h3>模块 1：网络的基本类型</h3>
+
+  <h4>1.1 无向网络（Undirected Network）</h4>
+  <div class="definition">
+    无向网络 $G = G(V, E)$ 由两个集合构成：
+    <ul class="tight">
+      <li>$V$：节点（vertices / nodes）集合，记为 $v_1, v_2, \dots$</li>
+      <li>$E$：边（edges / links）集合，每条边是<strong>无序对</strong> $\{v_i, v_j\}$</li>
+    </ul>
+    <strong>阶 (order)</strong>：$n = |V|$（节点数）；<strong>规模 (size)</strong>：$m = |E|$（边数）<br>
+    一条边 $\{v_i, v_j\}$ 的两端点 $v_i, v_j$ 称为该边的 <strong>endpoints</strong>，边"关联（incident to）"两端点。
+  </div>
+  <div class="tip">
+    把网络想象成<strong>社交圈合影</strong>：人是节点，两人若是朋友就拉一根绳子——这根绳子两头不分主次，就是无向边。无向网络典型例子：航空网（双向飞行）、班级友谊网、佛罗伦萨家族联姻网。
+  </div>
+
+  <h4>1.2 重边、自环与简单网络</h4>
+  <div class="definition">
+    <ul class="tight">
+      <li><strong>重边（multiedge）</strong>：两个节点间存在多条边。重边的数量叫 <strong>重数（multiplicity）</strong>。</li>
+      <li><strong>自环（self-edge / self-loop）</strong>：一条连接某节点到自身的边。</li>
+      <li><strong>简单网络（simple network）</strong>：既没有重边也没有自环的网络。</li>
+    </ul>
+  </div>
+
+  <h4>1.3 有向网络（Directed Network / Digraph）</h4>
+  <div class="definition">
+    有向网络的边集 $E$ 是<strong>有序对</strong> $(v_i, v_j)$ 构成的集合。<br>
+    边 $(v_i, v_j)$：$v_i$ 是 <strong>尾（tail）</strong>，$v_j$ 是 <strong>头（head）</strong>，方向从 $v_i$ 指向 $v_j$。
+  </div>
+  <div class="example">
+    <strong>食物网</strong>（猎物→捕食者）、<strong>万维网</strong>（页面超链接）、<strong>微博关注</strong>（A 关注 B 不代表 B 关注 A）——这些都是有向网络。
+  </div>
+
+  <h4>1.4 加权网络（Weighted Network）</h4>
+  <p>每条边带一个数字（权重 $w_{ij}$）。例如航线上的"每天航班数"、"票价"、"飞行时间"都可以作为权重。</p>
+
+  <h4>1.5 二分网络（Bipartite Network）</h4>
+  <div class="definition">
+    二分网络的节点集分为两个不相交的子集 $V_1, V_2$，每条边的两个端点必须分属 $V_1$ 和 $V_2$（即<strong>同一类节点之间没有边</strong>）。
+  </div>
+  <div class="tip">
+    想象<strong>推荐系统</strong>：一类节点是"用户"，另一类是"商品"，边表示"购买"——用户和用户之间、商品和商品之间都没有边。又如"人-事件"参与关系网。
+  </div>
+
+  <h4>1.6 单模投影（One-mode Projection）</h4>
+  <p>将二分网络"投影"到其中一类节点上，得到只有一种节点的加权网络：</p>
+  <ul class="tight">
+    <li>$V_1$ 上的投影：$V_1$ 中两节点 $v, w$ 相连 $\iff$ 它们在 $V_2$ 中至少有一个共同邻居；边权 = 共同邻居的数量。</li>
+    <li>$V_2$ 上的投影：类似定义。</li>
+  </ul>
+  <div class="example">
+    "学生-课程"二分网投影到学生：两个学生相连，权重是他们共同上的课程数；投影到课程：两门课相连，权重是同时选这两门课的学生数。
+  </div>
+
+  <!-- ===== 模块 2：邻接矩阵 ===== -->
+  <h3>模块 2：邻接矩阵（Adjacency Matrix）</h3>
+
+  <h4>2.1 简单无向网络</h4>
+  <div class="definition">
+    设网络 $G$ 有 $n$ 个节点。邻接矩阵 $A$ 是 $n \times n$ 矩阵：
+    <ul class="tight">
+      <li>$A_{ij} = 1$ 若 $i, j$ 间有边</li>
+      <li>$A_{ij} = 0$ 否则</li>
+    </ul>
+    <strong>关键性质</strong>：无向网络的 $A$ 是<strong>对称的</strong>（$A_{ij} = A_{ji}$）。
+  </div>
+
+  <h4>2.2 含重边和自环的无向网络</h4>
+  <div class="warning">
+    这是<strong>极易踩坑</strong>的地方！
+    <ul class="tight">
+      <li>$A_{ij} = $ $i, j$ 间边的重数（multiplicity）</li>
+      <li><strong>$A_{ii} = 2$ 表示一个自环</strong>（双自环 = 4，三自环 = 6 …），不是 1！</li>
+    </ul>
+    <strong>原因</strong>：矩阵记的是"边端点的数量"。一条普通边贡献 2 个端点（分给两个不同节点），所以 $A_{ij}=A_{ji}=1$（合计 2 个端点）；一条自环的两个端点都落在同一节点上，所以记 $A_{ii}=2$。
+  </div>
+
+  <h4>2.3 加权网络</h4>
+  <p>$A_{ij} = w_{ij}$（边的权重），$A_{ij} = 0$ 若无边。</p>
+
+  <h4>2.4 有向网络（含重边/自环）</h4>
+  <div class="definition">
+    <ul class="tight">
+      <li>$A_{ij} = 1$ 若有从 $i$ 到 $j$ 的边（注意方向！）</li>
+      <li>$A_{ij} = 0$ 否则</li>
+      <li>有重边时，$A_{ij}$ = 从 $i$ 到 $j$ 的边的重数</li>
+      <li><strong>有向自环：$A_{ii} = 1$ 表示一个自环</strong>（双自环 = 2），与无向情形不同！</li>
+    </ul>
+    有向网络的 $A$ 通常是<strong>不对称的</strong>。
+  </div>
+  <div class="warning">
+    <strong>方向约定的两派</strong>：本课程的约定是 $A_{ij} = 1$ 表示有边 <strong>从 $i$ 到 $j$</strong>（Newman 教材的约定）。但某些其他教材采用相反约定（$A_{ij}$ 表示 $j \to i$）。考试以本课件为准！
+  </div>
+
+  <!-- ===== 模块 3：网络同构 ===== -->
+  <h3>模块 3：网络同构（Isomorphism）</h3>
+  <div class="definition">
+    $G = (V, E)$ 与 $G' = (V', E')$ 同构（isomorphic），当且仅当存在双射 $f: V \to V'$，使得 $v_i, v_j$ 在 $G$ 中相连 $\iff$ $f(v_i), f(v_j)$ 在 $G'$ 中相连（保持连接关系）。
+  </div>
+  <div class="tip">
+    通俗讲：两个网络"<strong>结构完全一样</strong>，只是节点编号不同"。就像两张完全相同的电路图，只是元件标号换了。
+  </div>
+  <div class="formula">
+    <strong>命题</strong>：$G$ 与 $G'$ 同构 $\iff$ 邻接矩阵 $A'$ 可由 $A$ <strong>同时对行和列施加同一个置换</strong>得到。
+  </div>
+
+  <!-- ===== 模块 4：度与密度 ===== -->
+  <h3>模块 4：度、平均度、密度</h3>
+
+  <h4>4.1 无向网络的度</h4>
+  <div class="definition">
+    节点 $i$ 的度 $k_i$ 是与之关联的边数：
+    $$k_i = \sum_{j=1}^{n} A_{ij}$$
+  </div>
+  <div class="formula">
+    边数与度的关系：$\displaystyle 2m = \sum_{i=1}^n k_i = \sum_{i,j} A_{ij}$
+  </div>
+  <div class="warning">
+    自环必须按"$A_{ii} = 2$"的约定计入！否则上面这个公式不成立。这正是为什么定义无向网络自环的矩阵值为 2 的原因。
+  </div>
+
+  <h4>4.2 平均度与密度</h4>
+  <div class="formula">
+    平均度：$\displaystyle c = \frac{1}{n}\sum_{i=1}^n k_i = \frac{2m}{n}$<br><br>
+    密度：$\displaystyle \rho = \frac{m}{\binom{n}{2}} = \frac{2m}{n(n-1)} = \frac{c}{n-1}$
+  </div>
+  <p>密度 = 实际边数 / 理论上最多可能边数。</p>
+  <div class="tip">
+    现实网络多为<strong>稀疏（sparse）</strong>：当 $n \to \infty$ 时 $\rho \to 0$，等价于平均度 $c$ 增长慢于线性。例：Facebook 用户数 30 亿，但平均好友数也就几百，密度极低。
+  </div>
+
+  <h4>4.3 有向网络的入度与出度</h4>
+  <div class="definition">
+    <ul class="tight">
+      <li><strong>入度 $k_i^{in}$</strong>：射入 $i$ 的边数 = $\sum_{j=1}^n A_{ji}$（沿 $i$ 这一列求和）</li>
+      <li><strong>出度 $k_i^{out}$</strong>：从 $i$ 出发的边数 = $\sum_{j=1}^n A_{ij}$（沿 $i$ 这一行求和）</li>
+    </ul>
+    总边数：$\displaystyle m = \sum_i k_i^{in} = \sum_i k_i^{out} = \sum_{i,j} A_{ij}$
+  </div>
+  <div class="warning">
+    <strong>记忆口诀</strong>：行求和 = 出度（往外发），列求和 = 入度（向内收）。<br>
+    一定要看清课程约定的 $A_{ij}$ 是哪个方向！
+  </div>
+
+  <!-- ===== 模块 5：游走、路径、最短路径 ===== -->
+  <h3>模块 5：游走、路径、最短路径</h3>
+  <div class="definition">
+    <ul class="tight">
+      <li><strong>游走（walk）</strong>：节点序列，相邻节点间存在边。有向情形必须沿边方向走。<em>允许重复节点或边</em>。</li>
+      <li><strong>路径（path）</strong>：不重复节点（因此也不重复边）的游走。</li>
+      <li><strong>路径长度</strong>：经过的边数（加权网络中是边权之和）。</li>
+      <li><strong>最短路径（shortest path）</strong>：边数最少（或权重和最小）的路径。两点间最短路径可能不唯一。</li>
+      <li><strong>直径（diameter）</strong>：所有点对之间的最短路径长度中的<strong>最大值</strong>。</li>
+    </ul>
+  </div>
+
+  <h4>用邻接矩阵幂计算游走数</h4>
+  <div class="formula">
+    $$N_{ij}^{(r)} = (A^r)_{ij}$$
+  </div>
+  <p>从 $i$ 到 $j$ 长度为 $r$ 的游走数等于邻接矩阵 $r$ 次方的第 $(i,j)$ 项。</p>
+  <div class="tip">
+    <strong>证明思路</strong>（$r=2$）：从 $i$ 到 $j$ 走两步，必经过某中间点 $k$，方案数为 $\sum_k A_{ik} A_{kj} = (A^2)_{ij}$。$r=3$ 类似，过两个中间点 $k, l$，得 $\sum_{k,l} A_{ik}A_{kl}A_{lj} = (A^3)_{ij}$。可用归纳法推广到任意 $r$。
+  </div>
+
+  <!-- ===== 模块 6：循环与无环网络 ===== -->
+  <h3>模块 6：循环（Cycles）与无环网络</h3>
+  <div class="definition">
+    <ul class="tight">
+      <li><strong>循环（cycle）</strong>：一段有向边序列，起点 = 终点，且方向一致。</li>
+      <li><strong>无环网络（acyclic network）</strong>：不含任何循环的有向网络。</li>
+    </ul>
+  </div>
+  <div class="example">
+    <strong>引用网络（citation network）</strong>是天然无环的：论文只能引用<em>之前</em>已发表的论文，所以不可能出现 A→B→C→A 的循环。
+  </div>
+  <div class="formula">
+    <strong>命题（重要）</strong>：
+    <ul class="tight" style="text-align:left;">
+      <li>$G$ 无环 $\iff$ 可以画图使所有边都<strong>向下</strong>指。</li>
+      <li>对无环有向网络的节点重新编号，可以使其邻接矩阵 $A$ <strong>严格上三角</strong>（主对角线及以下全为 0）。</li>
+    </ul>
+    <em>思路</em>：从一个"无出边"的节点开始（汇点），反向构造拓扑序。
+  </div>
+
+  <!-- ===== 模块 7：关联矩阵 ===== -->
+  <h3>模块 7：关联矩阵（Incidence Matrix）</h3>
+  <p>用于二分网络。设 $V_1$ 有 $n_1$ 个节点，$V_2$ 有 $n_2$ 个节点。</p>
+  <div class="definition">
+    关联矩阵 $B$ 是 $n_1 \times n_2$ 矩阵：
+    <ul class="tight">
+      <li>$B_{ij} = 1$ 若 $i \in V_1$ 与 $j \in V_2$ 相连</li>
+      <li>$B_{ij} = 0$ 否则</li>
+    </ul>
+    注意：$B$ 是<strong>长方形</strong>矩阵，不是方阵。
+  </div>
+
+  <!-- ===== 模块 8：连通分量 ===== -->
+  <h3>模块 8：连通分量（Components）</h3>
+
+  <h4>8.1 无向网络</h4>
+  <div class="definition">
+    分量 $C$ 是一个满足下列两个条件的节点集合：
+    <ol class="tight">
+      <li>$C$ 中任意两节点之间存在路径</li>
+      <li>极大性：$G$ 中其他节点都不能加入 $C$ 同时保持条件 1</li>
+    </ol>
+    若 $G$ 仅由一个分量构成，则称 $G$ 是<strong>连通的（connected）</strong>。
+  </div>
+  <p>若将同一分量的节点连续编号，邻接矩阵 $A$ 会呈现<strong>块对角形（block-diagonal）</strong>。</p>
+
+  <h4>8.2 有向网络</h4>
+  <div class="definition">
+    <ul class="tight">
+      <li><strong>弱连通分量</strong>：忽略方向后的（无向意义下的）分量。</li>
+      <li><strong>强连通分量 $C$</strong>：极大节点集，任意两节点间存在<strong>双向</strong>有向路径。</li>
+      <li><strong>出分量（out-component）of $C$</strong>：从 $C$ 中任一节点出发，沿有向路径可到达的所有节点的集合（包含 $C$ 本身）。</li>
+      <li><strong>入分量（in-component）of $C$</strong>：能通过有向路径到达 $C$ 中任一节点的所有节点的集合（包含 $C$ 本身）。</li>
+    </ul>
+  </div>
+  <div class="tip">
+    <strong>重要性质</strong>：
+    <ul class="tight">
+      <li>任何强连通分量 $\subseteq$ 某个弱连通分量。</li>
+      <li>$C = (\text{out-component of } C) \cap (\text{in-component of } C)$。</li>
+    </ul>
+  </div>
+
+  <!-- ===== 模块 9：拉普拉斯矩阵 ===== -->
+  <h3>模块 9：拉普拉斯矩阵（Laplacian）</h3>
+  <div class="warning">
+    <strong>前提</strong>：拉普拉斯矩阵<strong>只对简单、无权、无向网络</strong>定义。有向网络<strong>没有</strong>拉普拉斯矩阵的标准推广！
+  </div>
+  <div class="definition">
+    设 $G$ 是简单无向网络，节点 $i$ 的度为 $k_i$。拉普拉斯矩阵 $L$ 是 $n \times n$ 对称矩阵：
+    <ul class="tight">
+      <li>$L_{ii} = k_i$（对角元 = 度）</li>
+      <li>$L_{ij} = -1$ 若 $i,j$ 有边</li>
+      <li>$L_{ij} = 0$ 否则</li>
+    </ul>
+    <strong>矩阵形式</strong>：$L = D - A$，其中 $D = \text{diag}(k_1, \dots, k_n)$ 是度对角矩阵。
+  </div>
+
+  <div class="formula">
+    <strong>拉普拉斯的 7 大性质</strong>（必背！）：
+    <ol class="tight" style="text-align:left;">
+      <li>每一行、每一列元素之和为 0</li>
+      <li>所有特征值均为<strong>实数</strong>（因 $L$ 对称）</li>
+      <li>所有特征值均<strong>非负</strong>（$L$ 半正定）</li>
+      <li>至少有一个<strong>零特征值</strong>（对应特征向量为全 1 向量 $\mathbf{1}$）</li>
+      <li>$L$ <strong>不可逆</strong>（因有 0 特征值）</li>
+      <li><strong>零特征值的个数 = 网络分量数</strong></li>
+      <li>第二小特征值 ≠ 0 $\iff$ 网络连通；此第二小特征值称为<strong>代数连通度（algebraic connectivity）</strong></li>
+    </ol>
+  </div>
+
+  <!-- ===== 模块 10：高效存储 ===== -->
+  <h3>模块 10：高效存储</h3>
+  <p>邻接矩阵和拉普拉斯包含网络的全部信息，但 $n \times n$ 对大型稀疏网络太浪费空间。常用替代：</p>
+  <ul class="tight">
+    <li><strong>边列表（Edge List）</strong>：所有边的列表，例如 <code>[(1,2),(2,3),(3,1)]</code>，可附加属性。</li>
+    <li><strong>邻接字典（Dictionary of Lists）</strong>：每个键是节点，值是其邻居列表，例如 <code>{1:[2], 2:[1,3], 3:[1]}</code>。</li>
+  </ul>
+  <div class="warning">
+    <strong>边列表的问题</strong>：如果某节点是<strong>孤立节点</strong>（没有任何边），它根本不会出现在边列表里！丢失了节点信息。<br>
+    <strong>解决方案</strong>：边列表 + 单独的节点列表。
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- ============== 第二部分：考点梳理 ================================ -->
+<!-- ============================================================== -->
+<section class="section" id="section-points">
+  <h2><span class="num">2</span>考点梳理</h2>
+
+  <p style="color: var(--text-soft); font-style: italic;">
+    重要程度标注：★★★ 高频必考（讲解详细、有专项练习） ｜ ★★ 中等（有定义和例子） ｜ ★ 低频（提及但未深入）<br>
+    <span class="tag tag-memory">记忆</span> = 需要记住定义/公式；<span class="tag tag-compute">理解/计算</span> = 需要会推导或算题。
+  </p>
+
+  <!-- 类别 1：网络类型 -->
+  <h3>一、网络类型与基本概念</h3>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>1. 无向网络（Undirected Network）</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span>
+    <p><strong>定义</strong>：$G = (V, E)$，$V$ 为节点集，$E$ 为<strong>无序对</strong> $\{v_i, v_j\}$ 构成的边集。</p>
+    <p><strong>关键术语</strong>：阶 $n = |V|$、规模 $m = |E|$、端点（endpoints）、关联（incident to）。</p>
+    <p><strong>易错点</strong>：边是<strong>无序对</strong>，$\{v_i, v_j\} = \{v_j, v_i\}$。</p>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>2. 有向网络（Directed Network / Digraph）</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span>
+    <p><strong>定义</strong>：$E$ 是<strong>有序对</strong> $(v_i, v_j)$ 构成的集合。</p>
+    <p><strong>关键术语</strong>：尾（tail）= $v_i$、头（head）= $v_j$、边从尾指向头。</p>
+    <p><strong>易错点</strong>：$(v_i, v_j) \ne (v_j, v_i)$；表示有向时记号是括号而非花括号。</p>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>3. 重边、自环、简单网络</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span>
+    <ul class="tight">
+      <li><strong>重边（multiedge）</strong>：连接同一对节点的多条边；其数量称为<strong>重数</strong>。</li>
+      <li><strong>自环（self-loop）</strong>：起止于同一节点的边。</li>
+      <li><strong>简单网络（simple）</strong>：无重边、无自环。</li>
+    </ul>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>4. 加权网络</span>
+      <span class="stars stars-2">★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span>
+    <p>每条边带数值权重 $w_{ij}$。在加权邻接矩阵中 $A_{ij} = w_{ij}$。</p>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>5. 二分网络（Bipartite Network）</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span> <span class="tag tag-compute">理解</span>
+    <p><strong>定义</strong>：节点集分为两个不相交集合 $V_1, V_2$；所有边的端点一个在 $V_1$，一个在 $V_2$（同类节点之间<strong>无边</strong>）。</p>
+    <p><strong>应用</strong>：成员关系（人-社团）、推荐系统（用户-商品）、参与关系（人-事件）。</p>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>6. 单模投影（One-mode Projection）</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-compute">计算</span>
+    <p><strong>定义</strong>：将二分网投影到 $V_1$（或 $V_2$）：$V_1$ 中两节点相连 $\iff$ 它们在 $V_2$ 中至少有一个公共邻居；<strong>边权 = 公共邻居数量</strong>。</p>
+    <p><strong>易错点</strong>：投影是<strong>加权</strong>无向网络；权重不一定为 1。注意每对节点只算<strong>一次</strong>边。</p>
+  </div>
+
+  <!-- 类别 2：邻接矩阵 -->
+  <h3>二、邻接矩阵</h3>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>7. 简单无向网络的邻接矩阵</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-compute">计算</span>
+    <p>$A$ 是 $n \times n$ 方阵：$A_{ij} = 1$（有边）或 $0$（无边），且 $A$ <strong>对称</strong>。</p>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>8. 含重边/自环的无向邻接矩阵</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span> <span class="tag tag-compute">计算</span>
+    <ul class="tight">
+      <li>$A_{ij}$ = $i,j$ 间边的重数</li>
+      <li><strong>$A_{ii} = 2 \times$ 自环数</strong>（单自环为 2，双自环为 4 ……）</li>
+    </ul>
+    <p><strong>原因</strong>：矩阵记的是"边端点的数量"。普通边的两端点分别落在两个不同节点上，自环的两端点都落在同一节点上。</p>
+    <div class="warning" style="margin-top: 0.5rem;">这是<strong>最容易出错</strong>的考点之一！务必记住 $A_{ii} = 2$（无向自环）。</div>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>9. 加权网络的邻接矩阵</span>
+      <span class="stars stars-2">★★</span>
+    </div>
+    <span class="tag tag-compute">计算</span>
+    <p>$A_{ij} = w_{ij}$（边权），$A_{ij} = 0$ 若无边。</p>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>10. 有向网络的邻接矩阵</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-compute">计算</span>
+    <ul class="tight">
+      <li>$A_{ij} = 1$（有边 $i \to j$）或 $0$</li>
+      <li>$A$ 通常<strong>不对称</strong></li>
+      <li>含自环：<strong>$A_{ii} = 1$（单自环）</strong>，与无向情形<strong>不同</strong>！</li>
+      <li>含重边：$A_{ij}$ = 从 $i$ 到 $j$ 的边数</li>
+    </ul>
+    <div class="warning" style="margin-top: 0.5rem;">
+      <strong>对比记忆</strong>：无向自环 $A_{ii}=2$，有向自环 $A_{ii}=1$。原因：有向自环只贡献一个"出"端点和一个"入"端点，但它们重合在同一个节点上，从矩阵语义看就是"$i \to i$ 一次"。
+    </div>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>11. 网络同构（Isomorphism）</span>
+      <span class="stars stars-2">★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span> <span class="tag tag-compute">理解</span>
+    <p><strong>定义</strong>：存在保持邻接关系的双射 $f: V \to V'$。</p>
+    <p><strong>矩阵刻画</strong>：$G \cong G' \iff A'$ 可由 $A$ 同时对行和列施加同一置换得到。</p>
+  </div>
+
+  <!-- 类别 3：度与密度 -->
+  <h3>三、度、平均度、密度</h3>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>12. 无向网络的度</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-compute">计算</span>
+    <p>$k_i = \sum_j A_{ij}$；$\sum_i k_i = 2m$。</p>
+    <div class="warning" style="margin-top: 0.5rem;">
+      自环按 $A_{ii} = 2$ 计入！否则握手定理 $\sum k_i = 2m$ 不成立。
+    </div>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>13. 平均度 c 与密度 ρ（无向）</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span> <span class="tag tag-compute">计算</span>
+    <p>$\displaystyle c = \frac{2m}{n}$，$\displaystyle \rho = \frac{m}{\binom{n}{2}} = \frac{2m}{n(n-1)} = \frac{c}{n-1}$。</p>
+    <p><strong>稀疏（sparse）</strong>：$n \to \infty$ 时 $\rho \to 0$；现实大多数网络均稀疏。</p>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>14. 有向网络的入度/出度</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-compute">计算</span>
+    <ul class="tight">
+      <li>出度 $k_i^{out} = \sum_j A_{ij}$（按本课程约定：行求和）</li>
+      <li>入度 $k_i^{in} = \sum_j A_{ji}$（列求和）</li>
+      <li>$m = \sum_i k_i^{in} = \sum_i k_i^{out}$ → 平均入度 = 平均出度 = $m/n$</li>
+    </ul>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>15. 有向网络的密度</span>
+      <span class="stars stars-2">★★</span>
+    </div>
+    <span class="tag tag-compute">计算</span>
+    <p>有向简单网络最多 $n(n-1)$ 条边（排除自环；每对 $(i, j)$ 与 $(j, i)$ 各算一次），故 $\rho = \dfrac{m}{n(n-1)}$。</p>
+  </div>
+
+  <!-- 类别 4：游走与路径 -->
+  <h3>四、游走、路径、最短路径</h3>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>16. 游走（Walk）与路径（Path）</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span>
+    <ul class="tight">
+      <li><strong>游走</strong>：边-节点交替序列；<strong>允许</strong>重复节点和边。</li>
+      <li><strong>路径</strong>：节点不重复（边也不重复）的游走。</li>
+      <li><strong>长度</strong>：经过的边数；加权情形为边权之和。</li>
+    </ul>
+    <div class="warning" style="margin-top: 0.5rem;">易混：所有路径都是游走，但游走不一定是路径。</div>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>17. 最短路径与直径</span>
+      <span class="stars stars-2">★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span>
+    <ul class="tight">
+      <li>两点间的最短路径可能<strong>不唯一</strong>（可能有多条等长最短路径）。</li>
+      <li><strong>直径（diameter）</strong>：所有节点对之间最短路径长度的<strong>最大值</strong>。</li>
+    </ul>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>18. 邻接矩阵的幂与游走数</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-compute">计算</span> <span class="tag tag-memory">公式</span>
+    <p>$\displaystyle N_{ij}^{(r)} = (A^r)_{ij}$ ：从 $i$ 到 $j$ 长度为 $r$ 的<strong>游走</strong>数。</p>
+    <p><strong>注意</strong>：是<strong>游走数</strong>，不是路径数（路径需要节点不重复，更难算）。</p>
+  </div>
+
+  <!-- 类别 5：循环 -->
+  <h3>五、循环与无环网络</h3>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>19. 循环（Cycle）</span>
+      <span class="stars stars-2">★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span>
+    <p><strong>定义</strong>：有向边序列起点 = 终点，且方向一致。<strong>无环网络</strong>不含任何循环。</p>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>20. 无环网络的两个等价刻画</span>
+      <span class="stars stars-2">★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span> <span class="tag tag-compute">理解</span>
+    <ul class="tight">
+      <li>$G$ 无环 $\iff$ 节点可重新排列使邻接矩阵 $A$ <strong>严格上三角</strong>（含主对角线全为 0）。</li>
+      <li>$G$ 无环 $\iff$ 可绘图使所有边均向下指（即存在拓扑排序）。</li>
+    </ul>
+    <p><strong>典型例子</strong>：引用网络（论文只能引用之前发表的）。</p>
+  </div>
+
+  <!-- 类别 6：关联矩阵 -->
+  <h3>六、关联矩阵（Incidence Matrix）</h3>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>21. 二分网络的关联矩阵</span>
+      <span class="stars stars-2">★★</span>
+    </div>
+    <span class="tag tag-compute">计算</span>
+    <p>$B$ 是 $n_1 \times n_2$ <strong>长方形</strong>矩阵：$B_{ij} = 1$ 若 $i \in V_1$ 连到 $j \in V_2$；否则 0。</p>
+    <div class="warning" style="margin-top: 0.5rem;">
+      易错：维度是 $n_1 \times n_2$（两类节点数），<strong>不是方阵</strong>，更不是对称矩阵。
+    </div>
+  </div>
+
+  <!-- 类别 7：分量 -->
+  <h3>七、连通分量（Components）</h3>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>22. 无向网络的分量</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span> <span class="tag tag-compute">计算</span>
+    <p>分量 = 极大连通节点集（任两节点间存在路径，且不能加入任何其他节点保持此性质）。<strong>连通网络</strong>仅有一个分量。</p>
+    <p>邻接矩阵在适当节点排序下呈<strong>块对角</strong>。</p>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>23. 有向网络的弱/强连通分量</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span> <span class="tag tag-compute">计算</span>
+    <ul class="tight">
+      <li><strong>弱连通分量</strong>：忽略方向后的分量。</li>
+      <li><strong>强连通分量 $C$</strong>：任意两节点间存在<strong>双向</strong>有向路径的极大节点集。</li>
+    </ul>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>24. 出分量 / 入分量</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span> <span class="tag tag-compute">计算</span>
+    <ul class="tight">
+      <li><strong>$C$ 的出分量</strong>：从 $C$ 中任一节点出发，沿有向路径可达的所有节点（含 $C$ 自身）。</li>
+      <li><strong>$C$ 的入分量</strong>：能通过有向路径到达 $C$ 任一节点的所有节点（含 $C$ 自身）。</li>
+      <li>关键性质：$C = (\text{out-comp of } C) \cap (\text{in-comp of } C)$。</li>
+      <li>强连通分量 $\subseteq$ 弱连通分量。</li>
+    </ul>
+    <div class="warning" style="margin-top: 0.5rem;">
+      易错：单个孤立点本身也是一个强连通分量（自己到自己路径长 0 平凡成立）。
+    </div>
+  </div>
+
+  <!-- 类别 8：拉普拉斯 -->
+  <h3>八、拉普拉斯矩阵（Laplacian）</h3>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>25. 拉普拉斯矩阵的定义</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span> <span class="tag tag-compute">计算</span>
+    <p><strong>适用范围</strong>：简单、无权、无向网络。</p>
+    <p><strong>定义</strong>：</p>
+    <ul class="tight">
+      <li>$L_{ii} = k_i$（度）</li>
+      <li>$L_{ij} = -1$ 若 $i \ne j$ 且 $i, j$ 有边</li>
+      <li>$L_{ij} = 0$ 其他</li>
+    </ul>
+    <p><strong>矩阵形式</strong>：$L = D - A$，$D = \text{diag}(k_1, \dots, k_n)$。</p>
+    <div class="warning" style="margin-top: 0.5rem;">
+      有向网络<strong>没有</strong>统一的拉普拉斯定义。
+    </div>
+  </div>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>26. 拉普拉斯的 7 大性质</span>
+      <span class="stars stars-3">★★★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span>
+    <ol class="tight">
+      <li>各行、各列元素之和均为 0</li>
+      <li>所有特征值为实数</li>
+      <li>所有特征值非负</li>
+      <li>至少有一个零特征值（对应特征向量 $\mathbf{1}$）</li>
+      <li>$L$ 不可逆</li>
+      <li><strong>零特征值的个数 = 网络分量数</strong>（核心结论！）</li>
+      <li>第二小特征值 $\lambda_2 > 0$ $\iff$ 网络连通；$\lambda_2$ 称为<strong>代数连通度</strong>（algebraic connectivity）</li>
+    </ol>
+  </div>
+
+  <!-- 类别 9：高效存储 -->
+  <h3>九、高效存储</h3>
+
+  <div class="knowledge-item">
+    <div class="knowledge-title">
+      <span>27. 边列表与邻接字典</span>
+      <span class="stars stars-1">★</span>
+    </div>
+    <span class="tag tag-memory">记忆</span>
+    <ul class="tight">
+      <li><strong>边列表</strong>：边的列表，如 <code>[(1,2),(2,3)]</code>。</li>
+      <li><strong>邻接字典</strong>：每个节点指向其邻居列表，如 <code>{1:[2], 2:[1,3]}</code>。</li>
+      <li><strong>边列表的缺陷</strong>：孤立节点不出现在表中 → 信息丢失。补救：附加节点列表。</li>
+    </ul>
+  </div>
+
+</section>
+
+<!-- ============================================================== -->
+<!-- ============== 第三部分：复习题目 ================================ -->
+<!-- ============================================================== -->
+<section class="section" id="section-quiz">
+  <h2><span class="num">3</span>复习题目</h2>
+
+  <div class="controls">
+    <div class="stats">
+      <span>已作答：<strong id="stat-answered">0</strong> / <strong id="stat-total">10</strong></span>
+      <span>正确：<strong id="stat-correct">0</strong></span>
+      <span>正确率：<strong id="stat-rate">—</strong></span>
+    </div>
+    <div>
+      <button type="button" data-action="expand-all">展开全部答案</button>
+      <button type="button" data-action="collapse-all">收起全部答案</button>
+      <button type="button" data-action="reset-quiz">重置答题</button>
+    </div>
+  </div>
+
+  <!-- ===================== 选择题 ===================== -->
+  <h3>一、选择题</h3>
+
+  <!-- 题 1 -->
+  <div class="question-block" data-qid="q1">
+    <div class="q-header">
+      <span class="q-number">第 1 题</span>
+      <div class="q-meta">
+        <span class="q-type">选择</span>
+        <span class="q-diff q-diff-easy">基础</span>
+        <span class="q-points">考点 #3, #8</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      下列关于<strong>无向网络</strong>中自环（self-loop）在邻接矩阵中表示的描述，哪一项正确？
+    </div>
+    <ul class="options" data-correct="C">
+      <li data-opt="A"><span class="opt-label">A.</span> 单个自环对应 $A_{ii} = 1$</li>
+      <li data-opt="B"><span class="opt-label">B.</span> 自环不出现在邻接矩阵中</li>
+      <li data-opt="C"><span class="opt-label">C.</span> 单个自环对应 $A_{ii} = 2$</li>
+      <li data-opt="D"><span class="opt-label">D.</span> 自环让矩阵失去对称性</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>答案：C</h5>
+        <h5>解析</h5>
+        <p>无向网络中，邻接矩阵 $A_{ij}$ 记的是<strong>边端点数量</strong>。一条普通边贡献 2 个端点（分给两个不同节点），故 $A_{ij}=A_{ji}=1$；一条自环的两个端点都落在同一节点上，故 $A_{ii} = 2$。这一约定保证了握手定理 $\sum_i k_i = 2m$ 即使在有自环时也成立。</p>
+        <p><strong>对比记忆</strong>：有向自环 $A_{ii} = 1$（因为只算一次 $i \to i$）。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 2 -->
+  <div class="question-block" data-qid="q2">
+    <div class="q-header">
+      <span class="q-number">第 2 题</span>
+      <div class="q-meta">
+        <span class="q-type">选择</span>
+        <span class="q-diff q-diff-easy">基础</span>
+        <span class="q-points">考点 #5</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      下列哪个是<strong>二分网络</strong>的正确刻画？
+    </div>
+    <ul class="options" data-correct="B">
+      <li data-opt="A"><span class="opt-label">A.</span> 网络可以画成两条平行直线</li>
+      <li data-opt="B"><span class="opt-label">B.</span> 节点集分为两个不相交集合，所有边的端点分属两集合，同类节点之间无边</li>
+      <li data-opt="C"><span class="opt-label">C.</span> 网络恰好有两个连通分量</li>
+      <li data-opt="D"><span class="opt-label">D.</span> 网络每条边的权重不超过 2</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>答案：B</h5>
+        <h5>解析</h5>
+        <p>二分网络的本质定义就是 B：节点分为 $V_1, V_2$，所有边 $\{v, v'\}$ 满足 $v \in V_1, v' \in V_2$。<strong>同类节点之间不允许有边</strong>。</p>
+        <p>A 错：二分网络可以以多种方式可视化，不必画成两条线（虽然画成两行是最常见画法）。<br>
+        C 错：连通分量数与二分性无关。<br>
+        D 错：与权重无关。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 3 -->
+  <div class="question-block" data-qid="q3">
+    <div class="q-header">
+      <span class="q-number">第 3 题</span>
+      <div class="q-meta">
+        <span class="q-type">选择</span>
+        <span class="q-diff q-diff-mid">进阶</span>
+        <span class="q-points">考点 #18</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      在邻接矩阵为 $A$ 的简单无向网络中，$\;(A^3)_{ij}$ 表示什么？
+    </div>
+    <ul class="options" data-correct="A">
+      <li data-opt="A"><span class="opt-label">A.</span> 从 $i$ 到 $j$ 长度为 3 的<strong>游走</strong>数</li>
+      <li data-opt="B"><span class="opt-label">B.</span> 从 $i$ 到 $j$ 长度为 3 的<strong>路径</strong>数</li>
+      <li data-opt="C"><span class="opt-label">C.</span> $i$ 与 $j$ 之间最短路径的长度</li>
+      <li data-opt="D"><span class="opt-label">D.</span> $i$ 与 $j$ 距离不超过 3 的节点数</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>答案：A</h5>
+        <h5>解析</h5>
+        <p>$N_{ij}^{(r)} = (A^r)_{ij}$ 是从 $i$ 到 $j$ 长度为 $r$ 的<strong>游走</strong>数。注意：</p>
+        <ul class="tight">
+          <li>游走允许重复节点和边；</li>
+          <li>路径要求节点不重复，难以用矩阵幂直接表示。</li>
+        </ul>
+        <p>这是个非常常见的陷阱：很多同学误以为是路径数。例如 1→2→1→2 是游走，不是路径，但仍计入 $(A^3)_{12}$ 中。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 4 -->
+  <div class="question-block" data-qid="q4">
+    <div class="q-header">
+      <span class="q-number">第 4 题</span>
+      <div class="q-meta">
+        <span class="q-type">选择</span>
+        <span class="q-diff q-diff-mid">进阶</span>
+        <span class="q-points">考点 #26</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      关于拉普拉斯矩阵 $L = D - A$（简单无向网络），下列描述<strong>错误</strong>的是？
+    </div>
+    <ul class="options" data-correct="C">
+      <li data-opt="A"><span class="opt-label">A.</span> $L$ 的每一行元素之和均为 0</li>
+      <li data-opt="B"><span class="opt-label">B.</span> $L$ 的零特征值个数等于网络分量个数</li>
+      <li data-opt="C"><span class="opt-label">C.</span> $L$ 可逆，因为它对称</li>
+      <li data-opt="D"><span class="opt-label">D.</span> $L$ 的所有特征值均为非负实数</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>答案：C</h5>
+        <h5>解析</h5>
+        <p>$L$ 至少有一个零特征值（对应特征向量为全 1 向量 $\mathbf{1}$，因为每行和为 0），故 $\det(L) = 0$，$L$ <strong>不可逆</strong>。"对称"只能推出特征值实，无法推出可逆。</p>
+        <p>A、B、D 均为拉普拉斯的标准性质。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 5 -->
+  <div class="question-block" data-qid="q5">
+    <div class="q-header">
+      <span class="q-number">第 5 题</span>
+      <div class="q-meta">
+        <span class="q-type">选择</span>
+        <span class="q-diff q-diff-mid">进阶</span>
+        <span class="q-points">考点 #20</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      关于<strong>有向无环网络（DAG）</strong>，下列哪项是<strong>正确</strong>的？
+    </div>
+    <ul class="options" data-correct="D">
+      <li data-opt="A"><span class="opt-label">A.</span> 无环网络的邻接矩阵必为对称矩阵</li>
+      <li data-opt="B"><span class="opt-label">B.</span> 无环网络必为连通的</li>
+      <li data-opt="C"><span class="opt-label">C.</span> 无环网络必含至少一个节点的入度为 0 且至少一个节点的出度为 0，且不能存在其他节点</li>
+      <li data-opt="D"><span class="opt-label">D.</span> 存在节点重排列使邻接矩阵成为严格上三角矩阵</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>答案：D</h5>
+        <h5>解析</h5>
+        <p>D 是无环网络的等价刻画——存在拓扑排序使所有边都"向下"，即重排后所有非零元素都在主对角线<strong>之上</strong>。</p>
+        <p>A 错：有向网络一般不对称。<br>
+        B 错：无环与连通是<strong>独立</strong>的概念。<br>
+        C 错：DAG 必有至少一个源点（入度 0）和汇点（出度 0），但 DAG 显然可以有其他节点。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 6 -->
+  <div class="question-block" data-qid="q6">
+    <div class="q-header">
+      <span class="q-number">第 6 题</span>
+      <div class="q-meta">
+        <span class="q-type">选择</span>
+        <span class="q-diff q-diff-mid">进阶</span>
+        <span class="q-points">考点 #24</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      在某有向网络中，节点 $\{1, 3\}$ 是一个强连通分量。已知其出分量是 $\{1, 2, 3\}$，入分量是 $\{1, 3, 4\}$。那么<strong>整个网络</strong>关于该强连通分量 $\{1,3\}$ 的描述哪项正确？
+    </div>
+    <ul class="options" data-correct="B">
+      <li data-opt="A"><span class="opt-label">A.</span> 节点 2 能够从 $\{1,3\}$ 到达，但 $\{1,3\}$ 也可以从节点 2 到达</li>
+      <li data-opt="B"><span class="opt-label">B.</span> 节点 4 能到达 $\{1,3\}$，但 $\{1,3\}$ 无法到达节点 4</li>
+      <li data-opt="C"><span class="opt-label">C.</span> $\{1, 3\}$ 包含网络的全部节点</li>
+      <li data-opt="D"><span class="opt-label">D.</span> 入分量与出分量必相等</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>答案：B</h5>
+        <h5>解析</h5>
+        <p>出分量 = 从 $\{1,3\}$ 可达的节点 = $\{1,2,3\}$ → 节点 4 不可达 → $\{1,3\}$ 无法到达节点 4。<br>
+        入分量 = 可达 $\{1,3\}$ 的节点 = $\{1,3,4\}$ → 节点 4 可达 $\{1,3\}$。<br>
+        所以 B 正确。</p>
+        <p>A 错：$\{1,3\}$ 到节点 2 可达（2 在出分量中），但 2 不在入分量中，故 2 不能到达 $\{1,3\}$。<br>
+        C 错：节点 4 显然不在 $\{1, 3\}$ 中。<br>
+        D 错：本例就反驳了。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ===================== 填空题 ===================== -->
+  <h3>二、填空题</h3>
+
+  <!-- 题 7 -->
+  <div class="question-block" data-qid="q7">
+    <div class="q-header">
+      <span class="q-number">第 7 题</span>
+      <div class="q-meta">
+        <span class="q-type">填空</span>
+        <span class="q-diff q-diff-easy">基础</span>
+        <span class="q-points">考点 #13</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      一个无向网络有 $n=10$ 个节点，$m=18$ 条边。则平均度 $c = $ ______；密度 $\rho = $ ______（保留两位小数）。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>答案：$c = 3.6$，$\rho = 0.40$</h5>
+        <h5>解析</h5>
+        <p>$c = \dfrac{2m}{n} = \dfrac{36}{10} = 3.6$。</p>
+        <p>$\rho = \dfrac{2m}{n(n-1)} = \dfrac{36}{10 \times 9} = \dfrac{36}{90} = 0.40$。</p>
+        <p>或等价地用 $\rho = \dfrac{c}{n-1} = \dfrac{3.6}{9} = 0.40$。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 8 -->
+  <div class="question-block" data-qid="q8">
+    <div class="q-header">
+      <span class="q-number">第 8 题</span>
+      <div class="q-meta">
+        <span class="q-type">填空</span>
+        <span class="q-diff q-diff-easy">基础</span>
+        <span class="q-points">考点 #26</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      某无向网络的拉普拉斯矩阵 $L$ 共有 ____ 个零特征值，已知该值等于网络的 ____ 个数。当网络连通时，$L$ 的第二小特征值称为 ____。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>答案</h5>
+        <p>分量个数（题目要求填的是"等于"对应的对象）；分量（components）；<strong>代数连通度</strong>（algebraic connectivity）。</p>
+        <h5>完整填法</h5>
+        <p>"$L$ 共有 <strong>等于分量数</strong> 个零特征值，该值等于网络的 <strong>分量</strong> 个数。第二小特征值称为 <strong>代数连通度</strong>。"</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ===================== 判断题 ===================== -->
+  <h3>三、判断题</h3>
+
+  <!-- 题 9 -->
+  <div class="question-block" data-qid="q9">
+    <div class="q-header">
+      <span class="q-number">第 9 题</span>
+      <div class="q-meta">
+        <span class="q-type">判断</span>
+        <span class="q-diff q-diff-easy">基础</span>
+        <span class="q-points">考点 #21</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      二分网络的关联矩阵 $B$ 必为方阵且关于主对角线对称。
+    </div>
+    <ul class="options" data-correct="B">
+      <li data-opt="A"><span class="opt-label">A.</span> 正确</li>
+      <li data-opt="B"><span class="opt-label">B.</span> 错误</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>答案：错误</h5>
+        <h5>解析</h5>
+        <p>关联矩阵 $B$ 的维度是 $n_1 \times n_2$，<strong>仅当</strong> $|V_1| = |V_2|$ 时才是方阵；即便是方阵，也未必对称。它是表达"$V_1$ 中节点 $i$ 是否连接到 $V_2$ 中节点 $j$"的<strong>长方形 0/1 矩阵</strong>。</p>
+        <p>易混点：邻接矩阵（方阵 $n \times n$） vs 关联矩阵（长方形 $n_1 \times n_2$）。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 10 -->
+  <div class="question-block" data-qid="q10">
+    <div class="q-header">
+      <span class="q-number">第 10 题</span>
+      <div class="q-meta">
+        <span class="q-type">判断</span>
+        <span class="q-diff q-diff-mid">进阶</span>
+        <span class="q-points">考点 #14</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      在任意有向网络中，所有节点的平均入度等于所有节点的平均出度。
+    </div>
+    <ul class="options" data-correct="A">
+      <li data-opt="A"><span class="opt-label">A.</span> 正确</li>
+      <li data-opt="B"><span class="opt-label">B.</span> 错误</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>答案：正确</h5>
+        <h5>解析</h5>
+        <p>$\sum_i k_i^{in} = $ 网络总边数 $= m = \sum_i k_i^{out}$（每条边贡献一个入端、一个出端）。故 $\bar{k}^{in} = m/n = \bar{k}^{out}$。</p>
+        <p>但注意：<strong>单个节点</strong>的入度和出度通常不等。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ===================== 简答题 ===================== -->
+  <h3>四、简答题</h3>
+
+  <!-- 题 11 -->
+  <div class="question-block" data-qid="q11">
+    <div class="q-header">
+      <span class="q-number">第 11 题</span>
+      <div class="q-meta">
+        <span class="q-type">简答</span>
+        <span class="q-diff q-diff-easy">基础</span>
+        <span class="q-points">考点 #16</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      用自己的话区分"游走（walk）"和"路径（path）"，并各举一例。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>参考答案</h5>
+        <p><strong>游走</strong>：沿着边走过的节点序列，<em>允许</em>重复经过同一节点或同一条边。<strong>路径</strong>：节点不重复（因此边也不重复）的游走。</p>
+        <p><strong>例子</strong>：在三角形 1-2-3 中，</p>
+        <ul class="tight">
+          <li>1 → 2 → 3 → 1 → 2 是长度 4 的游走（节点 1、2 重复），<strong>不是</strong>路径。</li>
+          <li>1 → 2 → 3 是长度 2 的路径（也是游走）。</li>
+        </ul>
+        <p><strong>关键</strong>：所有路径都是游走，但游走不一定是路径。计算 $A^r$ 给出的是游走数。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 12 -->
+  <div class="question-block" data-qid="q12">
+    <div class="q-header">
+      <span class="q-number">第 12 题</span>
+      <div class="q-meta">
+        <span class="q-type">简答</span>
+        <span class="q-diff q-diff-mid">进阶</span>
+        <span class="q-points">考点 #6</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      用文字解释二分网络的"单模投影（one-mode projection）"是如何构造的。投影后的网络是加权的还是无权的？为什么？
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>参考答案</h5>
+        <p>设二分网络节点集为 $V_1$ 和 $V_2$。投影到 $V_1$ 的过程是：对每对 $v, w \in V_1$，若它们在 $V_2$ 中至少有一个公共邻居，则在投影网络中给它们连一条边；边的<strong>权重等于公共邻居的数量</strong>。投影到 $V_2$ 同理。</p>
+        <p>因此投影后的网络是<strong>加权</strong>的：权重反映了两节点共享的"中间媒介"数量。例如"学生-课程"二分网投影到学生，权重就是两人共同上了多少门课，这个数字本身有研究意义（数值越大，两人关系越紧密）。</p>
+        <p><strong>常见错误</strong>：把投影当作无权网络（只记是否相连），这会丢失大量信息。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 13 -->
+  <div class="question-block" data-qid="q13">
+    <div class="q-header">
+      <span class="q-number">第 13 题</span>
+      <div class="q-meta">
+        <span class="q-type">简答</span>
+        <span class="q-diff q-diff-mid">进阶</span>
+        <span class="q-points">考点 #23, #24</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      在有向网络中，弱连通分量、强连通分量、出分量、入分量四个概念有何区别？请说明它们之间的关系。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>参考答案</h5>
+        <ul class="tight">
+          <li><strong>弱连通分量</strong>：把所有有向边视作无向后得到的连通分量。要求"忽略方向能互通"。</li>
+          <li><strong>强连通分量 $C$</strong>：极大节点集，任两节点间存在<strong>双向</strong>有向路径。要求"沿方向也能互通"。</li>
+          <li><strong>出分量 of $C$</strong>：从 $C$ 中任一节点出发，沿有向路径能到达的所有节点（含 $C$）。</li>
+          <li><strong>入分量 of $C$</strong>：能通过有向路径到达 $C$ 任一节点的所有节点（含 $C$）。</li>
+        </ul>
+        <h5>关系</h5>
+        <ol class="tight">
+          <li>任意强连通分量 $\subseteq$ 某个弱连通分量（强连通是更"严格"的连通）。</li>
+          <li>$C = (\text{out-comp of } C) \cap (\text{in-comp of } C)$。即强连通分量恰好是"能从中走出去到达的"与"能走回来的"两个集合的交集。</li>
+          <li>出分量和入分量都至少包含 $C$ 本身。</li>
+        </ol>
+      </div>
+    </details>
+  </div>
+
+  <!-- ===================== 计算题 ===================== -->
+  <h3>五、计算题</h3>
+
+  <!-- 题 14 -->
+  <div class="question-block" data-qid="q14">
+    <div class="q-header">
+      <span class="q-number">第 14 题</span>
+      <div class="q-meta">
+        <span class="q-type">计算</span>
+        <span class="q-diff q-diff-easy">基础</span>
+        <span class="q-points">考点 #7, #8</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      考虑一个 4 节点的<strong>无向</strong>网络，边为 $\{1,2\}, \{1,3\}, \{2,3\}, \{2,4\}, \{2,4\}$（即 2-4 之间有两条重边），且节点 3 上有一个自环。<br>
+      （1）写出邻接矩阵 $A$；<br>
+      （2）计算每个节点的度 $k_i$；<br>
+      （3）验证 $\sum_i k_i = 2m$。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>解答</h5>
+        <p><strong>（1）邻接矩阵</strong>：自环用 $A_{ii}=2$；2-4 重数为 2。</p>
+        <p>
+          $A = \begin{pmatrix} 0 & 1 & 1 & 0 \\ 1 & 0 & 1 & 2 \\ 1 & 1 & 2 & 0 \\ 0 & 2 & 0 & 0 \end{pmatrix}$
+        </p>
+        <p><strong>（2）节点度</strong>（按行求和）：</p>
+        <ul class="tight">
+          <li>$k_1 = 0+1+1+0 = 2$</li>
+          <li>$k_2 = 1+0+1+2 = 4$</li>
+          <li>$k_3 = 1+1+2+0 = 4$</li>
+          <li>$k_4 = 0+2+0+0 = 2$</li>
+        </ul>
+        <p><strong>（3）验证</strong>：$\sum k_i = 2+4+4+2 = 12$。<br>
+        边总数 $m$：原始边 $\{1,2\},\{1,3\},\{2,3\}$ 各 1 条，$\{2,4\}$ 算 2 条，自环 1 个。共 $1+1+1+2+1 = 6$ 条。$2m = 12$。✓</p>
+        <p><strong>易错提醒</strong>：自环必须 $A_{33}=2$；不写成 1。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 15 -->
+  <div class="question-block" data-qid="q15">
+    <div class="q-header">
+      <span class="q-number">第 15 题</span>
+      <div class="q-meta">
+        <span class="q-type">计算</span>
+        <span class="q-diff q-diff-mid">进阶</span>
+        <span class="q-points">考点 #25, #26</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      考虑下面 4 节点简单无向网络（无重边、无自环）：边集 $E = \{\{1,2\}, \{1,3\}, \{2,3\}, \{2,4\}\}$。<br>
+      （1）写出邻接矩阵 $A$；<br>
+      （2）写出度对角矩阵 $D$；<br>
+      （3）写出拉普拉斯 $L = D - A$；<br>
+      （4）验证 $L$ 每行之和为 0；<br>
+      （5）这个网络是否连通？由此判断 $L$ 有几个零特征值。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>解答</h5>
+        <p><strong>（1）</strong> 度：$k_1=2, k_2=3, k_3=2, k_4=1$。
+        $$A = \begin{pmatrix} 0 & 1 & 1 & 0 \\ 1 & 0 & 1 & 1 \\ 1 & 1 & 0 & 0 \\ 0 & 1 & 0 & 0 \end{pmatrix}$$</p>
+        <p><strong>（2）</strong>
+        $$D = \begin{pmatrix} 2 & 0 & 0 & 0 \\ 0 & 3 & 0 & 0 \\ 0 & 0 & 2 & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}$$</p>
+        <p><strong>（3）</strong> $L = D - A$：
+        $$L = \begin{pmatrix} 2 & -1 & -1 & 0 \\ -1 & 3 & -1 & -1 \\ -1 & -1 & 2 & 0 \\ 0 & -1 & 0 & 1 \end{pmatrix}$$</p>
+        <p><strong>（4）</strong> 行和验证：
+        $2-1-1+0=0$；$-1+3-1-1=0$；$-1-1+2+0=0$；$0-1+0+1=0$。全部为 0 ✓</p>
+        <p><strong>（5）</strong> 网络连通（从 1 出发可达 2, 3, 4，构成一棵生成树）；所以 $L$ 恰有 <strong>1 个零特征值</strong>。</p>
+        <p><strong>关键技巧</strong>：先列出度，再写 $D$，最后由 $L = D - A$ 套公式。这是必考的标准计算流程。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 16 -->
+  <div class="question-block" data-qid="q16">
+    <div class="q-header">
+      <span class="q-number">第 16 题</span>
+      <div class="q-meta">
+        <span class="q-type">计算</span>
+        <span class="q-diff q-diff-mid">进阶</span>
+        <span class="q-points">考点 #6, #21</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      给定二分网络：$V_1 = \{1, 2, 3, 4\}$ 为"用户"，$V_2 = \{A, B, C\}$ 为"商品"。边集为：
+      1-A, 1-B, 2-B, 2-C, 3-A, 3-C, 4-B。<br>
+      （1）写出关联矩阵 $B$（4×3）；<br>
+      （2）构造 $V_2$ 上的单模投影 $G_{\text{groups}}$（节点 A, B, C；权重 = 共同用户数）。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>解答</h5>
+        <p><strong>（1）关联矩阵</strong>（行对应 1,2,3,4；列对应 A,B,C）：
+        $$B = \begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & 1 \\ 1 & 0 & 1 \\ 0 & 1 & 0 \end{pmatrix}$$</p>
+        <p><strong>（2）投影到 $V_2$</strong>：计算每对商品的公共用户数。</p>
+        <ul class="tight">
+          <li>A 的购买用户：$\{1, 3\}$</li>
+          <li>B 的购买用户：$\{1, 2, 4\}$</li>
+          <li>C 的购买用户：$\{2, 3\}$</li>
+        </ul>
+        <p>计算交集大小：</p>
+        <ul class="tight">
+          <li>A ∩ B = $\{1\}$ → 权重 1</li>
+          <li>A ∩ C = $\{3\}$ → 权重 1</li>
+          <li>B ∩ C = $\{2\}$ → 权重 1</li>
+        </ul>
+        <p>所以 $G_{\text{groups}}$ 是一个三角形：A-B 权重 1，A-C 权重 1，B-C 权重 1。</p>
+        <p><strong>解题技巧</strong>：把每个商品的购买集合列出来，对每对商品求交集大小即为权重。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 17 -->
+  <div class="question-block" data-qid="q17">
+    <div class="q-header">
+      <span class="q-number">第 17 题</span>
+      <div class="q-meta">
+        <span class="q-type">计算</span>
+        <span class="q-diff q-diff-hard">综合</span>
+        <span class="q-points">考点 #23, #24</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      考虑有向网络 $G$，节点 $\{1,2,3,4\}$，有向边集为：
+      $1 \to 2$，$2 \to 4$，$4 \to 3$，$3 \to 1$，$1 \to 3$。<br>
+      （1）找出所有弱连通分量；<br>
+      （2）找出所有强连通分量；<br>
+      （3）对每个强连通分量，求其出分量和入分量。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>解答</h5>
+        <p><strong>先画图分析</strong>：</p>
+        <ul class="tight">
+          <li>$1 \to 2$，$2 \to 4$，$4 \to 3$，$3 \to 1$ 构成一个循环 $1 \to 2 \to 4 \to 3 \to 1$。</li>
+          <li>另外还有 $1 \to 3$（捷径）。</li>
+        </ul>
+        <p><strong>（1）弱连通分量</strong>：忽略方向后所有 4 个节点彼此可达 → 仅 1 个：$\{1,2,3,4\}$。</p>
+        <p><strong>（2）强连通分量</strong>：检查双向可达性。由于存在循环 $1 \to 2 \to 4 \to 3 \to 1$，所以 1, 2, 3, 4 中任意两节点都能沿这个循环互相到达 → <strong>整个网络是一个强连通分量 $\{1, 2, 3, 4\}$</strong>。</p>
+        <p><strong>（3）出/入分量</strong>：对唯一强连通分量 $C = \{1, 2, 3, 4\}$：
+        <ul class="tight">
+          <li>出分量 = $\{1,2,3,4\}$（从 $C$ 任意节点出发，已能到达所有节点）</li>
+          <li>入分量 = $\{1,2,3,4\}$（每个节点都能到达 $C$ 中任一节点）</li>
+        </ul>
+        验证：$C = $ 出分量 $\cap$ 入分量 = $\{1,2,3,4\}$ ✓</p>
+        <p><strong>关键洞察</strong>：只要存在一个包含所有节点的有向循环，整个网络就是一个强连通分量。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 18 -->
+  <div class="question-block" data-qid="q18">
+    <div class="q-header">
+      <span class="q-number">第 18 题</span>
+      <div class="q-meta">
+        <span class="q-type">计算</span>
+        <span class="q-diff q-diff-hard">综合</span>
+        <span class="q-points">考点 #18</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      考虑路径图 $P_3$：节点 $\{1, 2, 3\}$，边为 $\{1,2\}, \{2,3\}$。<br>
+      （1）写出邻接矩阵 $A$；<br>
+      （2）计算 $A^2$ 和 $A^3$；<br>
+      （3）解释 $(A^2)_{13}$ 和 $(A^3)_{13}$ 的网络含义。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>解答</h5>
+        <p><strong>（1）</strong> $A = \begin{pmatrix} 0&1&0 \\ 1&0&1 \\ 0&1&0 \end{pmatrix}$</p>
+        <p><strong>（2）计算 $A^2$</strong>：</p>
+        <p>$(A^2)_{11} = 0\cdot0+1\cdot1+0\cdot0 = 1$<br>
+           $(A^2)_{12} = 0\cdot1+1\cdot0+0\cdot1 = 0$<br>
+           $(A^2)_{13} = 0\cdot0+1\cdot1+0\cdot0 = 1$<br>
+           $(A^2)_{22} = 1\cdot1+0\cdot0+1\cdot1 = 2$<br>
+           $(A^2)_{33} = 1$, $(A^2)_{23}=(A^2)_{32}=0$<br>
+           $(A^2)_{21}=(A^2)_{31}=$ 对应的 0。
+        </p>
+        <p>$A^2 = \begin{pmatrix} 1&0&1 \\ 0&2&0 \\ 1&0&1 \end{pmatrix}$</p>
+        <p><strong>计算 $A^3 = A^2 \cdot A$</strong>：</p>
+        <p>$(A^3)_{12} = 1\cdot1+0\cdot0+1\cdot1 = 2$<br>
+           $(A^3)_{11} = 1\cdot0+0\cdot1+1\cdot0 = 0$<br>
+           $(A^3)_{13} = 1\cdot0+0\cdot1+1\cdot0 = 0$<br>
+           …</p>
+        <p>$A^3 = \begin{pmatrix} 0&2&0 \\ 2&0&2 \\ 0&2&0 \end{pmatrix}$</p>
+        <p><strong>（3）含义</strong>：</p>
+        <ul class="tight">
+          <li>$(A^2)_{13} = 1$：从 1 到 3 长度为 2 的游走有 1 条，即 $1 \to 2 \to 3$。</li>
+          <li>$(A^3)_{13} = 0$：从 1 到 3 没有长度为 3 的游走（因为图是二部的，奇偶长度限制下不能从 1 到 3）。</li>
+        </ul>
+        <p><strong>额外洞察</strong>：$(A^2)_{ii}$ 等于节点 $i$ 的度（因为长度 2 的"自游走" $i \to j \to i$ 数等于 $i$ 的邻居数 = $k_i$）。例如 $(A^2)_{22} = 2 = k_2$ ✓</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ===================== 论述题 ===================== -->
+  <h3>六、论述题</h3>
+
+  <!-- 题 19 -->
+  <div class="question-block" data-qid="q19">
+    <div class="q-header">
+      <span class="q-number">第 19 题</span>
+      <div class="q-meta">
+        <span class="q-type">论述</span>
+        <span class="q-diff q-diff-hard">综合</span>
+        <span class="q-points">考点 #25, #26</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      证明：拉普拉斯矩阵 $L$ 的每一行元素之和为 0，并由此说明 $L$ 必有一个零特征值，对应的特征向量是什么？
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>证明</h5>
+        <p><strong>步骤 1：行和为 0。</strong> 第 $i$ 行：</p>
+        <p>$\displaystyle \sum_{j=1}^n L_{ij} = L_{ii} + \sum_{j \ne i} L_{ij}$</p>
+        <p>按定义 $L_{ii} = k_i$，且 $L_{ij} = -A_{ij}$（$i \ne j$）。因此</p>
+        <p>$\displaystyle \sum_{j=1}^n L_{ij} = k_i - \sum_{j \ne i} A_{ij} = k_i - k_i = 0$.</p>
+        <p>（最后一步用到 $k_i = \sum_j A_{ij}$，且简单网络中 $A_{ii}=0$）</p>
+        <p><strong>步骤 2：构造零特征向量</strong>。设 $\mathbf{1} = (1, 1, \dots, 1)^T$，则 $(L \mathbf{1})_i = \sum_j L_{ij} \cdot 1 = 0$，即 $L \mathbf{1} = \mathbf{0} = 0 \cdot \mathbf{1}$。</p>
+        <p>这说明 $\mathbf{1}$ 是 $L$ 的特征向量，对应特征值 $0$。所以 $L$ <strong>必有零特征值</strong>，对应特征向量为<strong>全 1 向量</strong>。</p>
+        <h5>意义</h5>
+        <p>这个结论是拉普拉斯理论的基石之一——它进一步推广为"零特征值的重数 = 连通分量数"，从而把图的几何结构（连通性）与代数性质（谱）联系起来。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 题 20 -->
+  <div class="question-block" data-qid="q20">
+    <div class="q-header">
+      <span class="q-number">第 20 题</span>
+      <div class="q-meta">
+        <span class="q-type">论述</span>
+        <span class="q-diff q-diff-hard">综合</span>
+        <span class="q-points">考点 #11</span>
+      </div>
+    </div>
+    <div class="q-stem">
+      试论述：为什么"邻接矩阵 $A$ 与 $A'$ 可通过同时对行和列施加同一置换而相互转化"等价于"两个网络 $G$ 与 $G'$ 同构"？请结合定义说明。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <h5>参考答案</h5>
+        <p><strong>同构定义</strong>：存在双射 $f: V \to V'$，使得 $\{v_i, v_j\} \in E \iff \{f(v_i), f(v_j)\} \in E'$。</p>
+        <p><strong>论证思路</strong>（→ 方向）：若存在这样的双射 $f$，把 $f$ 看成节点编号的一次"置换"：把 $G$ 中编号为 $i$ 的节点重命名为 $G'$ 中的 $f(i)$。在邻接矩阵的语言中，这相当于把 $A$ 的第 $i$ 行（列）按 $f$ 重排为新位置 $f(i)$。由于这一重排同时作用于行和列（因为节点既是"起点"也是"终点"），最终得到的就是 $A'$。</p>
+        <p><strong>论证思路</strong>（← 方向）：反之，若 $A'$ 可由 $A$ 同时对行和列施加置换 $\pi$ 得到，定义 $f(v_i) = v'_{\pi(i)}$。要验证 $\{v_i, v_j\} \in E \iff \{f(v_i), f(v_j)\} \in E'$。利用 $A_{ij} = A'_{\pi(i)\pi(j)}$（行列同时置换的含义），$A_{ij} = 1 \iff A'_{\pi(i)\pi(j)} = 1$，即 $v_i, v_j$ 在 $G$ 中相连 $\iff f(v_i), f(v_j)$ 在 $G'$ 中相连。</p>
+        <p><strong>关键直觉</strong>：行表示"边的一端"，列表示"边的另一端"。<strong>必须同时对行和列做相同置换</strong>才能保持图的结构——只置换行或只置换列会破坏邻接关系。这也是为什么不能只单独打乱行的根本原因。</p>
+        <p><strong>常见错误</strong>：</p>
+        <ul class="tight">
+          <li>误以为只置换行（或只置换列）就够了——错。</li>
+          <li>误以为同构的两个矩阵就是相等的——错，需要置换。</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+</section>
+
+</div><!-- /container -->
+
+<!-- ============== MathJax 状态提示 ============== -->
+<div id="mathjax-status">📐 加载数学公式渲染中…</div>
+
+<!-- ============== 回到顶部 ============== -->
+<button id="back-to-top" type="button" title="回到顶部" aria-label="回到顶部">↑</button>
+
+<!-- ============== JS：事件委托 + 进度 + 折叠 ============== -->
+<script>
+(function() {
+  'use strict';
+
+  // ================ 1. 选项点击（事件委托） ================
+  document.addEventListener('click', function(event) {
+    var target = event.target;
+
+    // ---- 1a. 处理选项点击 ----
+    var optionLi = target.closest('.options li');
+    if (optionLi) {
+      var optionsUl = optionLi.parentElement;
+      // 已锁定则不处理
+      if (optionsUl.classList.contains('locked')) return;
+
+      var correct = optionsUl.getAttribute('data-correct');
+      var chosen = optionLi.getAttribute('data-opt');
+      var questionBlock = optionLi.closest('.question-block');
+
+      // 锁定该题
+      optionsUl.classList.add('locked');
+      Array.prototype.forEach.call(optionsUl.querySelectorAll('li'), function(li) {
+        li.classList.add('locked');
+      });
+
+      // 标记正确/错误
+      if (chosen === correct) {
+        optionLi.classList.add('selected-correct');
+        questionBlock.setAttribute('data-result', 'correct');
+      } else {
+        optionLi.classList.add('selected-wrong');
+        // 同时显示正确选项
+        var correctLi = optionsUl.querySelector('[data-opt="' + correct + '"]');
+        if (correctLi) correctLi.classList.add('show-correct');
+        questionBlock.setAttribute('data-result', 'wrong');
+      }
+
+      // 自动展开答案
+      var detailsEl = questionBlock.querySelector('details.answer-block');
+      if (detailsEl) detailsEl.open = true;
+
+      // 更新统计
+      updateStats();
+      return;
+    }
+
+    // ---- 1b. 处理控制按钮 ----
+    if (target.tagName === 'BUTTON' && target.hasAttribute('data-action')) {
+      var action = target.getAttribute('data-action');
+      var allDetails = document.querySelectorAll('details.answer-block');
+
+      if (action === 'expand-all') {
+        Array.prototype.forEach.call(allDetails, function(d) { d.open = true; });
+      } else if (action === 'collapse-all') {
+        Array.prototype.forEach.call(allDetails, function(d) { d.open = false; });
+      } else if (action === 'reset-quiz') {
+        // 解锁所有题，清除选择
+        var allOptionsUls = document.querySelectorAll('.options');
+        Array.prototype.forEach.call(allOptionsUls, function(ul) {
+          ul.classList.remove('locked');
+          Array.prototype.forEach.call(ul.querySelectorAll('li'), function(li) {
+            li.classList.remove('locked', 'selected-correct', 'selected-wrong', 'show-correct');
+          });
+        });
+        Array.prototype.forEach.call(document.querySelectorAll('.question-block'), function(qb) {
+          qb.removeAttribute('data-result');
+        });
+        Array.prototype.forEach.call(allDetails, function(d) { d.open = false; });
+        updateStats();
+      }
+    }
+  });
+
+  // ================ 2. 统计 ================
+  function updateStats() {
+    var allOptionsUls = document.querySelectorAll('.options');
+    var total = allOptionsUls.length;
+    var answered = 0;
+    var correct = 0;
+    Array.prototype.forEach.call(allOptionsUls, function(ul) {
+      if (ul.classList.contains('locked')) {
+        answered++;
+        if (ul.querySelector('.selected-correct')) correct++;
+      }
+    });
+    var statTotal = document.getElementById('stat-total');
+    var statAnswered = document.getElementById('stat-answered');
+    var statCorrect = document.getElementById('stat-correct');
+    var statRate = document.getElementById('stat-rate');
+    if (statTotal) statTotal.textContent = total;
+    if (statAnswered) statAnswered.textContent = answered;
+    if (statCorrect) statCorrect.textContent = correct;
+    if (statRate) statRate.textContent = answered > 0 ? (Math.round(correct / answered * 100) + '%') : '—';
+  }
+
+  // ================ 3. 回到顶部 ================
+  var btn = document.getElementById('back-to-top');
+  if (btn) {
+    window.addEventListener('scroll', function() {
+      if (window.pageYOffset > 400) btn.classList.add('show');
+      else btn.classList.remove('show');
+    });
+    btn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // ================ 4. 初始化总数 ================
+  updateStats();
+
+})();
+</script>
+
+</body>
+</html>

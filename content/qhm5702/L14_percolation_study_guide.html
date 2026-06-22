@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L14: 网络中的渗流（Percolation） · 期末复习指南</title>
+
+<!-- MathJax config -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true
+  },
+  options: {
+    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  startup: {
+    ready: () => {
+      MathJax.startup.defaultReady();
+      MathJax.startup.promise.then(() => {
+        const w = document.getElementById('mathjax-warning');
+        if (w) w.style.display = 'none';
+      });
+    }
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #FAF7F2;
+  --bg-alt: #F2EEE5;
+  --bg-card: #FFFFFF;
+  --text: #2A2520;
+  --text-soft: #5A5048;
+  --text-muted: #8A8278;
+  --accent: #D26B3C;
+  --accent-dark: #A8542E;
+  --navy: #1F3851;
+  --teal: #3D7A80;
+  --teal-soft: #E8F1F2;
+  --warning: #C04A3A;
+  --warning-soft: #FBE8E6;
+  --highlight: #FFF4E5;
+  --gold: #C89B3D;
+  --green: #4A7C59;
+  --green-soft: #E5F0E8;
+  --red-soft: #F8DDD8;
+  --border: #E5DFD2;
+  --border-strong: #C8C0AC;
+  --shadow: 0 1px 3px rgba(42, 37, 32, 0.06), 0 4px 12px rgba(42, 37, 32, 0.04);
+  --shadow-lg: 0 8px 28px rgba(42, 37, 32, 0.10);
+  --radius: 6px;
+  --radius-lg: 10px;
+  --font-serif: 'Lora', 'Source Han Serif SC', 'Noto Serif SC', Georgia, serif;
+  --font-sans: 'Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.75;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ───── Header ───── */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(250, 247, 242, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.top-bar-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.brand {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--navy);
+  letter-spacing: 0.01em;
+}
+.brand .accent { color: var(--accent); }
+.brand .tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  background: var(--navy);
+  color: #fff;
+  padding: 2px 7px;
+  border-radius: 3px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.nav {
+  display: flex;
+  gap: 4px;
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+.nav a {
+  color: var(--text-soft);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  transition: all 0.15s;
+  font-weight: 500;
+}
+.nav a:hover { background: var(--bg-alt); color: var(--accent); }
+
+/* ───── Hero ───── */
+.hero {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 56px 24px 32px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+.hero h1 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+  line-height: 1.15;
+  margin: 0 0 6px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.hero .lec-num {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: block;
+}
+.hero .subtitle {
+  font-size: 1.05rem;
+  color: var(--text-soft);
+  max-width: 720px;
+}
+.hero .meta-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.meta-item {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.meta-item strong {
+  display: block;
+  color: var(--text);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+/* ───── Main containers ───── */
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.section {
+  margin-bottom: 64px;
+  scroll-margin-top: 80px;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--accent);
+  margin-bottom: 32px;
+}
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+.section-head h2 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.7rem;
+  margin: 0;
+  color: var(--navy);
+  letter-spacing: -0.005em;
+}
+.section-sub {
+  color: var(--text-soft);
+  margin-left: auto;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.3rem;
+  margin: 36px 0 14px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+h3::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 1.05em;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+h4 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin: 24px 0 10px;
+  color: var(--navy);
+}
+
+p { margin: 0 0 14px; }
+
+ul, ol { padding-left: 1.4em; margin: 0 0 14px; }
+li { margin-bottom: 6px; }
+
+/* ───── Specialized boxes ───── */
+.box {
+  padding: 18px 22px;
+  border-radius: var(--radius-lg);
+  margin: 18px 0;
+}
+.box-title {
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.box-title::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.box-def {
+  background: var(--teal-soft);
+  border-left: 4px solid var(--teal);
+}
+.box-def .box-title { color: var(--teal); }
+.box-def .box-title::before { background: var(--teal); }
+
+.box-formula {
+  background: var(--bg-alt);
+  border: 1px solid var(--border-strong);
+  text-align: center;
+  padding: 22px;
+}
+.box-formula .box-title {
+  color: var(--navy);
+  text-align: left;
+}
+.box-formula .box-title::before { background: var(--navy); }
+
+.box-warning {
+  background: var(--warning-soft);
+  border-left: 4px solid var(--warning);
+}
+.box-warning .box-title { color: var(--warning); }
+.box-warning .box-title::before { background: var(--warning); }
+
+.box-tip {
+  background: var(--highlight);
+  border-left: 4px solid var(--accent);
+}
+.box-tip .box-title { color: var(--accent-dark); }
+.box-tip .box-title::before { background: var(--accent); }
+
+.box-aside {
+  background: #F7F5EF;
+  border: 1px dashed var(--border-strong);
+  color: var(--text-soft);
+  font-size: 0.95rem;
+}
+
+/* ───── Knowledge point cards ───── */
+.kp-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 26px;
+  margin: 16px 0;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+.kp-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.kp-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--navy);
+  margin: 0;
+  flex: 1;
+}
+.kp-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+}
+.badge-memo { background: #F0E5D0; color: #8C6D2C; }
+.badge-calc { background: #E0E8F0; color: var(--navy); }
+.badge-concept { background: #E8DBE8; color: #6E3B6E; }
+.stars {
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+.stars.high { color: var(--accent); }
+.stars.mid { color: var(--gold); }
+.stars.low { color: var(--text-muted); }
+
+.kp-section {
+  margin: 10px 0;
+}
+.kp-section strong {
+  color: var(--navy);
+  font-weight: 600;
+}
+.kp-section .label {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-right: 8px;
+}
+
+/* ───── Math display ───── */
+.formula-display {
+  text-align: center;
+  margin: 10px 0;
+  font-size: 1.1em;
+}
+
+/* ───── Tables ───── */
+.tbl-wrap { overflow-x: auto; margin: 14px 0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  font-size: 0.95rem;
+}
+th, td {
+  padding: 9px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+th {
+  background: var(--bg-alt);
+  font-weight: 600;
+  color: var(--navy);
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--bg-alt); }
+
+/* ───── Practice questions ───── */
+.q-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 70px;
+  z-index: 40;
+}
+.q-btn {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 7px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.q-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.progress-display {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+.progress-display strong { color: var(--accent); }
+.progress-display .ok { color: var(--green); font-weight: 600; }
+
+.q-group-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--navy);
+  font-size: 1.2rem;
+  margin: 36px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.question {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin: 16px 0;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s;
+}
+.question.answered { border-left: 4px solid var(--accent); }
+.question.correct-q { border-left: 4px solid var(--green); }
+.question.incorrect-q { border-left: 4px solid var(--warning); }
+
+.q-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.q-num {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+.q-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.q-tag {
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--bg-alt);
+  color: var(--text-soft);
+  font-weight: 500;
+}
+.q-tag.diff-1 { background: #E5F0E8; color: var(--green); }
+.q-tag.diff-2 { background: #FFF4E5; color: var(--accent-dark); }
+.q-tag.diff-3 { background: var(--warning-soft); color: var(--warning); }
+
+.q-stem {
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+
+.q-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0;
+}
+.q-option {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.15s;
+  line-height: 1.55;
+}
+.q-option:hover:not(.locked) {
+  background: var(--bg-alt);
+  border-color: var(--accent);
+}
+.q-option.correct {
+  background: var(--green-soft);
+  border-color: var(--green);
+  color: var(--green);
+  font-weight: 500;
+}
+.q-option.incorrect {
+  background: var(--red-soft);
+  border-color: var(--warning);
+  color: var(--warning);
+  font-weight: 500;
+}
+.q-option.locked { cursor: default; }
+.q-option .opt-mark {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  margin-right: 8px;
+  color: var(--accent);
+}
+.q-option.correct .opt-mark { color: var(--green); }
+.q-option.incorrect .opt-mark { color: var(--warning); }
+
+/* details / summary native fold */
+.answer-block {
+  margin-top: 14px;
+  border-top: 1px dashed var(--border-strong);
+  padding-top: 4px;
+}
+.answer-block > summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 10px 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+.answer-block > summary::-webkit-details-marker { display: none; }
+.answer-block > summary::before {
+  content: "▶";
+  font-size: 0.7em;
+  transition: transform 0.2s;
+  color: var(--accent);
+}
+.answer-block[open] > summary::before { transform: rotate(90deg); }
+.answer-block > summary:hover { color: var(--accent-dark); }
+
+.answer-content {
+  padding: 14px 18px;
+  background: var(--bg-alt);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--accent);
+  margin-top: 8px;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.answer-content p:last-child { margin-bottom: 0; }
+.answer-content .ans-label {
+  display: inline-block;
+  font-weight: 600;
+  color: var(--accent-dark);
+  font-size: 0.85rem;
+  margin-right: 6px;
+}
+.answer-content .reason-label {
+  display: block;
+  font-weight: 600;
+  color: var(--navy);
+  font-size: 0.85rem;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  letter-spacing: 0.03em;
+}
+.answer-content .ans-correct {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  background: var(--green-soft);
+  color: var(--green);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.answer-content .ans-tf {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  background: var(--green-soft);
+  color: var(--green);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.answer-content .ans-tf.false {
+  background: var(--red-soft);
+  color: var(--warning);
+}
+
+.answer-content .step {
+  background: var(--bg-card);
+  padding: 8px 12px;
+  margin: 6px 0;
+  border-left: 2px solid var(--border-strong);
+  border-radius: 0 4px 4px 0;
+}
+
+/* ───── Highlight helpers ───── */
+.k {
+  background: var(--highlight);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 500;
+  color: var(--accent-dark);
+}
+.term {
+  font-style: italic;
+  color: var(--navy);
+  font-weight: 500;
+}
+code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--bg-alt);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--navy);
+}
+
+/* ───── Floating buttons ───── */
+.to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.to-top.visible { opacity: 1; transform: translateY(0); }
+.to-top:hover { background: var(--accent-dark); }
+
+/* ───── Roadmap diagram ───── */
+.roadmap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  margin: 20px 0;
+  box-shadow: var(--shadow);
+}
+.roadmap-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.rm-step {
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  border-top: 3px solid var(--accent);
+  font-size: 0.9rem;
+}
+.rm-step .rm-num {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.8rem;
+  display: block;
+  margin-bottom: 4px;
+}
+.rm-step .rm-title {
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 4px;
+  font-family: var(--font-serif);
+}
+
+/* ───── Mathjax fallback warning ───── */
+#mathjax-warning {
+  display: block;
+  background: var(--warning-soft);
+  color: var(--warning);
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  margin: 16px 0;
+  border-left: 3px solid var(--warning);
+}
+
+/* ───── Footer ───── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 24px;
+  margin-top: 64px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ───── Responsive ───── */
+@media (max-width: 720px) {
+  .top-bar-inner { padding: 10px 16px; }
+  .nav { font-size: 0.82rem; gap: 0; }
+  .nav a { padding: 5px 8px; }
+  .hero { padding: 32px 16px 24px; }
+  main { padding: 16px; }
+  .section { margin-bottom: 48px; }
+  .section-head { flex-wrap: wrap; }
+  .section-sub { margin-left: 0; width: 100%; }
+  h3 { font-size: 1.15rem; }
+  .question { padding: 16px 18px; }
+  .kp-card { padding: 18px 20px; }
+  .q-controls { position: static; padding: 12px 14px; }
+  .progress-display { width: 100%; text-align: left; }
+  .to-top { bottom: 16px; right: 16px; width: 40px; height: 40px; }
+}
+</style>
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="top-bar-inner">
+    <div class="brand">
+      <span class="accent">●</span> Networks <span class="tag">L14</span>
+    </div>
+    <nav class="nav">
+      <a href="#sec-intro">课程讲解</a>
+      <a href="#sec-points">考点梳理</a>
+      <a href="#sec-quiz">复习题目</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div>
+    <span class="lec-num">Lecture 14 · 期末复习</span>
+    <h1>网络中的渗流<br><span style="color: var(--accent);">Percolation on Networks</span></h1>
+    <p class="subtitle">本章研究在节点（或边）逐步被移除时，网络的"巨连通簇"何时崩塌——这是衡量网络鲁棒性、分析疾病传播与设计疫苗策略的核心工具。</p>
+    <div class="meta-row">
+      <div class="meta-item"><strong>核心定理</strong>$\phi_c = \dfrac{\langle k\rangle}{\langle k^2\rangle - \langle k\rangle}$</div>
+      <div class="meta-item"><strong>关键概念</strong>占据概率 · 巨连通簇 · 渗流阈值</div>
+      <div class="meta-item"><strong>主要应用</strong>基础设施鲁棒性 · 流行病学</div>
+    </div>
+  </div>
+  <div id="mathjax-warning">⚠ 公式排版仍在加载…若长时间无变化，请检查网络是否能访问 jsdelivr.net 上的 MathJax 资源。</div>
+</section>
+
+<main>
+
+<!-- ════════════════════ 第一部分 课程讲解 ════════════════════ -->
+<section class="section" id="sec-intro">
+  <div class="section-head">
+    <span class="section-num">PART 01</span>
+    <h2>课程讲解</h2>
+    <span class="section-sub">从零理解这一章在做什么</span>
+  </div>
+
+  <h3>整体脉络：这一章在解决什么问题？</h3>
+  <p>
+    现实世界中的网络——电网、交通系统、互联网、社交网络——并不会永远完好。
+    路由器会坏、车站会关闭、个体会被疫苗免疫。
+    这一章问的核心问题是：<span class="k">当网络中的节点（或边）被逐渐移除时，整个网络何时会"碎裂"？</span>
+  </p>
+  <p>
+    更具体地，我们关心一个量：经过移除后，最大连通块（"巨连通簇"）的大小如何变化？
+    存在一个临界值，叫做 <span class="term">渗流阈值（percolation threshold）</span>，
+    一旦移除比例越过它，巨连通簇就会消失，网络瓦解成许多小碎片。
+  </p>
+
+  <div class="roadmap">
+    <strong style="color: var(--navy); font-family: var(--font-serif); font-size: 1.05rem;">📍 本章学习路径</strong>
+    <div class="roadmap-steps">
+      <div class="rm-step">
+        <span class="rm-num">STEP 1</span>
+        <div class="rm-title">超额度分布</div>
+        <div>预备工具：从邻居视角看度分布</div>
+      </div>
+      <div class="rm-step">
+        <span class="rm-num">STEP 2</span>
+        <div class="rm-title">渗流定义</div>
+        <div>节点/边渗流，随机/针对移除</div>
+      </div>
+      <div class="rm-step">
+        <span class="rm-num">STEP 3</span>
+        <div class="rm-title">渗流阈值</div>
+        <div>配置模型的核心定理</div>
+      </div>
+      <div class="rm-step">
+        <span class="rm-num">STEP 4</span>
+        <div class="rm-title">计算应用</div>
+        <div>具体度序列、Poisson、幂律</div>
+      </div>
+      <div class="rm-step">
+        <span class="rm-num">STEP 5</span>
+        <div class="rm-title">网络鲁棒性</div>
+        <div>幂律网络的"鲁棒又脆弱"</div>
+      </div>
+      <div class="rm-step">
+        <span class="rm-num">STEP 6</span>
+        <div class="rm-title">数值算法</div>
+        <div>移除法 vs 添加法</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>模块 1：超额度（Excess Degree）——一个新视角</h3>
+  <p>
+    为什么需要"超额度"这个新概念？
+    因为在分析渗流时，我们经常需要回答："从节点 $v$ 沿边走到邻居 $w$，$w$ 还能延伸出去多少个连接？"
+    答案不是 $w$ 的全部度数 $k_w$，而是 $k_w - 1$（要去掉来路那条边）。这个 $k_w - 1$ 就是 $w$ 作为 $v$ 邻居的"超额度"。
+  </p>
+
+  <div class="box box-def">
+    <div class="box-title">定义</div>
+    <p><strong>超额度（excess degree）</strong>：设 $v$ 为某节点，$w$ 为 $v$ 的一个邻居。$w$ 作为 $v$ 邻居的"超额度"，是 $w$ 除 $v$ 之外的邻居数，即 $k_w - 1$。</p>
+    <p><strong>超额度分布 $q_k$</strong>：在所有"邻居关系"中，超额度恰为 $k$ 的比例。</p>
+  </div>
+
+  <p>
+    一个直观（也很关键）的事实是：度为 $k$ 的节点会以"邻居"身份在邻居列表中出现 $k$ 次（每条边都让它当一次别人的邻居），每次它带来的超额度都是 $k-1$。
+    把这个事实做归一化，就得到核心公式：
+  </p>
+
+  <div class="box box-formula">
+    <div class="box-title">核心公式</div>
+    $$ q_k = \frac{(k+1)\,p_{k+1}}{\langle k \rangle} $$
+    <p style="margin-top: 10px; color: var(--text-soft); font-size: 0.92rem;">含义：随机沿一条边走到一个邻居，该邻居拥有"超额度 = k"的概率，等于走到一个度数为 $k+1$ 节点的概率。</p>
+  </div>
+
+  <h4>🍎 类比帮助理解</h4>
+  <p>
+    把人想象成节点、友谊想象成边。
+    随机选一个人 $v$，再随机选他的一个朋友 $w$。$w$ 还有多少其他朋友（除 $v$ 之外）？
+    答案的分布就是超额度分布。
+    朋友越多的人，越容易出现在别人的"朋友列表"里——所以 $q_k$ 偏向"度数大"的节点，这就是著名的<span class="term">"友谊悖论"</span>（你的朋友通常比你朋友多）的数学根源。
+  </p>
+
+  <h3>模块 2：什么是渗流（Percolation）？</h3>
+
+  <div class="box box-def">
+    <div class="box-title">定义</div>
+    <p><strong>节点渗流（node / site percolation）</strong>：从网络中移除一些节点（及其所有相连的边）的过程。</p>
+    <p><strong>边渗流（edge / bond percolation）</strong>：从网络中移除一些边（不动节点）的过程。</p>
+  </div>
+
+  <div class="box box-tip">
+    <div class="box-title">命名小贴士</div>
+    <p>"节点 = site"、"边 = bond"——这是物理学的传统术语。在论文里看到 <em>site percolation</em> 时，就是节点渗流。</p>
+  </div>
+
+  <h4>为什么要研究渗流？两大动机</h4>
+  <ul>
+    <li><strong>节点失效</strong>：路由器宕机、道路口关闭、电站故障——网络还能撑住吗？</li>
+    <li><strong>疫苗接种</strong>：被接种的人无法传播疾病，相当于在传播网络中被"移除"。多少人接种才能形成群体免疫？</li>
+  </ul>
+
+  <h4>移除策略：随机还是针对？</h4>
+  <ul>
+    <li><strong>均匀随机移除</strong>：每个节点独立、以同概率被移除（模拟无差别的随机故障）。</li>
+    <li><strong>针对性移除</strong>：依据节点属性挑选移除目标，比如先移除度数最大或介数最大的节点（模拟攻击或精准接种）。</li>
+  </ul>
+
+  <h3>模块 3：均匀随机移除 & 渗流阈值</h3>
+
+  <div class="box box-def">
+    <div class="box-title">关键术语</div>
+    <p><strong>占据概率 $\phi$（occupation probability）</strong>：每个节点独立地以概率 $\phi$ 被"保留"，以概率 $1-\phi$ 被移除。$0 \le \phi \le 1$。</p>
+    <p><strong>簇（cluster）</strong>：移除之后仍然连通的一组节点。</p>
+    <p><strong>巨簇（giant cluster）</strong>：大小与总节点数 $n$ 同阶（线性比例）的簇。</p>
+    <p><strong>渗流阈值 $\phi_c$（percolation threshold）</strong>：使巨簇刚好能存在的最小 $\phi$ 值。$\phi < \phi_c$ 时网络碎裂；$\phi > \phi_c$ 时存在巨簇。</p>
+  </div>
+
+  <h4>🔥 类比：森林火灾</h4>
+  <p>
+    把每个节点想成一棵树。$\phi$ 是"这片土地上长出树（而不是空地）"的概率。
+    火从一棵着火的树蔓延到所有连通的树。如果树太稀疏（$\phi$ 小），火很快被空地阻断；
+    如果树足够密集（$\phi$ 越过阈值 $\phi_c$），就会出现横贯整片森林的"巨大火场"。
+    我们要找的就是这个"恰好能让火横贯"的密度临界点。
+  </p>
+
+  <h3>模块 4：配置模型中的渗流阈值（核心定理）</h3>
+  <p>先复习<span class="term">配置模型（configuration model）</span>：固定 $n$ 个节点，给每个节点 $i$ 指定度 $k_i$，并生成 $k_i$ 个"半边（stub）"，然后把所有半边随机两两配对。这是一种生成具有任意度分布的随机网络的标准方式。</p>
+
+  <div class="box box-formula">
+    <div class="box-title">主定理（必须掌握）</div>
+    <p>在配置模型中，对均匀随机节点渗流，渗流阈值为：</p>
+    $$ \boxed{\;\phi_c = \frac{\langle k\rangle}{\langle k^2\rangle - \langle k\rangle}\;} $$
+    <p style="margin-top: 10px;">其中 $\langle k\rangle = \sum_k k\,p_k$ 为平均度，$\langle k^2\rangle = \sum_k k^2 p_k$ 为度的二阶矩。</p>
+  </div>
+
+  <div class="box box-formula">
+    <div class="box-title">等价形式（用生成函数）</div>
+    <p>令 $g_1(u) = \sum_{k=0}^\infty q_k u^k$（超额度分布的概率生成函数），则：</p>
+    $$ \phi_c = \frac{1}{g_1'(1)} $$
+    <p style="margin-top: 10px; color: var(--text-soft); font-size: 0.92rem;">两种形式等价：因为 $g_1'(1) = \sum_k k\,q_k = \dfrac{\langle k^2\rangle - \langle k\rangle}{\langle k\rangle}$。</p>
+  </div>
+
+  <div class="box box-warning">
+    <div class="box-title">考试提示</div>
+    <p>讲义中关于这个定理的<strong>详细证明被明确标记为 "NOT EXAMINABLE"</strong>（不可考）。但定理本身、它的应用、以及由它推出的鲁棒性结论是<strong>核心考点</strong>。</p>
+  </div>
+
+  <h3>模块 5：计算实战（必考类型）</h3>
+
+  <h4>例 1：度序列 (1, 2, 2, 3)</h4>
+  <div class="box box-aside">
+    <p>度分布：$p_1 = \tfrac{1}{4}, p_2 = \tfrac{2}{4}, p_3 = \tfrac{1}{4}$，其余 $p_k = 0$。</p>
+    <p>$\langle k\rangle = 1\cdot\tfrac{1}{4} + 2\cdot\tfrac{2}{4} + 3\cdot\tfrac{1}{4} = 2$</p>
+    <p>$\langle k^2\rangle = 1\cdot\tfrac{1}{4} + 4\cdot\tfrac{2}{4} + 9\cdot\tfrac{1}{4} = \tfrac{18}{4} = \tfrac{9}{2}$</p>
+    <p>$\phi_c = \dfrac{2}{\tfrac{9}{2} - 2} = \dfrac{2}{\tfrac{5}{2}} = \dfrac{4}{5}$</p>
+  </div>
+
+  <h4>例 2：Poisson 度分布 $p_k = e^{-c}\dfrac{c^k}{k!}$</h4>
+  <p>关键计算：$\langle k\rangle = c$，$\langle k^2\rangle = c^2 + c$。代入主定理：</p>
+  <p class="formula-display">$\phi_c = \dfrac{c}{c^2 + c - c} = \dfrac{1}{c}$</p>
+  <p>若 $c = 3$，则 $\phi_c = \tfrac{1}{3}$——也就是说要让巨簇消失，需要平均移除 $\tfrac{2}{3}$ 的节点。</p>
+
+  <h3>模块 6：网络鲁棒性 & 幂律的"双面性"</h3>
+  <p>
+    网络对随机故障是否<span class="term">鲁棒（robust）</span>，由 $\phi_c$ 决定：<strong>$\phi_c$ 越小越鲁棒</strong>，因为这意味着即使有很大一部分节点失效，巨簇仍存在。
+  </p>
+
+  <p>当度分布为幂律 $p_k \propto k^{-\alpha}$ 时，有一个惊人的结果：</p>
+  <div class="box box-tip">
+    <div class="box-title">核心结论</div>
+    <p>当 $2 < \alpha < 3$ 时：$\langle k\rangle$ 收敛，但 $\langle k^2\rangle$ 发散，于是 $\phi_c = \dfrac{\langle k\rangle}{\langle k^2\rangle - \langle k\rangle} \to 0$。</p>
+    <p style="margin-top: 8px;"><strong>意味着：永远存在巨簇！</strong>幂律网络对均匀随机移除节点极度鲁棒。</p>
+  </div>
+
+  <p>但反过来——<strong>幂律网络对针对性攻击极度脆弱</strong>：仅仅移除最高度数前 3% 的节点，就能让巨簇崩塌。</p>
+
+  <h4>这意味着什么？</h4>
+  <ul>
+    <li><strong>互联网</strong>：作为幂律网络，遇到随机路由器故障时非常稳定（好事）。</li>
+    <li><strong>疾病传播</strong>：随机接种效率极低（因为巨连通簇难以打断），但<strong>优先给"高接触度"的人接种</strong>能事半功倍。</li>
+    <li><strong>友谊悖论的妙用</strong>：你不知道谁度数最高？那就"接种你朋友"——平均而言，你朋友的度数比你高。</li>
+  </ul>
+
+  <h3>模块 7：算法实现</h3>
+  <p>两种数值算法用于计算 $S(\phi)$（最大簇相对大小作为 $\phi$ 的函数）：</p>
+
+  <h4>算法 1：移除法（适合单个 $\phi$）</h4>
+  <ol>
+    <li>固定 $\phi$。</li>
+    <li>遍历每个节点，以概率 $1-\phi$ 移除。</li>
+    <li>用 BFS 找最大簇大小 $S$。</li>
+    <li>多次重复取平均。</li>
+  </ol>
+  <p>时间复杂度（处理 $O(n)$ 个不同 $\phi$ 值）：$O(n(n+m))$。</p>
+
+  <h4>算法 2：添加法（适合多个 $\phi$，更高效）</h4>
+  <ol>
+    <li>固定占据节点数 $r$（而不是概率 $\phi$）。</li>
+    <li>随机选 $r$ 个节点，计算最大簇大小，多次平均得 $S_r$。</li>
+    <li>用二项概率把 $S_r$ 转回 $S(\phi)$：
+      $$ S(\phi) = \sum_{r=0}^n p_r\,S_r,\quad p_r = \binom{n}{r}\phi^r(1-\phi)^{n-r} $$
+    </li>
+  </ol>
+  <p>关键加速：增量地添加节点，用<strong>"较小簇并入较大簇"</strong>的标签合并策略，每个节点最多被重新标记 $\log_2 n$ 次。</p>
+  <p>时间复杂度：$O((n+m)\log_2 n)$，对稀疏网络为 $O(n\log_2 n)$。</p>
+
+</section>
+
+<!-- ════════════════════ 第二部分 考点梳理 ════════════════════ -->
+<section class="section" id="sec-points">
+  <div class="section-head">
+    <span class="section-num">PART 02</span>
+    <h2>考点梳理</h2>
+    <span class="section-sub">系统、全面、按主题分类</span>
+  </div>
+
+  <p style="color: var(--text-soft); margin-bottom: 24px;">
+    <strong>图例说明：</strong>
+    <span class="badge badge-memo">需记忆</span> 公式 / 定义 / 名词；
+    <span class="badge badge-calc">需理解计算</span> 推导 / 数值题；
+    <span class="badge badge-concept">需理解概念</span> 思想 / 应用。
+    重要度：<span class="stars high">★★★</span> 高频　<span class="stars mid">★★</span> 中等　<span class="stars low">★</span> 低频。
+  </p>
+
+  <!-- A. 超额度分布 -->
+  <h3>A. 超额度分布（Excess Degree Distribution）</h3>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">A1. 超额度的定义</div>
+      <div class="kp-badges">
+        <span class="badge badge-memo">需记忆</span>
+        <span class="stars mid">★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">定义</span>
+      设 $v$ 为节点，$w$ 为 $v$ 的一个邻居。$w$ 作为 $v$ 邻居的<strong>超额度</strong>，是 $w$ 除 $v$ 之外的邻居数；即若 $w$ 的度为 $k$，则超额度为 $k-1$。
+    </div>
+    <div class="kp-section">
+      <span class="label">易混点</span>
+      "超额度"不是某个节点的属性，<strong>而是某条"邻居关系"的属性</strong>；同一个节点对不同的邻居都有一次超额度（重复出现 $k$ 次）。
+    </div>
+  </div>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">A2. 超额度分布公式</div>
+      <div class="kp-badges">
+        <span class="badge badge-memo">需记忆</span>
+        <span class="badge badge-calc">需计算</span>
+        <span class="stars high">★★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">公式</span>
+      $$ q_k = \frac{(k+1)\,p_{k+1}}{\langle k\rangle} $$
+    </div>
+    <div class="kp-section">
+      <span class="label">含义</span>
+      沿一条边随机走到一个邻居，该邻居超额度恰为 $k$（即原本度为 $k+1$）的概率。
+    </div>
+    <div class="kp-section">
+      <span class="label">推导关键</span>
+      度为 $k$ 的节点会作为邻居出现 $k$ 次，每次贡献超额度 $k-1$。所以 $q_{k-1} \propto k\,p_k$，归一化常数 $\alpha = 1/\langle k\rangle$。
+    </div>
+    <div class="kp-section">
+      <span class="label">常见错误</span>
+      把 $q_k$ 误认为是 $p_{k+1}$ 本身——忘了乘 $(k+1)$ 和除 $\langle k\rangle$ 归一化。
+    </div>
+  </div>
+
+  <!-- B. 渗流基本概念 -->
+  <h3>B. 渗流（Percolation）基本概念</h3>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">B1. 节点渗流 vs 边渗流</div>
+      <div class="kp-badges">
+        <span class="badge badge-memo">需记忆</span>
+        <span class="stars high">★★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">定义</span>
+      <ul>
+        <li><strong>节点渗流（node / site percolation）</strong>：移除节点连同其相连的所有边。</li>
+        <li><strong>边渗流（edge / bond percolation）</strong>：仅移除边，不动节点。</li>
+      </ul>
+    </div>
+    <div class="kp-section">
+      <span class="label">术语</span>
+      "site" = 节点；"bond" = 边。
+    </div>
+  </div>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">B2. 渗流的动机与应用</div>
+      <div class="kp-badges">
+        <span class="badge badge-concept">需理解</span>
+        <span class="stars mid">★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">动机</span>
+      研究节点/边失效的连锁效应：路由器宕机、车站关闭、个体被疫苗免疫。
+    </div>
+    <div class="kp-section">
+      <span class="label">应用</span>
+      <ul>
+        <li>评估<strong>基础设施鲁棒性</strong>（电网、交通、互联网）。</li>
+        <li>分析<strong>网络上的疾病传播</strong>，设计接种策略与群体免疫目标。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">B3. 移除策略：随机 vs 针对</div>
+      <div class="kp-badges">
+        <span class="badge badge-concept">需理解</span>
+        <span class="stars mid">★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">两类策略</span>
+      <ol>
+        <li><strong>均匀随机移除</strong>：每节点同概率独立移除（模拟无差别故障）。</li>
+        <li><strong>针对性移除</strong>：依节点属性选择，如优先移除最高度数、最高介数节点（模拟攻击、精准接种）。</li>
+      </ol>
+    </div>
+    <div class="kp-section">
+      <span class="label">现实对应</span>
+      随机移除 ≈ 随机故障；针对性移除 ≈ 蓄意攻击 或 精准疫苗策略（"给朋友最多的人先打疫苗"）。
+    </div>
+  </div>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">B4. 核心术语：占据概率、簇、巨簇、渗流阈值</div>
+      <div class="kp-badges">
+        <span class="badge badge-memo">需记忆</span>
+        <span class="stars high">★★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">占据概率 $\phi$</span>
+      节点被"保留"的概率（$0 \le \phi \le 1$）。每个节点独立以概率 $\phi$ 保留、$1-\phi$ 移除。
+    </div>
+    <div class="kp-section">
+      <span class="label">簇 (cluster)</span>
+      移除后仍互相连通的一组节点。
+    </div>
+    <div class="kp-section">
+      <span class="label">巨簇 (giant cluster)</span>
+      大小与总节点数 $n$ 同阶（线性比例）的簇。简单理解：簇的大小占整个网络的"有限比例"，而不是渐近为 0。
+    </div>
+    <div class="kp-section">
+      <span class="label">渗流阈值 $\phi_c$</span>
+      使巨簇存在的最小 $\phi$ 值。当 $\phi < \phi_c$ 时网络碎裂，当 $\phi > \phi_c$ 时巨簇存在。
+    </div>
+    <div class="kp-section">
+      <span class="label">实践</span>
+      在有限网络中，我们用"最大簇"的大小近似巨簇的大小。
+    </div>
+  </div>
+
+  <!-- C. 渗流阈值定理 -->
+  <h3>C. 配置模型中的渗流阈值（核心定理）</h3>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">C1. 主定理（必背公式）</div>
+      <div class="kp-badges">
+        <span class="badge badge-memo">需记忆</span>
+        <span class="badge badge-calc">需计算</span>
+        <span class="stars high">★★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">公式</span>
+      在配置模型上做均匀随机节点渗流，渗流阈值为：
+      $$ \phi_c = \frac{\langle k\rangle}{\langle k^2\rangle - \langle k\rangle} $$
+    </div>
+    <div class="kp-section">
+      <span class="label">含义</span>
+      阈值完全由度分布的<strong>前两阶矩</strong>决定。$\langle k^2\rangle$ 越大（度异质性越强），分母越大，$\phi_c$ 越小，网络越鲁棒。
+    </div>
+    <div class="kp-section">
+      <span class="label">易错点</span>
+      <ul>
+        <li>不要把 $\phi_c$ 写成 $\langle k\rangle/\langle k^2\rangle$——分母是 $\langle k^2\rangle - \langle k\rangle$。</li>
+        <li>$\langle k^2\rangle \neq \langle k\rangle^2$。前者是 $\sum k^2 p_k$，后者是均值的平方。两者差等于方差。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">C2. 等价形式（生成函数）</div>
+      <div class="kp-badges">
+        <span class="badge badge-memo">需记忆</span>
+        <span class="badge badge-calc">需计算</span>
+        <span class="stars high">★★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">公式</span>
+      令 $g_1(u) = \sum_{k=0}^\infty q_k u^k$，则
+      $$ \phi_c = \frac{1}{g_1'(1)} $$
+    </div>
+    <div class="kp-section">
+      <span class="label">两式等价</span>
+      $g_1'(1) = \sum_k k q_k = \dfrac{\langle k^2\rangle - \langle k\rangle}{\langle k\rangle}$。
+    </div>
+    <div class="kp-section">
+      <span class="label">何时用哪个</span>
+      <ul>
+        <li>已知度分布 $p_k$ → 用第一个公式更直接（先算两阶矩）。</li>
+        <li>已知 / 需要 $q_k$ 或 $g_1(u)$ → 用第二个公式。</li>
+        <li>两种方法应给出同样答案——可以互相验证。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">C3. 证明思路（NOT EXAMINABLE）</div>
+      <div class="kp-badges">
+        <span class="badge badge-concept">了解即可</span>
+        <span class="stars low">★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">三步</span>
+      <ol>
+        <li>引入 $u$ = 节点"不通过某邻居连接到巨簇"的平均概率。</li>
+        <li>建立自洽方程 $u = 1 - \phi + \phi g_1(u)$。</li>
+        <li>几何分析：当切线斜率 $\dfrac{\mathrm{d}}{\mathrm{d}u}[1 - \phi + \phi g_1(u)]\Big|_{u=1} = 1$ 时为临界，解得 $\phi_c = 1/g_1'(1)$。</li>
+      </ol>
+    </div>
+    <div class="kp-section">
+      <span class="label">提醒</span>
+      讲义明确标注"NOT EXAMINABLE"，所以不会出推导过程的题，但理解此思路有助于记公式。
+    </div>
+  </div>
+
+  <!-- D. 计算应用 -->
+  <h3>D. 计算应用（高频题型）</h3>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">D1. 给定度序列求 $\phi_c$</div>
+      <div class="kp-badges">
+        <span class="badge badge-calc">需计算</span>
+        <span class="stars high">★★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">解题步骤</span>
+      <ol>
+        <li>由度序列写出度分布 $p_k$（数频率）。</li>
+        <li>计算 $\langle k\rangle = \sum_k k p_k$。</li>
+        <li>计算 $\langle k^2\rangle = \sum_k k^2 p_k$。</li>
+        <li>代入 $\phi_c = \langle k\rangle / (\langle k^2\rangle - \langle k\rangle)$。</li>
+      </ol>
+    </div>
+    <div class="kp-section">
+      <span class="label">替代方法（用 $g_1$）</span>
+      <ol>
+        <li>由 $p_k$ 算 $q_k = (k+1)p_{k+1}/\langle k\rangle$。</li>
+        <li>写出 $g_1(u)$ 多项式。</li>
+        <li>求导 $g_1'(u)$，代 $u = 1$。</li>
+        <li>$\phi_c = 1/g_1'(1)$。</li>
+      </ol>
+    </div>
+    <div class="kp-section">
+      <span class="label">易错点</span>
+      <ul>
+        <li>度序列 $(1,2,2,3)$ 共 4 个节点：注意 $p_2 = 2/4$（不是 $1/4$）。</li>
+        <li>$\langle k^2\rangle$ 别忘记是 $k^2$（不是 $k$）乘 $p_k$。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">D2. Poisson 度分布的 $\phi_c$</div>
+      <div class="kp-badges">
+        <span class="badge badge-memo">需记忆结论</span>
+        <span class="badge badge-calc">需计算</span>
+        <span class="stars high">★★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">结论</span>
+      若 $p_k = e^{-c}c^k/k!$（参数 $c$），则
+      $$ \langle k\rangle = c,\quad \langle k^2\rangle = c^2 + c,\quad \phi_c = \frac{1}{c} $$
+    </div>
+    <div class="kp-section">
+      <span class="label">推导关键</span>
+      $\sum_{k\ge 1} \dfrac{ke^{-c}c^k}{k!} = c\sum_{l\ge 0}\dfrac{e^{-c}c^l}{l!} = c\cdot 1 = c$。同理可算 $\langle k^2\rangle$。
+    </div>
+    <div class="kp-section">
+      <span class="label">直观解读</span>
+      平均度越大、阈值越低——直观地讲：稠密的随机图更鲁棒。
+    </div>
+  </div>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">D3. 计算小网络的超额度分布</div>
+      <div class="kp-badges">
+        <span class="badge badge-calc">需计算</span>
+        <span class="stars mid">★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">方法</span>
+      列表法：对每个节点 $v$ 列出度 $d_v$ 与邻居，并对每个邻居写下"邻居的度 − 1"。统计所有"邻居关系"中超额度的频率即得 $q_k$。
+    </div>
+    <div class="kp-section">
+      <span class="label">验证</span>
+      用公式 $q_k = (k+1)p_{k+1}/\langle k\rangle$ 反算，与列表统计一致。
+    </div>
+  </div>
+
+  <!-- E. 鲁棒性 -->
+  <h3>E. 网络鲁棒性</h3>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">E1. 鲁棒性的判据</div>
+      <div class="kp-badges">
+        <span class="badge badge-concept">需理解</span>
+        <span class="stars high">★★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">判据</span>
+      <strong>$\phi_c$ 越小，网络越鲁棒</strong>。因为这意味着即使大部分节点失效（$\phi$ 很小），网络仍能保持巨簇。
+    </div>
+    <div class="kp-section">
+      <span class="label">关键依赖</span>
+      在配置模型下，鲁棒性完全由度分布的前两阶矩 $\langle k\rangle$ 与 $\langle k^2\rangle$ 决定。
+    </div>
+  </div>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">E2. 幂律网络的"双面性"</div>
+      <div class="kp-badges">
+        <span class="badge badge-concept">需理解</span>
+        <span class="stars high">★★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">数学结果</span>
+      若 $p_k \propto k^{-\alpha}$ 且 $2 < \alpha < 3$：
+      <ul>
+        <li>$\langle k\rangle \propto \sum k^{1-\alpha}$ 收敛（有限）。</li>
+        <li>$\langle k^2\rangle \propto \sum k^{2-\alpha}$ 发散。</li>
+        <li>$\phi_c \to 0$。</li>
+      </ul>
+    </div>
+    <div class="kp-section">
+      <span class="label">含义</span>
+      <ul>
+        <li><strong>对随机故障极其鲁棒</strong>：永远存在巨簇（好事：互联网随机宕机不会瘫痪）。</li>
+        <li><strong>对针对性攻击极其脆弱</strong>：移除最多 3% 最高度数节点就能让巨簇崩塌。</li>
+      </ul>
+    </div>
+    <div class="kp-section">
+      <span class="label">疫苗启示</span>
+      <ul>
+        <li>幂律社交网络下，<strong>随机接种效率低</strong>（巨簇难打断）。</li>
+        <li><strong>按度数从高到低接种</strong>能高效形成群体免疫。</li>
+        <li>"友谊悖论"启示：不知道谁度数高？接种<strong>你的朋友</strong>，他们平均度数比你高。</li>
+      </ul>
+    </div>
+    <div class="kp-section">
+      <span class="label">易错点</span>
+      不要混淆"鲁棒于随机故障 = 鲁棒于一切"。幂律网络的二象性是本章核心洞见。
+    </div>
+  </div>
+
+  <!-- F. 算法 -->
+  <h3>F. 数值算法</h3>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">F1. 算法 1：移除法</div>
+      <div class="kp-badges">
+        <span class="badge badge-concept">需理解</span>
+        <span class="stars mid">★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">流程</span>
+      <ol>
+        <li>固定 $\phi$。</li>
+        <li>遍历每节点，以概率 $1-\phi$ 移除。</li>
+        <li>用 BFS 找最大簇大小 $S$。</li>
+        <li>多次重复取平均得 $S(\phi)$。</li>
+      </ol>
+    </div>
+    <div class="kp-section">
+      <span class="label">复杂度</span>
+      单次 BFS：$O(n + m)$。求 $O(n)$ 个 $\phi$ 值需 $O(n(n+m))$。
+    </div>
+    <div class="kp-section">
+      <span class="label">适用场景</span>
+      只关心一个 $\phi$ 值。
+    </div>
+  </div>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">F2. 算法 2：添加法</div>
+      <div class="kp-badges">
+        <span class="badge badge-concept">需理解</span>
+        <span class="stars mid">★★</span>
+      </div>
+    </div>
+    <div class="kp-section">
+      <span class="label">核心思想</span>
+      不固定概率，而是<strong>固定占据节点数 $r$</strong>，然后增量地添加节点。维护每个节点的簇标签和簇大小记录。
+    </div>
+    <div class="kp-section">
+      <span class="label">流程</span>
+      <ol>
+        <li>随机选择一个节点顺序。</li>
+        <li>逐个加入节点（一开始自成一个簇）。</li>
+        <li>检查与已占据节点相连的边：若两端簇标签不同，则<strong>把较小簇的所有节点重新标记为较大簇的标签</strong>。</li>
+        <li>记录每个 $r$ 下的最大簇大小 $S_r$。</li>
+        <li>多次重复，平均得 $\bar{S_r}$。</li>
+        <li>最终 $S(\phi) = \sum_{r=0}^n p_r S_r$，其中 $p_r = \binom{n}{r}\phi^r(1-\phi)^{n-r}$。</li>
+      </ol>
+    </div>
+    <div class="kp-section">
+      <span class="label">复杂度分析</span>
+      因为总是"小簇并入大簇"，每个节点最多被重新标记 $\log_2 n$ 次。总时间 $O((n+m)\log_2 n)$；对稀疏网络 $O(n\log_2 n)$。
+    </div>
+    <div class="kp-section">
+      <span class="label">为何更快</span>
+      一次扫描就得到<strong>所有 $r$ 下的 $S_r$</strong>，避免对每个 $\phi$ 重做 BFS。
+    </div>
+    <div class="kp-section">
+      <span class="label">易错点</span>
+      要点是"小簇并入大簇"——反过来会破坏 $O(\log n)$ 的复杂度。
+    </div>
+  </div>
+
+  <div class="kp-card">
+    <div class="kp-header">
+      <div class="kp-title">F3. 复杂度对比</div>
+      <div class="kp-badges">
+        <span class="badge badge-memo">需记忆</span>
+        <span class="stars mid">★★</span>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>算法</th><th>策略</th><th>$O(n)$ 个 $\phi$ 的总复杂度</th><th>稀疏网络</th></tr></thead>
+        <tbody>
+          <tr><td>算法 1</td><td>对每个 $\phi$ 跑 BFS</td><td>$O(n(n+m))$</td><td>$O(n^2)$</td></tr>
+          <tr><td>算法 2</td><td>增量添加 + 标签合并</td><td>$O((n+m)\log_2 n)$</td><td>$O(n\log_2 n)$</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+<!-- ════════════════════ 第三部分 复习题目 ════════════════════ -->
+<section class="section" id="sec-quiz">
+  <div class="section-head">
+    <span class="section-num">PART 03</span>
+    <h2>复习题目</h2>
+    <span class="section-sub">由易到难 · 含详细解析</span>
+  </div>
+
+  <div class="q-controls">
+    <button class="q-btn" id="btn-expand">展开全部答案</button>
+    <button class="q-btn" id="btn-collapse">收起全部答案</button>
+    <button class="q-btn" id="btn-reset">重置作答</button>
+    <div class="progress-display" id="progress">
+      已作答选择题 <strong id="answered-count">0</strong>/<strong id="total-count">0</strong>　
+      正确 <span class="ok" id="correct-count">0</span>
+    </div>
+  </div>
+
+  <!-- ═══ 选择题 ═══ -->
+  <h3 class="q-group-title">一、选择题</h3>
+
+  <!-- Q1 -->
+  <div class="question" data-qid="q1" data-correct="C">
+    <div class="q-header">
+      <span class="q-num">Q1</span>
+      <div class="q-tags">
+        <span class="q-tag">选择题</span>
+        <span class="q-tag">考点 B1</span>
+        <span class="q-tag diff-1">基础</span>
+      </div>
+    </div>
+    <div class="q-stem">下列关于 site percolation 和 bond percolation 的描述，哪一项正确？</div>
+    <div class="q-options">
+      <button class="q-option" data-option="A"><span class="opt-mark">A.</span>Site percolation 移除边，bond percolation 移除节点。</button>
+      <button class="q-option" data-option="B"><span class="opt-mark">B.</span>Site 和 bond percolation 是同一概念的两个名字。</button>
+      <button class="q-option" data-option="C"><span class="opt-mark">C.</span>Site percolation 即节点渗流（移除节点及其相连的边），bond percolation 即边渗流（移除边）。</button>
+      <button class="q-option" data-option="D"><span class="opt-mark">D.</span>Site percolation 仅适用于物理学，bond percolation 仅适用于网络科学。</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-correct">C</span></p>
+        <p><span class="reason-label">解析</span>"site" 是物理学传统用语，对应"格点 / 节点"；"bond" 对应"键 / 边"。移除节点时它的所有相邻边自然也被移除。</p>
+        <p><span class="reason-label">易错提醒</span>不要把 site/bond 的对应关系记反。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q2 -->
+  <div class="question" data-qid="q2" data-correct="B">
+    <div class="q-header">
+      <span class="q-num">Q2</span>
+      <div class="q-tags">
+        <span class="q-tag">选择题</span>
+        <span class="q-tag">考点 B4</span>
+        <span class="q-tag diff-1">基础</span>
+      </div>
+    </div>
+    <div class="q-stem">占据概率 $\phi$（occupation probability）表示：</div>
+    <div class="q-options">
+      <button class="q-option" data-option="A"><span class="opt-mark">A.</span>每个节点被移除的概率。</button>
+      <button class="q-option" data-option="B"><span class="opt-mark">B.</span>每个节点被保留的概率。</button>
+      <button class="q-option" data-option="C"><span class="opt-mark">C.</span>整个网络保持连通的概率。</button>
+      <button class="q-option" data-option="D"><span class="opt-mark">D.</span>巨簇存在的概率。</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-correct">B</span></p>
+        <p><span class="reason-label">解析</span>"occupation"意为"占据"。$\phi$ 是节点被占据（保留）的概率，被移除的概率为 $1-\phi$。</p>
+        <p><span class="reason-label">易错提醒</span>注意"占据 = 保留"。考试中可能用"removal probability"指代 $1-\phi$，不要混淆。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q3 -->
+  <div class="question" data-qid="q3" data-correct="A">
+    <div class="q-header">
+      <span class="q-num">Q3</span>
+      <div class="q-tags">
+        <span class="q-tag">选择题</span>
+        <span class="q-tag">考点 B4</span>
+        <span class="q-tag diff-1">基础</span>
+      </div>
+    </div>
+    <div class="q-stem">渗流阈值 $\phi_c$ 的精确定义是：</div>
+    <div class="q-options">
+      <button class="q-option" data-option="A"><span class="opt-mark">A.</span>使得巨簇能够存在的 $\phi$ 的最小值。</button>
+      <button class="q-option" data-option="B"><span class="opt-mark">B.</span>使得网络保持连通的 $\phi$ 的最大值。</button>
+      <button class="q-option" data-option="C"><span class="opt-mark">C.</span>所有节点都被移除时的 $\phi$ 值。</button>
+      <button class="q-option" data-option="D"><span class="opt-mark">D.</span>最大簇的大小等于平均簇大小时的 $\phi$ 值。</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-correct">A</span></p>
+        <p><span class="reason-label">解析</span>$\phi_c$ 是相变临界点：当 $\phi > \phi_c$ 时存在线性比例大小的巨簇，当 $\phi < \phi_c$ 时巨簇消失。</p>
+        <p><span class="reason-label">易错提醒</span>渗流阈值衡量的是"是否存在巨簇"，与"整个网络是否连通"不同。即使 $\phi=1$（不移除任何节点），原网络也可能本来就不连通。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q4 -->
+  <div class="question" data-qid="q4" data-correct="C">
+    <div class="q-header">
+      <span class="q-num">Q4</span>
+      <div class="q-tags">
+        <span class="q-tag">选择题</span>
+        <span class="q-tag">考点 C1</span>
+        <span class="q-tag diff-1">基础</span>
+      </div>
+    </div>
+    <div class="q-stem">在配置模型中，均匀随机节点渗流的渗流阈值公式是：</div>
+    <div class="q-options">
+      <button class="q-option" data-option="A"><span class="opt-mark">A.</span>$\phi_c = \dfrac{\langle k\rangle}{\langle k^2\rangle}$</button>
+      <button class="q-option" data-option="B"><span class="opt-mark">B.</span>$\phi_c = \dfrac{\langle k^2\rangle - \langle k\rangle}{\langle k\rangle}$</button>
+      <button class="q-option" data-option="C"><span class="opt-mark">C.</span>$\phi_c = \dfrac{\langle k\rangle}{\langle k^2\rangle - \langle k\rangle}$</button>
+      <button class="q-option" data-option="D"><span class="opt-mark">D.</span>$\phi_c = \dfrac{1}{\langle k\rangle}$</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-correct">C</span></p>
+        <p><span class="reason-label">解析</span>这是本章最重要的公式：$\phi_c = \langle k\rangle / (\langle k^2\rangle - \langle k\rangle)$。等价于 $\phi_c = 1/g_1'(1)$。</p>
+        <p><span class="reason-label">易错提醒</span>
+        <ul>
+          <li>选项 D 仅在 Poisson 度分布下成立（$\langle k\rangle = c$ 时 $\phi_c = 1/c$），不是一般公式。</li>
+          <li>选项 B 是 $g_1'(1)$ 的值（公式的倒数），别记反。</li>
+        </ul>
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q5 -->
+  <div class="question" data-qid="q5" data-correct="A">
+    <div class="q-header">
+      <span class="q-num">Q5</span>
+      <div class="q-tags">
+        <span class="q-tag">选择题</span>
+        <span class="q-tag">考点 E2</span>
+        <span class="q-tag diff-2">进阶</span>
+      </div>
+    </div>
+    <div class="q-stem">关于度分布服从 $p_k \propto k^{-\alpha}$（$2 < \alpha < 3$）的幂律网络，下列哪项正确？</div>
+    <div class="q-options">
+      <button class="q-option" data-option="A"><span class="opt-mark">A.</span>$\phi_c \to 0$，即对随机节点移除极度鲁棒；但对针对性高度数攻击极度脆弱。</button>
+      <button class="q-option" data-option="B"><span class="opt-mark">B.</span>对随机移除和针对性攻击都鲁棒。</button>
+      <button class="q-option" data-option="C"><span class="opt-mark">C.</span>对随机移除脆弱，对针对性攻击鲁棒。</button>
+      <button class="q-option" data-option="D"><span class="opt-mark">D.</span>$\phi_c = 1$，即任何节点的移除都会破坏巨簇。</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-correct">A</span></p>
+        <p><span class="reason-label">解析</span>当 $2 < \alpha < 3$ 时，$\langle k\rangle$ 收敛而 $\langle k^2\rangle$ 发散，故 $\phi_c \to 0$。这意味着无论随机移除多少节点都不会破坏巨簇。但同样的高度异质性（少量节点拥有大量连接）让网络对针对性攻击极度脆弱——移除约 3% 最高度数节点即可瓦解巨簇。</p>
+        <p><span class="reason-label">应用</span>这正是为什么互联网对随机故障稳健（好事），而流感传播应优先给"社交活跃者"接种（精准接种比随机接种高效）。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q6 -->
+  <div class="question" data-qid="q6" data-correct="C">
+    <div class="q-header">
+      <span class="q-num">Q6</span>
+      <div class="q-tags">
+        <span class="q-tag">选择题</span>
+        <span class="q-tag">考点 A2</span>
+        <span class="q-tag diff-2">进阶</span>
+      </div>
+    </div>
+    <div class="q-stem">超额度分布 $q_k$ 的正确公式是：</div>
+    <div class="q-options">
+      <button class="q-option" data-option="A"><span class="opt-mark">A.</span>$q_k = p_{k+1}$</button>
+      <button class="q-option" data-option="B"><span class="opt-mark">B.</span>$q_k = \dfrac{k p_k}{\langle k\rangle}$</button>
+      <button class="q-option" data-option="C"><span class="opt-mark">C.</span>$q_k = \dfrac{(k+1) p_{k+1}}{\langle k\rangle}$</button>
+      <button class="q-option" data-option="D"><span class="opt-mark">D.</span>$q_k = \dfrac{p_k}{\langle k\rangle}$</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-correct">C</span></p>
+        <p><span class="reason-label">解析</span>超额度等于度减 1。"邻居中超额度为 $k$"等价于"邻居本身度为 $k+1$"。沿一条边走到度为 $k+1$ 节点的概率与该度数的节点贡献的"端点数" $(k+1)p_{k+1}$ 成比例，归一化常数为 $\langle k\rangle$，故 $q_k = (k+1)p_{k+1}/\langle k\rangle$。</p>
+        <p><span class="reason-label">易错提醒</span>选项 B 是"沿边走到度为 $k$ 节点"的概率（不是超额度为 $k$）。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q7 -->
+  <div class="question" data-qid="q7" data-correct="B">
+    <div class="q-header">
+      <span class="q-num">Q7</span>
+      <div class="q-tags">
+        <span class="q-tag">选择题</span>
+        <span class="q-tag">考点 F2</span>
+        <span class="q-tag diff-2">进阶</span>
+      </div>
+    </div>
+    <div class="q-stem">渗流算法 2（添加法）中，合并两个簇时的策略是：</div>
+    <div class="q-options">
+      <button class="q-option" data-option="A"><span class="opt-mark">A.</span>始终把较大簇的标签改成较小簇的标签。</button>
+      <button class="q-option" data-option="B"><span class="opt-mark">B.</span>始终把较小簇的所有节点重新标记为较大簇的标签。</button>
+      <button class="q-option" data-option="C"><span class="opt-mark">C.</span>给两个簇随机选一个标签作为新标签。</button>
+      <button class="q-option" data-option="D"><span class="opt-mark">D.</span>每次合并都给所有节点重新生成新标签。</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-correct">B</span></p>
+        <p><span class="reason-label">解析</span>"小簇并入大簇"是该算法的核心技巧。每次相当于让被重新标记的簇至少翻倍大小，因此每个节点最多被重新标记 $\log_2 n$ 次，总重新标记次数为 $O(n\log_2 n)$。这是把整体复杂度降为 $O((n+m)\log_2 n)$ 的关键。</p>
+        <p><span class="reason-label">易错提醒</span>若反过来"大簇并入小簇"，复杂度会变差。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q8 -->
+  <div class="question" data-qid="q8" data-correct="D">
+    <div class="q-header">
+      <span class="q-num">Q8</span>
+      <div class="q-tags">
+        <span class="q-tag">选择题</span>
+        <span class="q-tag">考点 C1, C2</span>
+        <span class="q-tag diff-3">综合</span>
+      </div>
+    </div>
+    <div class="q-stem">下列关于 $g_1(u)$ 与 $\phi_c$ 的关系，哪项<strong>错误</strong>？</div>
+    <div class="q-options">
+      <button class="q-option" data-option="A"><span class="opt-mark">A.</span>$g_1(u) = \sum_{k=0}^\infty q_k u^k$ 是超额度分布的概率生成函数。</button>
+      <button class="q-option" data-option="B"><span class="opt-mark">B.</span>$g_1'(1) = \sum_k k q_k$，等于超额度的平均值。</button>
+      <button class="q-option" data-option="C"><span class="opt-mark">C.</span>$\phi_c = 1/g_1'(1)$ 等价于 $\phi_c = \langle k\rangle/(\langle k^2\rangle - \langle k\rangle)$。</button>
+      <button class="q-option" data-option="D"><span class="opt-mark">D.</span>$g_1(1) = \langle k\rangle$，即概率生成函数在 1 处的取值等于平均度。</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-correct">D</span>（这是错的那项）</p>
+        <p><span class="reason-label">解析</span>$g_1(1) = \sum_k q_k = 1$（任何概率分布的生成函数在 1 处都等于 1），而非 $\langle k\rangle$。需要 $\langle k\rangle$ 时应取一阶矩 $\sum_k k p_k$（对原度分布），或代入 $g_1'(1) = \sum_k k q_k$（对超额度分布）。</p>
+        <p><span class="reason-label">提醒</span>A、B、C 均正确：</p>
+        <ul>
+          <li>A：定义。</li>
+          <li>B：$g_1'(u) = \sum_k k q_k u^{k-1}$，代 $u=1$ 即 $\sum_k k q_k$。</li>
+          <li>C：可代公式 $q_k = (k+1)p_{k+1}/\langle k\rangle$，化简得 $g_1'(1) = (\langle k^2\rangle - \langle k\rangle)/\langle k\rangle$。</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <!-- ═══ 判断题 ═══ -->
+  <h3 class="q-group-title">二、判断题</h3>
+
+  <!-- T1 -->
+  <div class="question" data-qid="t1" data-correct="T">
+    <div class="q-header">
+      <span class="q-num">T1</span>
+      <div class="q-tags">
+        <span class="q-tag">判断题</span>
+        <span class="q-tag">考点 E2</span>
+        <span class="q-tag diff-1">基础</span>
+      </div>
+    </div>
+    <div class="q-stem">度分布 $p_k \propto k^{-\alpha}$（$2 < \alpha < 3$）的网络对均匀随机节点移除非常鲁棒。</div>
+    <div class="q-options">
+      <button class="q-option" data-option="T"><span class="opt-mark">✓</span>正确</button>
+      <button class="q-option" data-option="F"><span class="opt-mark">✗</span>错误</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-tf">正确</span></p>
+        <p><span class="reason-label">解析</span>由于 $\langle k^2\rangle$ 发散，$\phi_c \to 0$，所以无论随机移除多少节点都不会破坏巨簇。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- T2 -->
+  <div class="question" data-qid="t2" data-correct="F">
+    <div class="q-header">
+      <span class="q-num">T2</span>
+      <div class="q-tags">
+        <span class="q-tag">判断题</span>
+        <span class="q-tag">考点 E2</span>
+        <span class="q-tag diff-1">基础</span>
+      </div>
+    </div>
+    <div class="q-stem">同样的幂律网络（$2 < \alpha < 3$）对针对性的高度数攻击也很鲁棒。</div>
+    <div class="q-options">
+      <button class="q-option" data-option="T"><span class="opt-mark">✓</span>正确</button>
+      <button class="q-option" data-option="F"><span class="opt-mark">✗</span>错误</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-tf false">错误</span></p>
+        <p><span class="reason-label">解析</span>幂律网络对针对性攻击高度脆弱：移除最多 3% 最高度数节点即可使巨簇崩塌。这就是"鲁棒又脆弱（robust yet fragile）"的特性。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- T3 -->
+  <div class="question" data-qid="t3" data-correct="F">
+    <div class="q-header">
+      <span class="q-num">T3</span>
+      <div class="q-tags">
+        <span class="q-tag">判断题</span>
+        <span class="q-tag">考点 A2</span>
+        <span class="q-tag diff-2">进阶</span>
+      </div>
+    </div>
+    <div class="q-stem">超额度分布满足 $q_k = p_{k+1}$，即超额度为 $k$ 的概率等于度为 $k+1$ 节点在网络中的比例。</div>
+    <div class="q-options">
+      <button class="q-option" data-option="T"><span class="opt-mark">✓</span>正确</button>
+      <button class="q-option" data-option="F"><span class="opt-mark">✗</span>错误</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-tf false">错误</span></p>
+        <p><span class="reason-label">解析</span>正确公式为 $q_k = (k+1)p_{k+1}/\langle k\rangle$。差别在于"沿边走到一个节点"会以与其度数成比例的概率选中它——度大的节点更易被选中（友谊悖论）。所以 $q_k$ 偏向"高度数节点"，比 $p_{k+1}$ 加了权重 $(k+1)$ 并归一化。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- T4 -->
+  <div class="question" data-qid="t4" data-correct="T">
+    <div class="q-header">
+      <span class="q-num">T4</span>
+      <div class="q-tags">
+        <span class="q-tag">判断题</span>
+        <span class="q-tag">考点 F1, F2</span>
+        <span class="q-tag diff-1">基础</span>
+      </div>
+    </div>
+    <div class="q-stem">如果要为很多不同的 $\phi$ 值都计算 $S(\phi)$，添加法（算法 2）比移除法（算法 1）效率更高。</div>
+    <div class="q-options">
+      <button class="q-option" data-option="T"><span class="opt-mark">✓</span>正确</button>
+      <button class="q-option" data-option="F"><span class="opt-mark">✗</span>错误</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-tf">正确</span></p>
+        <p><span class="reason-label">解析</span>算法 1 需要对每个 $\phi$ 重新运行 BFS（$O(n(n+m))$），而算法 2 通过增量添加节点 + 小簇并入大簇，一次扫描就可获得所有 $r$ 下的 $S_r$，复杂度为 $O((n+m)\log_2 n)$。对稀疏网络优势尤其明显。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- T5 -->
+  <div class="question" data-qid="t5" data-correct="F">
+    <div class="q-header">
+      <span class="q-num">T5</span>
+      <div class="q-tags">
+        <span class="q-tag">判断题</span>
+        <span class="q-tag">考点 C1</span>
+        <span class="q-tag diff-2">进阶</span>
+      </div>
+    </div>
+    <div class="q-stem">配置模型中的渗流阈值公式 $\phi_c = \langle k\rangle/(\langle k^2\rangle - \langle k\rangle)$ 适用于任意节点移除策略，包括针对性高度数攻击。</div>
+    <div class="q-options">
+      <button class="q-option" data-option="T"><span class="opt-mark">✓</span>正确</button>
+      <button class="q-option" data-option="F"><span class="opt-mark">✗</span>错误</button>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span><span class="ans-tf false">错误</span></p>
+        <p><span class="reason-label">解析</span>该公式是在<strong>均匀随机移除</strong>假设下推导出来的——每个节点以相同概率 $\phi$ 被独立保留。针对性移除时，移除概率依赖节点属性（如度数），此公式不再适用，需要其他分析（如对度分布做调整后再用公式）。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ═══ 填空题 ═══ -->
+  <h3 class="q-group-title">三、填空题</h3>
+
+  <!-- F1 -->
+  <div class="question" data-qid="f1">
+    <div class="q-header">
+      <span class="q-num">F1</span>
+      <div class="q-tags">
+        <span class="q-tag">填空题</span>
+        <span class="q-tag">考点 A2</span>
+        <span class="q-tag diff-1">基础</span>
+      </div>
+    </div>
+    <div class="q-stem">超额度分布与度分布的关系公式：$q_k = $ ＿＿＿＿＿＿＿＿（用 $p_k$ 和 $\langle k\rangle$ 表达）。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span>$q_k = \dfrac{(k+1)p_{k+1}}{\langle k\rangle}$</p>
+        <p><span class="reason-label">记忆口诀</span>"超额 $k$ 即原度 $k+1$；沿边到达概率正比于度本身（$k+1$）；除以平均度归一化。"</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- F2 -->
+  <div class="question" data-qid="f2">
+    <div class="q-header">
+      <span class="q-num">F2</span>
+      <div class="q-tags">
+        <span class="q-tag">填空题</span>
+        <span class="q-tag">考点 C1</span>
+        <span class="q-tag diff-1">基础</span>
+      </div>
+    </div>
+    <div class="q-stem">配置模型在均匀随机节点渗流下的渗流阈值（两阶矩形式）：$\phi_c = $ ＿＿＿＿＿＿＿＿。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span>$\phi_c = \dfrac{\langle k\rangle}{\langle k^2\rangle - \langle k\rangle}$</p>
+        <p><span class="reason-label">提醒</span>分母是 $\langle k^2\rangle - \langle k\rangle$（不是 $\langle k^2\rangle$ 或 $\langle k\rangle^2$）。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- F3 -->
+  <div class="question" data-qid="f3">
+    <div class="q-header">
+      <span class="q-num">F3</span>
+      <div class="q-tags">
+        <span class="q-tag">填空题</span>
+        <span class="q-tag">考点 C2</span>
+        <span class="q-tag diff-2">进阶</span>
+      </div>
+    </div>
+    <div class="q-stem">用超额度分布生成函数 $g_1(u) = \sum_k q_k u^k$ 表达，渗流阈值 $\phi_c = $ ＿＿＿＿＿＿＿＿。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span>$\phi_c = \dfrac{1}{g_1'(1)}$</p>
+        <p><span class="reason-label">解析</span>$g_1'(1) = \sum_k k q_k$ 是超额度的平均值。代入 $q_k$ 表达式可证 $g_1'(1) = (\langle k^2\rangle - \langle k\rangle)/\langle k\rangle$，与两阶矩公式吻合。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- F4 -->
+  <div class="question" data-qid="f4">
+    <div class="q-header">
+      <span class="q-num">F4</span>
+      <div class="q-tags">
+        <span class="q-tag">填空题</span>
+        <span class="q-tag">考点 D2</span>
+        <span class="q-tag diff-1">基础</span>
+      </div>
+    </div>
+    <div class="q-stem">对 Poisson 度分布 $p_k = e^{-c}c^k/k!$，渗流阈值 $\phi_c = $ ＿＿＿（用 $c$ 表达）。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span>$\phi_c = \dfrac{1}{c}$</p>
+        <p><span class="reason-label">推导</span>$\langle k\rangle = c$，$\langle k^2\rangle = c^2 + c$，代入公式 $\phi_c = c/(c^2 + c - c) = 1/c$。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- F5 -->
+  <div class="question" data-qid="f5">
+    <div class="q-header">
+      <span class="q-num">F5</span>
+      <div class="q-tags">
+        <span class="q-tag">填空题</span>
+        <span class="q-tag">考点 F2</span>
+        <span class="q-tag diff-2">进阶</span>
+      </div>
+    </div>
+    <div class="q-stem">算法 2 中，把 $S_r$（占据 $r$ 个节点时最大簇大小平均）转换为 $S(\phi)$ 的公式为：$S(\phi) = $ ＿＿＿＿＿＿＿＿。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span>$S(\phi) = \sum_{r=0}^n p_r S_r$，其中 $p_r = \binom{n}{r}\phi^r(1-\phi)^{n-r}$ 是二项分布概率。</p>
+        <p><span class="reason-label">解析</span>这是全概率公式：每节点独立以概率 $\phi$ 被占据，则恰有 $r$ 个被占据的概率服从二项分布。把每个条件下的 $S_r$ 加权求和即得 $S(\phi)$。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ═══ 简答题 ═══ -->
+  <h3 class="q-group-title">四、简答题</h3>
+
+  <!-- S1 -->
+  <div class="question" data-qid="s1">
+    <div class="q-header">
+      <span class="q-num">S1</span>
+      <div class="q-tags">
+        <span class="q-tag">简答题</span>
+        <span class="q-tag">考点 A1, A2</span>
+        <span class="q-tag diff-2">进阶</span>
+      </div>
+    </div>
+    <div class="q-stem">解释"超额度（excess degree）"的物理含义，并说明为什么沿着一条边走到的邻居，其平均度数比一个均匀随机选取的节点的平均度数要大。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案要点：</span></p>
+        <ul>
+          <li><strong>超额度定义</strong>：当我们从节点 $v$ 沿一条边到达邻居 $w$，"超额度"指的是 $w$ 除 $v$ 之外的邻居数（即 $w$ 的度减 1）。</li>
+          <li><strong>邻居加权偏差</strong>：随机选一个节点时，每个节点被选中的概率为 $1/n$；但沿边随机到达一个节点时，度为 $k$ 的节点恰好出现在 $k$ 条边的端点上，被到达的概率正比于 $k$。所以"沿边到达"对高度数节点有偏。</li>
+          <li><strong>形式化</strong>：沿边走到一个度为 $k$ 节点的概率为 $kp_k/\langle k\rangle$。其平均度为 $\sum_k k\cdot kp_k/\langle k\rangle = \langle k^2\rangle/\langle k\rangle$，而 $\langle k^2\rangle/\langle k\rangle \ge \langle k\rangle$（柯西-施瓦茨不等式或方差非负），所以邻居的平均度比一般节点高。</li>
+          <li><strong>现实含义</strong>：这就是"友谊悖论"——你的朋友平均比你朋友多。这背后并不神秘：朋友多的人更容易出现在大家的朋友圈里。</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <!-- S2 -->
+  <div class="question" data-qid="s2">
+    <div class="q-header">
+      <span class="q-num">S2</span>
+      <div class="q-tags">
+        <span class="q-tag">简答题</span>
+        <span class="q-tag">考点 E2</span>
+        <span class="q-tag diff-3">综合</span>
+      </div>
+    </div>
+    <div class="q-stem">解释为什么度分布服从幂律（$2 < \alpha < 3$）的网络既"鲁棒"又"脆弱"。这一性质对疫苗策略有什么启示？</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案要点：</span></p>
+
+        <p><span class="reason-label">为什么对随机移除鲁棒</span></p>
+        <p>对幂律 $p_k \propto k^{-\alpha}$：
+        $\langle k\rangle \propto \sum k^{1-\alpha}$ 收敛（$\alpha > 2$），但
+        $\langle k^2\rangle \propto \sum k^{2-\alpha}$ 发散（$\alpha < 3$）。
+        因此 $\phi_c = \langle k\rangle/(\langle k^2\rangle - \langle k\rangle) \to 0$。
+        几乎不论随机移除多大比例的节点，巨簇都不会消失。</p>
+
+        <p><span class="reason-label">为什么对针对性攻击脆弱</span></p>
+        <p>幂律意味着<strong>少数节点（"hub"）拥有大量连接</strong>——它们是网络互联的关键骨架。针对性地移除最高度数的少数（比如 3%）节点，会一次性切断大量连接，使巨簇迅速崩塌。</p>
+
+        <p><span class="reason-label">对疫苗策略的启示</span></p>
+        <ul>
+          <li>把"接种疫苗"视为"在传播网络中移除节点"。随机接种相当于随机移除——对幂律网络效率低（需要接种很高比例才能阻断传播）。</li>
+          <li><strong>按度数从高到低接种</strong>极为高效：少量高接触者的免疫就能让传播巨簇崩溃，形成群体免疫。</li>
+          <li><strong>友谊悖论的应用</strong>：现实中我们往往不知道谁是"超级接触者"，但可以让"目标人群随机挑一个朋友"——这个朋友平均度数比目标人群更高。这是公共卫生中"vaccinate your friends"策略的依据。</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <!-- S3 -->
+  <div class="question" data-qid="s3">
+    <div class="q-header">
+      <span class="q-num">S3</span>
+      <div class="q-tags">
+        <span class="q-tag">简答题</span>
+        <span class="q-tag">考点 F1, F2</span>
+        <span class="q-tag diff-2">进阶</span>
+      </div>
+    </div>
+    <div class="q-stem">比较算法 1（移除法）和算法 2（添加法）的思路、适用场景与复杂度。重点解释为什么算法 2 的复杂度只有 $O((n+m)\log_2 n)$。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案要点：</span></p>
+
+        <p><span class="reason-label">算法 1（移除法）</span></p>
+        <ul>
+          <li>固定 $\phi$，以概率 $1-\phi$ 移除每节点，BFS 找最大簇大小。多次重复取平均。</li>
+          <li>对每个 $\phi$ 都要重做整个流程：BFS 是 $O(n+m)$，求 $O(n)$ 个 $\phi$ 值共 $O(n(n+m))$。</li>
+          <li>适合只关心某一个 $\phi$ 的场景。</li>
+        </ul>
+
+        <p><span class="reason-label">算法 2（添加法）</span></p>
+        <ul>
+          <li>不固定概率，而是固定占据数 $r$。随机顺序依次添加节点，每次用"小簇并入大簇"策略更新簇标签。</li>
+          <li>一次扫描即可记录所有 $r$ 下的 $S_r$；最后用 $S(\phi) = \sum_r p_r S_r$（二项分布加权）转回所需任意 $\phi$。</li>
+          <li>适合需要 $S(\phi)$ 关于多个 $\phi$ 的整条曲线时。</li>
+        </ul>
+
+        <p><span class="reason-label">为什么算法 2 复杂度为 $O((n+m)\log_2 n)$</span></p>
+        <ul>
+          <li><strong>关键技巧</strong>："总是把较小簇的所有节点重新标记成较大簇的标签。"这样被重新标记的簇的大小至少翻倍。</li>
+          <li><strong>计数</strong>：单个节点初始大小为 1，最多翻倍 $\log_2 n$ 次（因为 $2^{\log_2 n} = n$）。所以每个节点最多被重新标记 $\log_2 n$ 次，总重新标记次数为 $O(n\log_2 n)$。</li>
+          <li><strong>扫描边</strong>：每个新加入节点需检查与已占据节点相连的边，平均 $2m/n$ 条；总扫边时间 $O(m)$。</li>
+          <li>合起来：$O(n + m + n\log_2 n) = O((n+m)\log_2 n)$，对稀疏网络（$m = O(n)$）为 $O(n\log_2 n)$。</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <!-- S4 -->
+  <div class="question" data-qid="s4">
+    <div class="q-header">
+      <span class="q-num">S4</span>
+      <div class="q-tags">
+        <span class="q-tag">简答题</span>
+        <span class="q-tag">考点 B4</span>
+        <span class="q-tag diff-1">基础</span>
+      </div>
+    </div>
+    <div class="q-stem">解释"占据概率 $\phi$"、"巨簇 (giant cluster)"、"渗流阈值 $\phi_c$" 三个概念之间的逻辑关系。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案要点：</span></p>
+        <ul>
+          <li><strong>$\phi$ 是输入参数</strong>：决定多少比例的节点被保留（每节点独立以概率 $\phi$ 保留）。</li>
+          <li><strong>巨簇是一个"是否存在"的属性</strong>：定义为大小与 $n$ 同阶的连通块（占网络的有限比例，而非趋于 0）。它的存在反映了网络"整体仍然互联"。</li>
+          <li><strong>$\phi_c$ 是临界值</strong>：恰好分隔"有巨簇"与"无巨簇"两种相。当 $\phi > \phi_c$，巨簇存在；$\phi < \phi_c$，网络碎裂成许多小块。$\phi = \phi_c$ 是相变点。</li>
+          <li><strong>意义</strong>：知道 $\phi_c$ 即知道网络的"耐受极限"——可以容忍多大比例的节点失效仍保持互联。$\phi_c$ 越小，网络越鲁棒。</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <!-- ═══ 计算题 ═══ -->
+  <h3 class="q-group-title">五、计算题</h3>
+
+  <!-- C1 -->
+  <div class="question" data-qid="c1">
+    <div class="q-header">
+      <span class="q-num">C1</span>
+      <div class="q-tags">
+        <span class="q-tag">计算题</span>
+        <span class="q-tag">考点 D1</span>
+        <span class="q-tag diff-2">进阶</span>
+      </div>
+    </div>
+    <div class="q-stem">配置模型的度序列为 $(1, 1, 2, 3, 3)$。请用两阶矩公式计算渗流阈值 $\phi_c$。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span>$\phi_c = \dfrac{5}{7} \approx 0.714$</p>
+        <p><span class="reason-label">详细步骤</span></p>
+        <div class="step"><strong>Step 1：列度分布。</strong>共 5 个节点。度为 1 的有 2 个、度为 2 的有 1 个、度为 3 的有 2 个：
+        $$ p_1 = \tfrac{2}{5},\quad p_2 = \tfrac{1}{5},\quad p_3 = \tfrac{2}{5},\quad p_k = 0\text{ 其它} $$
+        </div>
+        <div class="step"><strong>Step 2：计算 $\langle k\rangle$。</strong>
+        $$ \langle k\rangle = 1\cdot\tfrac{2}{5} + 2\cdot\tfrac{1}{5} + 3\cdot\tfrac{2}{5} = \tfrac{2+2+6}{5} = \tfrac{10}{5} = 2 $$
+        </div>
+        <div class="step"><strong>Step 3：计算 $\langle k^2\rangle$。</strong>
+        $$ \langle k^2\rangle = 1\cdot\tfrac{2}{5} + 4\cdot\tfrac{1}{5} + 9\cdot\tfrac{2}{5} = \tfrac{2+4+18}{5} = \tfrac{24}{5} $$
+        </div>
+        <div class="step"><strong>Step 4：代入公式。</strong>
+        $$ \phi_c = \frac{\langle k\rangle}{\langle k^2\rangle - \langle k\rangle} = \frac{2}{\tfrac{24}{5} - 2} = \frac{2}{\tfrac{14}{5}} = \frac{10}{14} = \frac{5}{7} $$
+        </div>
+        <p><span class="reason-label">易错提醒</span>
+        <ul>
+          <li>$p_k$ 是节点比例，分母是节点总数（5），不是某种度数的节点数。</li>
+          <li>$\langle k^2\rangle$ 要用 $k^2$ 而非 $k$。</li>
+          <li>最后一步是 $\langle k^2\rangle - \langle k\rangle$，要保留这个减法。</li>
+        </ul>
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <!-- C2 -->
+  <div class="question" data-qid="c2">
+    <div class="q-header">
+      <span class="q-num">C2</span>
+      <div class="q-tags">
+        <span class="q-tag">计算题</span>
+        <span class="q-tag">考点 D2</span>
+        <span class="q-tag diff-2">进阶</span>
+      </div>
+    </div>
+    <div class="q-stem">考虑度分布为 Poisson 的配置模型，参数 $c = 5$。计算 $\phi_c$，并解释"网络瓦解需要平均移除多少比例的节点"。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span>$\phi_c = \tfrac{1}{5}$；网络瓦解需要平均移除约 $80\%$ 的节点。</p>
+        <p><span class="reason-label">详细步骤</span></p>
+        <div class="step"><strong>Step 1：Poisson 度分布的两阶矩。</strong>
+        $$ \langle k\rangle = c = 5,\quad \langle k^2\rangle = c^2 + c = 25 + 5 = 30 $$
+        </div>
+        <div class="step"><strong>Step 2：代入公式。</strong>
+        $$ \phi_c = \frac{\langle k\rangle}{\langle k^2\rangle - \langle k\rangle} = \frac{5}{30 - 5} = \frac{5}{25} = \frac{1}{5} $$
+        </div>
+        <div class="step"><strong>Step 3：解读。</strong>$\phi_c = 1/5$ 意味着当占据概率低于 $1/5$ 时巨簇消失。换句话说，平均要移除约 $1 - 1/5 = 4/5 = 80\%$ 的节点才能让网络瓦解。</div>
+        <p><span class="reason-label">通用结论</span>对 Poisson($c$)：$\phi_c = 1/c$。平均度越大，网络越鲁棒。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- C3 -->
+  <div class="question" data-qid="c3">
+    <div class="q-header">
+      <span class="q-num">C3</span>
+      <div class="q-tags">
+        <span class="q-tag">计算题</span>
+        <span class="q-tag">考点 C2, D1</span>
+        <span class="q-tag diff-3">综合</span>
+      </div>
+    </div>
+    <div class="q-stem">配置模型度序列为 $(1, 2, 2, 3)$。请用<strong>生成函数法</strong>计算 $\phi_c$：先写出 $g_1(u)$，再求 $\phi_c = 1/g_1'(1)$。最后与两阶矩公式比较，验证一致。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span>$\phi_c = \tfrac{4}{5}$</p>
+        <p><span class="reason-label">详细步骤</span></p>
+        <div class="step"><strong>Step 1：度分布。</strong>共 4 个节点：
+        $$ p_1 = \tfrac{1}{4},\quad p_2 = \tfrac{2}{4} = \tfrac{1}{2},\quad p_3 = \tfrac{1}{4} $$
+        </div>
+        <div class="step"><strong>Step 2：计算 $\langle k\rangle$。</strong>
+        $$ \langle k\rangle = 1\cdot\tfrac{1}{4} + 2\cdot\tfrac{1}{2} + 3\cdot\tfrac{1}{4} = \tfrac{1+4+3}{4} = 2 $$
+        </div>
+        <div class="step"><strong>Step 3：计算超额度分布 $q_k = (k+1)p_{k+1}/\langle k\rangle$。</strong>
+        $$ q_0 = \tfrac{1\cdot p_1}{2} = \tfrac{1}{8},\quad q_1 = \tfrac{2\cdot p_2}{2} = \tfrac{1}{2},\quad q_2 = \tfrac{3\cdot p_3}{2} = \tfrac{3}{8} $$
+        其余 $q_k = 0$。<strong>验证</strong>：$\tfrac{1}{8} + \tfrac{1}{2} + \tfrac{3}{8} = 1$ ✓
+        </div>
+        <div class="step"><strong>Step 4：写出 $g_1(u)$。</strong>
+        $$ g_1(u) = \tfrac{1}{8} + \tfrac{1}{2}u + \tfrac{3}{8}u^2 $$
+        </div>
+        <div class="step"><strong>Step 5：求导并代 $u=1$。</strong>
+        $$ g_1'(u) = \tfrac{1}{2} + \tfrac{3}{4}u,\quad g_1'(1) = \tfrac{1}{2} + \tfrac{3}{4} = \tfrac{5}{4} $$
+        </div>
+        <div class="step"><strong>Step 6：$\phi_c = 1/g_1'(1) = 4/5$。</strong></div>
+        <div class="step"><strong>验证（两阶矩法）。</strong>
+        $\langle k^2\rangle = 1\cdot\tfrac{1}{4} + 4\cdot\tfrac{1}{2} + 9\cdot\tfrac{1}{4} = \tfrac{1+8+9}{4} = \tfrac{18}{4} = \tfrac{9}{2}$
+        $$ \phi_c = \frac{2}{\tfrac{9}{2} - 2} = \frac{2}{\tfrac{5}{2}} = \frac{4}{5} ✓ $$
+        </div>
+        <p><span class="reason-label">易错提醒</span>$q_k$ 中下标错位是常见错误——记住"超额度为 $k$"对应"原度为 $k+1$"。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- C4 -->
+  <div class="question" data-qid="c4">
+    <div class="q-header">
+      <span class="q-num">C4</span>
+      <div class="q-tags">
+        <span class="q-tag">计算题</span>
+        <span class="q-tag">考点 D3, A2</span>
+        <span class="q-tag diff-2">进阶</span>
+      </div>
+    </div>
+    <div class="q-stem">考虑课件中的小网络：5 个节点，度序列为 $d_1 = 1$（$v_1$），$d_2 = 2$（$v_2$），$d_3 = 2$（$v_3$），$d_4 = 4$（$v_4$），$d_5 = 1$（$v_5$）。计算该网络的超额度分布 $q_k$。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span>$q_0 = \tfrac{1}{5},\; q_1 = \tfrac{2}{5},\; q_2 = 0,\; q_3 = \tfrac{2}{5},\; q_k = 0$ 其它。</p>
+        <p><span class="reason-label">详细步骤</span></p>
+        <div class="step"><strong>Step 1：度分布。</strong>$n=5$。度 1 有 2 个、度 2 有 2 个、度 4 有 1 个：
+        $$ p_1 = \tfrac{2}{5},\quad p_2 = \tfrac{2}{5},\quad p_4 = \tfrac{1}{5},\quad p_k = 0\text{ 其它} $$
+        注意 $p_3 = 0$！
+        </div>
+        <div class="step"><strong>Step 2：平均度。</strong>
+        $$ \langle k\rangle = 1\cdot\tfrac{2}{5} + 2\cdot\tfrac{2}{5} + 4\cdot\tfrac{1}{5} = \tfrac{2+4+4}{5} = 2 $$
+        </div>
+        <div class="step"><strong>Step 3：用公式 $q_k = (k+1)p_{k+1}/\langle k\rangle$ 计算。</strong>
+        <ul>
+          <li>$q_0 = 1\cdot p_1/2 = 1\cdot(2/5)/2 = 1/5$</li>
+          <li>$q_1 = 2\cdot p_2/2 = 2\cdot(2/5)/2 = 2/5$</li>
+          <li>$q_2 = 3\cdot p_3/2 = 0$（因为 $p_3 = 0$）</li>
+          <li>$q_3 = 4\cdot p_4/2 = 4\cdot(1/5)/2 = 2/5$</li>
+          <li>$q_k = 0$ 对 $k \ge 4$</li>
+        </ul>
+        </div>
+        <div class="step"><strong>Step 4：验证归一化。</strong>$\tfrac{1}{5} + \tfrac{2}{5} + 0 + \tfrac{2}{5} = 1$ ✓</div>
+        <p><span class="reason-label">关键洞察</span>当某个度数 $p_{k+1} = 0$ 时，超额度分布的相应位置 $q_k = 0$，即使有度数在 $k$ 和 $k+2$ 之间。这就是为什么本题中 $q_2 = 0$。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- C5 -->
+  <div class="question" data-qid="c5">
+    <div class="q-header">
+      <span class="q-num">C5</span>
+      <div class="q-tags">
+        <span class="q-tag">计算题</span>
+        <span class="q-tag">考点 D2</span>
+        <span class="q-tag diff-3">综合</span>
+      </div>
+    </div>
+    <div class="q-stem">完整推导 Poisson 度分布的两阶矩 $\langle k\rangle = c$ 与 $\langle k^2\rangle = c^2 + c$，并由此证明 $\phi_c = 1/c$。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="reason-label">证 $\langle k\rangle = c$</span></p>
+        <p>$$ \langle k\rangle = \sum_{k=0}^\infty k\,p_k = \sum_{k=1}^\infty k\,\frac{e^{-c}c^k}{k!} = \sum_{k=1}^\infty \frac{e^{-c}c^k}{(k-1)!} $$</p>
+        <p>令 $l = k - 1$，即 $k = l + 1$：</p>
+        <p>$$ \langle k\rangle = \sum_{l=0}^\infty \frac{e^{-c}c^{l+1}}{l!} = c\sum_{l=0}^\infty \frac{e^{-c}c^l}{l!} = c\cdot 1 = c $$</p>
+        <p>（最后一步用了 Poisson 分布归一化 $\sum_l e^{-c}c^l/l! = 1$。）</p>
+
+        <p><span class="reason-label">证 $\langle k^2\rangle = c^2 + c$</span></p>
+        <p>$$ \langle k^2\rangle = \sum_{k=1}^\infty k^2\,\frac{e^{-c}c^k}{k!} = \sum_{k=1}^\infty \frac{k\,e^{-c}c^k}{(k-1)!} $$</p>
+        <p>写 $k = (k-1) + 1$：</p>
+        <p>$$ \langle k^2\rangle = \sum_{k=1}^\infty \frac{(k-1)\,e^{-c}c^k}{(k-1)!} + \sum_{k=1}^\infty \frac{e^{-c}c^k}{(k-1)!} $$</p>
+        <p>令 $l = k - 1$，第一项 $= \sum_{l=0}^\infty l\cdot c\cdot\dfrac{e^{-c}c^l}{l!} \cdot \dfrac{1}{1}$。简化：</p>
+        <p>$$ \text{第一项} = c\sum_{l=0}^\infty l\frac{e^{-c}c^l}{l!} = c\cdot\langle l\rangle = c\cdot c = c^2 $$</p>
+        <p>$$ \text{第二项} = \sum_{l=0}^\infty \frac{e^{-c}c^{l+1}}{l!} = c\sum_{l=0}^\infty \frac{e^{-c}c^l}{l!} = c $$</p>
+        <p>所以 $\langle k^2\rangle = c^2 + c$。</p>
+
+        <p><span class="reason-label">代入主公式</span></p>
+        <p>$$ \phi_c = \frac{\langle k\rangle}{\langle k^2\rangle - \langle k\rangle} = \frac{c}{c^2 + c - c} = \frac{c}{c^2} = \frac{1}{c} $$</p>
+
+        <p><span class="reason-label">易错提醒</span>
+        <ul>
+          <li>$\sum_{k=0}^\infty$ 和 $\sum_{k=1}^\infty$：$k=0$ 项乘以 $k$ 或 $k^2$ 都是 0，所以从 $k=1$ 开始求和不影响结果。</li>
+          <li>换元 $l = k-1$ 时，$l$ 从 0 开始。</li>
+          <li>$k^2 = k \cdot k$，可用 $k = (k-1) + 1$ 拆开简化。</li>
+        </ul>
+        </p>
+      </div>
+    </details>
+  </div>
+
+  <!-- C6 -->
+  <div class="question" data-qid="c6">
+    <div class="q-header">
+      <span class="q-num">C6</span>
+      <div class="q-tags">
+        <span class="q-tag">计算题</span>
+        <span class="q-tag">考点 E2</span>
+        <span class="q-tag diff-3">综合</span>
+      </div>
+    </div>
+    <div class="q-stem">已知幂律度分布 $p_k \propto k^{-\alpha}$。讨论以下三种情形下渗流阈值的行为：(a) $\alpha > 3$；(b) $2 < \alpha < 3$；(c) $\alpha < 2$。分析现实网络的鲁棒性意义。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="reason-label">关键事实</span></p>
+        <p>对幂律 $p_k \propto k^{-\alpha}$，两阶矩为 $\langle k\rangle \propto \sum k^{1-\alpha}$，$\langle k^2\rangle \propto \sum k^{2-\alpha}$。当 $\sum k^{-s}$ 中指数 $s > 1$ 时收敛，反之发散。</p>
+
+        <p><span class="reason-label">三种情形</span></p>
+        <p><strong>(a) $\alpha > 3$</strong>：$\langle k\rangle$ 和 $\langle k^2\rangle$ 均收敛。$\phi_c$ 为有限正数。此时幂律网络的鲁棒性与一般网络类似——异质性不够强，无法带来"$\phi_c = 0$"的奇迹。</p>
+        <p><strong>(b) $2 < \alpha < 3$</strong>：$\langle k\rangle$ 收敛但 $\langle k^2\rangle$ 发散，所以 $\phi_c = \langle k\rangle/(\langle k^2\rangle - \langle k\rangle) \to 0$。<strong>对随机移除极度鲁棒：永远存在巨簇。</strong>但对针对性高度数攻击极度脆弱。</p>
+        <p><strong>(c) $\alpha < 2$</strong>：连 $\langle k\rangle$ 也发散。此情形度分布的"平均度"已经没有意义；实际网络中很难精确观察到。理论上巨簇会非常稳健，但模型本身需要更精细处理。</p>
+
+        <p><span class="reason-label">现实意义</span></p>
+        <ul>
+          <li>许多真实网络（互联网、社交网络、引文网络）的幂律指数估计落在 $2 < \alpha < 3$，这正解释了它们对随机故障的强大耐受力。</li>
+          <li>但这也意味着它们对针对性攻击（DDoS 集中打击关键路由器、移除社交"超级传播者"）非常脆弱。</li>
+          <li>从设计角度：要让网络抗攻击，应避免过于集中的"hub"结构；要让接种更高效，应针对 hub 而非随机投放。</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <!-- C7 -->
+  <div class="question" data-qid="c7">
+    <div class="q-header">
+      <span class="q-num">C7</span>
+      <div class="q-tags">
+        <span class="q-tag">计算题</span>
+        <span class="q-tag">考点 F2</span>
+        <span class="q-tag diff-3">综合</span>
+      </div>
+    </div>
+    <div class="q-stem">在算法 2 中，假设 5 个节点已占据，构成 4 个簇：$|C_1|=2,\,|C_2|=1,\,|C_3|=1,\,|C_4|=1$。现在添加第 6 个节点（新簇 $C_5$，初始 $|C_5|=1$），它通过新加入的 3 条边分别连到 $C_1, C_2, C_3$ 中的节点。请按算法 2 的"小簇并入大簇"策略，逐边演示合并过程，给出最终的簇结构与 $S_6 = $ 最大簇大小 / 总节点数。</div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><span class="ans-label">答案：</span>最终剩 2 个簇 $\{C_1', C_4\}$，大小分别为 $5$ 和 $1$。$S_6 = 5/10 = 1/2$（假设总节点数 $n = 10$，与课件示例一致）。</p>
+
+        <p><span class="reason-label">详细演示</span></p>
+
+        <div class="step"><strong>初始：</strong>$|C_1|=2,\,|C_2|=1,\,|C_3|=1,\,|C_4|=1,\,|C_5|=1$（共 5 个簇）。</div>
+
+        <div class="step"><strong>边 1：连接 $C_5$ 和 $C_1$。</strong>
+        $|C_5|=1 < |C_1|=2$，所以把 $C_5$ 并入 $C_1$。
+        新簇 $C_1' = C_1 \cup C_5$，$|C_1'| = 3$。
+        当前：$|C_1'|=3,\,|C_2|=1,\,|C_3|=1,\,|C_4|=1$（4 个簇）。
+        </div>
+
+        <div class="step"><strong>边 2：连接 $C_1'$（含新节点）和 $C_2$。</strong>
+        $|C_2|=1 < |C_1'|=3$，所以把 $C_2$ 并入 $C_1'$。
+        新簇 $|C_1''| = 4$。
+        当前：$|C_1''|=4,\,|C_3|=1,\,|C_4|=1$（3 个簇）。
+        </div>
+
+        <div class="step"><strong>边 3：连接 $C_1''$ 和 $C_3$。</strong>
+        $|C_3|=1 < |C_1''|=4$，所以把 $C_3$ 并入 $C_1''$。
+        新簇 $|C_1'''| = 5$。
+        当前：$|C_1'''|=5,\,|C_4|=1$（2 个簇）。
+        </div>
+
+        <div class="step"><strong>$S_6$ 计算。</strong>
+        最大簇大小为 5；总节点数 10（沿用课件设定）。
+        $$ S_6 = \frac{5}{10} = \frac{1}{2} $$
+        </div>
+
+        <p><span class="reason-label">关键观察</span>每次"小簇并入大簇"，被重新标记的节点数每次都不超过当时较小簇的大小。如果反过来"大并入小"，将无法保证 $O(\log n)$ 的复杂度。</p>
+      </div>
+    </details>
+  </div>
+
+</section>
+
+</main>
+
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+
+<footer>
+  <p>L14: Percolation on Networks &nbsp;·&nbsp; 期末复习指南</p>
+  <p style="margin-top: 6px;">基于课程讲义编制 · 严格忠于材料 · 详细证明部分标注为 NOT EXAMINABLE</p>
+</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  // ───── MathJax fallback timeout ─────
+  setTimeout(function() {
+    const warn = document.getElementById('mathjax-warning');
+    if (warn && warn.style.display !== 'none' && (typeof window.MathJax === 'undefined' || !window.MathJax.startup)) {
+      warn.textContent = '⚠ 公式无法加载（MathJax 未能从 CDN 获取）。所有内容仍可阅读，公式以原始 LaTeX 形式显示。';
+    }
+  }, 8000);
+
+  // ───── Expand / Collapse all answer-blocks ─────
+  function setAllAnswers(open) {
+    const blocks = document.querySelectorAll('details.answer-block');
+    blocks.forEach(function(d) { d.open = open; });
+  }
+
+  // ───── Question answering state ─────
+  function getTotalMC() {
+    return document.querySelectorAll('.question[data-correct]').length;
+  }
+
+  function updateProgress() {
+    const total = getTotalMC();
+    const answered = document.querySelectorAll('.question[data-correct][data-answered="1"]').length;
+    const correct = document.querySelectorAll('.question[data-correct].correct-q').length;
+    const totEl = document.getElementById('total-count');
+    const ansEl = document.getElementById('answered-count');
+    const corEl = document.getElementById('correct-count');
+    if (totEl) totEl.textContent = total;
+    if (ansEl) ansEl.textContent = answered;
+    if (corEl) corEl.textContent = correct;
+  }
+
+  function resetAll() {
+    const questions = document.querySelectorAll('.question[data-correct]');
+    questions.forEach(function(q) {
+      q.removeAttribute('data-answered');
+      q.classList.remove('answered', 'correct-q', 'incorrect-q');
+      const opts = q.querySelectorAll('.q-option');
+      opts.forEach(function(opt) {
+        opt.classList.remove('correct', 'incorrect', 'locked');
+      });
+      const det = q.querySelector('details.answer-block');
+      if (det) det.open = false;
+    });
+    updateProgress();
+  }
+
+  // ───── Event delegation: ALL clicks go through one listener ─────
+  document.addEventListener('click', function(e) {
+    const target = e.target;
+
+    // (1) Expand all
+    if (target.id === 'btn-expand') {
+      setAllAnswers(true);
+      return;
+    }
+    // (2) Collapse all
+    if (target.id === 'btn-collapse') {
+      setAllAnswers(false);
+      return;
+    }
+    // (3) Reset
+    if (target.id === 'btn-reset') {
+      resetAll();
+      return;
+    }
+    // (4) Back to top
+    if (target.id === 'to-top' || target.closest('#to-top')) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // (5) Multiple choice option click
+    const opt = target.closest('.q-option');
+    if (opt) {
+      const question = opt.closest('.question[data-correct]');
+      if (!question) return; // not a graded question
+      if (question.getAttribute('data-answered') === '1') return; // already locked
+
+      const userAnswer = opt.getAttribute('data-option');
+      const correctAnswer = question.getAttribute('data-correct');
+
+      // Lock all options in this question
+      const allOpts = question.querySelectorAll('.q-option');
+      allOpts.forEach(function(o) {
+        o.classList.add('locked');
+      });
+
+      if (userAnswer === correctAnswer) {
+        opt.classList.add('correct');
+        question.classList.add('correct-q', 'answered');
+      } else {
+        opt.classList.add('incorrect');
+        // Also highlight the correct one in green
+        allOpts.forEach(function(o) {
+          if (o.getAttribute('data-option') === correctAnswer) {
+            o.classList.add('correct');
+          }
+        });
+        question.classList.add('incorrect-q', 'answered');
+      }
+      question.setAttribute('data-answered', '1');
+
+      // Auto-open the answer block
+      const det = question.querySelector('details.answer-block');
+      if (det) det.open = true;
+
+      updateProgress();
+      return;
+    }
+  });
+
+  // ───── Show/hide back-to-top button on scroll ─────
+  const toTop = document.getElementById('to-top');
+  function onScroll() {
+    if (window.scrollY > 400) {
+      toTop.classList.add('visible');
+    } else {
+      toTop.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // ───── Init ─────
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>

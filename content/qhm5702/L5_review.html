@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L5 节点组 · 期末复习</title>
+
+  <!-- MathJax via CDN with fallback -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="mathjax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+    onerror="document.getElementById('mathjax-fallback').style.display='block'"></script>
+
+  <style>
+    :root {
+      --bg:           #faf9f5;
+      --bg-soft:      #f3f1e9;
+      --ink:          #1e2230;
+      --ink-soft:     #4a4e5c;
+      --ink-muted:    #7a7e8c;
+      --rule:         #e2dfd4;
+      --primary:      #0e5c5c;   /* deep teal */
+      --primary-soft: #d9e8e6;
+      --accent:       #b97e2a;   /* warm amber */
+      --accent-soft:  #f7eedb;
+      --danger:       #a13b3b;
+      --danger-soft:  #f4dfdc;
+      --success:      #2e7d4f;
+      --success-soft: #dceee2;
+      --code-bg:      #ecebe1;
+      --shadow:       0 1px 2px rgba(20,25,40,.04), 0 8px 24px -12px rgba(20,25,40,.08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans CN",
+                   Roboto, Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---------- Top bar ---------- */
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(250, 249, 245, 0.92);
+      backdrop-filter: saturate(180%) blur(10px);
+      -webkit-backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid var(--rule);
+    }
+    .topbar-inner {
+      max-width: 880px; margin: 0 auto; padding: 12px 24px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .brand {
+      font-weight: 700; font-size: 15px; color: var(--primary);
+      letter-spacing: .01em; display: flex; align-items: center; gap: 8px;
+    }
+    .brand-mark {
+      display: inline-block; width: 26px; height: 26px;
+    }
+    .nav-links {
+      display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto;
+    }
+    .nav-links a {
+      font-size: 13.5px; color: var(--ink-soft); text-decoration: none;
+      padding: 6px 12px; border-radius: 999px; transition: all .15s ease;
+    }
+    .nav-links a:hover { background: var(--primary-soft); color: var(--primary); }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      max-width: 880px; margin: 0 auto; padding: 56px 24px 24px;
+    }
+    .eyebrow {
+      font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--primary); font-weight: 600; margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 4vw, 38px);
+      font-weight: 700; letter-spacing: -.01em;
+      line-height: 1.2; margin: 0 0 14px;
+    }
+    .hero .subtitle {
+      color: var(--ink-soft); font-size: 16px; max-width: 640px;
+    }
+    .progress-card {
+      margin-top: 28px;
+      background: white; border: 1px solid var(--rule);
+      border-radius: 14px; padding: 18px 22px;
+      display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+      box-shadow: var(--shadow);
+    }
+    .progress-card .stat {
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .progress-card .stat-num {
+      font-size: 22px; font-weight: 700; color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+    .progress-card .stat-label {
+      font-size: 12px; color: var(--ink-muted);
+      text-transform: uppercase; letter-spacing: .12em;
+    }
+    .progress-card .controls {
+      margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .btn {
+      font-size: 13px; padding: 8px 14px; border-radius: 8px;
+      border: 1px solid var(--rule); background: white; color: var(--ink-soft);
+      cursor: pointer; transition: all .15s ease; font-family: inherit;
+    }
+    .btn:hover { border-color: var(--primary); color: var(--primary); }
+    .btn.primary { background: var(--primary); color: white; border-color: var(--primary); }
+    .btn.primary:hover { background: #0a4848; }
+
+    /* ---------- Main content ---------- */
+    main { max-width: 880px; margin: 0 auto; padding: 24px; }
+
+    section.part {
+      margin-top: 48px;
+      scroll-margin-top: 80px;
+    }
+    .part-header {
+      display: flex; align-items: baseline; gap: 14px;
+      padding-bottom: 12px; border-bottom: 2px solid var(--ink);
+      margin-bottom: 28px;
+    }
+    .part-num {
+      font-size: 13px; font-weight: 700; color: var(--primary);
+      letter-spacing: .12em;
+    }
+    .part-header h2 {
+      font-size: 26px; font-weight: 700; margin: 0;
+      letter-spacing: -.005em;
+    }
+
+    h3 {
+      font-size: 20px; font-weight: 700;
+      margin: 40px 0 12px;
+      color: var(--ink);
+      scroll-margin-top: 80px;
+    }
+    h3 .h3-tag {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      color: var(--primary); background: var(--primary-soft);
+      padding: 3px 8px; border-radius: 4px; margin-right: 8px;
+      vertical-align: middle; letter-spacing: .04em;
+    }
+    h4 {
+      font-size: 16px; font-weight: 700; margin: 24px 0 8px;
+      color: var(--ink-soft);
+    }
+
+    p { margin: 12px 0; }
+    strong { color: var(--ink); font-weight: 600; }
+    em { color: var(--ink-soft); font-style: normal; }
+
+    ul, ol { padding-left: 22px; margin: 12px 0; }
+    li { margin: 6px 0; }
+
+    code, .formula-inline {
+      font-family: "JetBrains Mono", "SF Mono", Consolas, Menlo, monospace;
+      font-size: .92em; background: var(--code-bg);
+      padding: 1px 6px; border-radius: 4px;
+    }
+
+    /* Highlight boxes */
+    .box {
+      border-radius: 10px; padding: 16px 20px;
+      margin: 18px 0; border: 1px solid;
+    }
+    .box-def {
+      background: var(--primary-soft); border-color: #b8d4d1;
+    }
+    .box-def .box-title { color: var(--primary); }
+    .box-warn {
+      background: var(--accent-soft); border-color: #ecd6a8;
+    }
+    .box-warn .box-title { color: var(--accent); }
+    .box-key {
+      background: var(--success-soft); border-color: #b8d8c4;
+    }
+    .box-key .box-title { color: var(--success); }
+    .box-title {
+      font-weight: 700; font-size: 13px; letter-spacing: .06em;
+      text-transform: uppercase; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* Formula display */
+    .formula {
+      background: white; border: 1px solid var(--rule);
+      border-left: 3px solid var(--primary);
+      padding: 14px 20px; margin: 16px 0; border-radius: 0 8px 8px 0;
+      overflow-x: auto;
+    }
+
+    /* Tables */
+    .term-table {
+      width: 100%; border-collapse: collapse; margin: 18px 0;
+      font-size: 14.5px;
+    }
+    .term-table th, .term-table td {
+      padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+    }
+    .term-table th {
+      background: var(--bg-soft); color: var(--ink-soft);
+      font-weight: 600; font-size: 13px;
+      letter-spacing: .04em; text-transform: uppercase;
+    }
+    .term-table tr:last-child td { border-bottom: none; }
+
+    /* SVG illustrations */
+    .figure {
+      background: white; border: 1px solid var(--rule);
+      border-radius: 10px; padding: 20px;
+      margin: 16px 0; text-align: center;
+    }
+    .figure svg { max-width: 100%; height: auto; }
+    .figure-caption {
+      font-size: 13px; color: var(--ink-muted);
+      margin-top: 8px; font-style: italic;
+    }
+    .figure-row {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      justify-content: center; align-items: stretch;
+    }
+    .figure-row .figure {
+      flex: 1 1 240px; min-width: 240px; max-width: 360px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+
+    /* Star importance markers */
+    .stars { color: var(--accent); letter-spacing: 1px; font-size: 14px; }
+    .stars.s3 { color: #d23a3a; }
+    .stars.s2 { color: #b97e2a; }
+    .stars.s1 { color: #888; }
+    .importance {
+      display: inline-block; margin-left: 6px; font-size: 12px;
+      padding: 2px 8px; border-radius: 4px; vertical-align: middle;
+      font-weight: 600;
+    }
+    .importance.high { background: #fce4e4; color: #a13b3b; }
+    .importance.mid  { background: #faecd3; color: #966420; }
+    .importance.low  { background: #e8e7df; color: #6a6e7c; }
+
+    /* ---------- Questions ---------- */
+    .q {
+      background: white; border: 1px solid var(--rule); border-radius: 12px;
+      padding: 20px 22px; margin: 18px 0;
+      scroll-margin-top: 80px;
+    }
+    .q.locked .opt { cursor: default; }
+    .q-head {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .q-num {
+      font-weight: 700; color: var(--primary);
+      font-size: 15px; font-variant-numeric: tabular-nums;
+    }
+    .q-tag {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      padding: 2px 8px; border-radius: 4px; letter-spacing: .04em;
+    }
+    .q-tag.type   { background: var(--primary-soft); color: var(--primary); }
+    .q-tag.topic  { background: var(--bg-soft); color: var(--ink-soft); }
+    .q-tag.diff-1 { background: #dceee2; color: #2e7d4f; }
+    .q-tag.diff-2 { background: #f7eedb; color: #966420; }
+    .q-tag.diff-3 { background: #f4dfdc; color: #a13b3b; }
+
+    .q-stem {
+      font-size: 15.5px; line-height: 1.7; color: var(--ink);
+      margin-bottom: 12px;
+    }
+
+    .options { list-style: none; padding: 0; margin: 0; }
+    .opt {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 10px 14px; margin: 6px 0;
+      border: 1px solid var(--rule); border-radius: 8px;
+      cursor: pointer; transition: all .12s ease;
+      background: white; user-select: none;
+    }
+    .opt:hover { border-color: var(--primary); background: #fbfcfc; }
+    .opt-letter {
+      font-weight: 700; color: var(--ink-muted); min-width: 18px;
+      font-size: 14px;
+    }
+    .opt-text { flex: 1; font-size: 14.5px; }
+    .opt.correct {
+      background: var(--success-soft); border-color: #7cb89a; color: var(--success);
+    }
+    .opt.correct .opt-letter { color: var(--success); }
+    .opt.wrong {
+      background: var(--danger-soft); border-color: #d99a96; color: var(--danger);
+    }
+    .opt.wrong .opt-letter { color: var(--danger); }
+
+    /* Native details for answer fold */
+    details.answer-block {
+      margin-top: 14px;
+      border-top: 1px dashed var(--rule);
+      padding-top: 6px;
+    }
+    details.answer-block > summary {
+      list-style: none;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13.5px; font-weight: 600; color: var(--primary);
+      padding: 6px 12px; border-radius: 6px;
+      background: var(--primary-soft);
+      user-select: none;
+      transition: background .12s ease;
+    }
+    details.answer-block > summary::-webkit-details-marker { display: none; }
+    details.answer-block > summary:hover { background: #c5dcd9; }
+    details.answer-block > summary::after {
+      content: "▼"; font-size: 10px; transition: transform .15s ease;
+    }
+    details.answer-block[open] > summary::after { transform: rotate(180deg); }
+    details.answer-block > .answer-content {
+      margin-top: 12px;
+      background: var(--bg-soft);
+      border-left: 3px solid var(--primary);
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      font-size: 14.5px; line-height: 1.75;
+    }
+    .answer-content .ans-label {
+      font-weight: 700; color: var(--primary); margin-right: 6px;
+    }
+    .answer-content .ans-section {
+      margin: 10px 0;
+    }
+    .answer-content .ans-section-title {
+      font-size: 12px; font-weight: 700; color: var(--ink-soft);
+      letter-spacing: .08em; text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .answer-content .pitfall {
+      background: white; border-left: 3px solid var(--accent);
+      padding: 8px 12px; margin-top: 10px; border-radius: 0 6px 6px 0;
+      font-size: 13.5px;
+    }
+    .answer-content .pitfall-title {
+      font-weight: 700; color: var(--accent); font-size: 12px;
+      letter-spacing: .04em; margin-right: 4px;
+    }
+
+    /* MathJax fallback notice */
+    .mathjax-fallback {
+      display: none;
+      margin: 24px 0; padding: 12px 16px;
+      background: var(--accent-soft); border: 1px solid #ecd6a8;
+      border-radius: 8px; font-size: 14px; color: var(--ink-soft);
+    }
+
+    /* Back to top */
+    .to-top {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--primary); color: white;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; box-shadow: var(--shadow);
+      opacity: 0; pointer-events: none; transition: opacity .25s ease;
+      border: none; font-size: 18px; z-index: 40;
+    }
+    .to-top.show { opacity: 1; pointer-events: auto; }
+    .to-top:hover { background: #0a4848; }
+
+    footer {
+      max-width: 880px; margin: 64px auto 40px; padding: 24px;
+      border-top: 1px solid var(--rule);
+      color: var(--ink-muted); font-size: 13px; text-align: center;
+    }
+
+    /* Decorative network divider */
+    .net-divider {
+      margin: 40px auto; display: block; opacity: .35;
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 640px) {
+      .hero { padding: 36px 20px 16px; }
+      main { padding: 16px; }
+      .progress-card { padding: 14px 16px; }
+      .progress-card .controls { margin-left: 0; width: 100%; }
+      .q { padding: 16px 14px; }
+      .nav-links a { padding: 5px 10px; font-size: 12.5px; }
+      h3 { font-size: 18px; }
+      .part-header h2 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 26 26" fill="none">
+        <circle cx="6" cy="7" r="2.5" fill="#0e5c5c"/>
+        <circle cx="20" cy="7" r="2.5" fill="#0e5c5c"/>
+        <circle cx="13" cy="19" r="2.5" fill="#b97e2a"/>
+        <line x1="6" y1="7" x2="20" y2="7" stroke="#0e5c5c" stroke-width="1.5"/>
+        <line x1="6" y1="7" x2="13" y2="19" stroke="#0e5c5c" stroke-width="1.5"/>
+        <line x1="20" y1="7" x2="13" y2="19" stroke="#0e5c5c" stroke-width="1.5"/>
+      </svg>
+      L5 · 节点组
+    </div>
+    <nav class="nav-links">
+      <a href="#part1">课程讲解</a>
+      <a href="#part2">考点梳理</a>
+      <a href="#part3">复习题目</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">L5 · GROUPS OF NODES</div>
+  <h1>从中心性到节点组：网络的中观结构</h1>
+  <p class="subtitle">
+    在 L4 我们用中心性衡量"单个节点的重要性"；本章把视角拉远，关注
+    <strong>一组节点</strong>有多紧密。三大工具：clique（最严的同伴圈）、
+    k-core（更宽松的同伴圈）、clustering coefficient（朋友的朋友也是朋友的程度）。
+  </p>
+
+  <div class="progress-card">
+    <div class="stat">
+      <span class="stat-num" id="stat-done">0</span>
+      <span class="stat-label">已作答</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" id="stat-correct">0</span>
+      <span class="stat-label">正确</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" id="stat-total">8</span>
+      <span class="stat-label">选择题总数</span>
+    </div>
+    <div class="controls">
+      <button class="btn" id="btn-expand">展开全部答案</button>
+      <button class="btn" id="btn-collapse">收起全部答案</button>
+    </div>
+  </div>
+
+  <div class="mathjax-fallback" id="mathjax-fallback">
+    ⚠ 数学公式渲染脚本（MathJax）加载失败，公式将以原始 LaTeX 文本显示。
+    页面其余内容不受影响，可正常阅读。
+  </div>
+</div>
+
+<main>
+
+<!-- ============================================================ -->
+<!-- PART 1: 课程讲解                                              -->
+<!-- ============================================================ -->
+<section class="part" id="part1">
+  <div class="part-header">
+    <span class="part-num">PART 01</span>
+    <h2>课程讲解</h2>
+  </div>
+
+  <h3 id="overview"><span class="h3-tag">概览</span>整体脉络</h3>
+  <p>
+    把"网络分析"看作不断变换视野的过程：
+    <strong>个体 → 邻域 → 全局</strong>。
+  </p>
+  <ul>
+    <li><strong>L4：聚焦个体</strong>——用各种"中心性"（度、特征向量、closeness、betweenness）度量
+      <em>一个节点</em>有多重要。</li>
+    <li><strong>L5（本章）：聚焦小群体</strong>——一个节点和它的邻居们组成的"圈子"有多紧密？
+      用 <em>cliques</em>、<em>k-cores</em>、<em>clustering coefficient</em> 来刻画。</li>
+  </ul>
+  <p>三个工具其实回答同一个问题，但角度不同：</p>
+  <table class="term-table">
+    <thead>
+      <tr>
+        <th>工具</th>
+        <th>问的是什么</th>
+        <th>严格程度</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Clique</strong></td>
+        <td>这一群人是不是<em>两两都认识</em>？</td>
+        <td>最严</td>
+      </tr>
+      <tr>
+        <td><strong>$k$-core</strong></td>
+        <td>这一群人里每个人是不是<em>至少认识 $k$ 个本群成员</em>？</td>
+        <td>较松（clique 的推广）</td>
+      </tr>
+      <tr>
+        <td><strong>Clustering coef.</strong></td>
+        <td>"朋友的朋友"也是朋友的<em>比例</em>有多高？</td>
+        <td>统计量（一个数字）</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <svg class="net-divider" width="120" height="20" viewBox="0 0 120 20">
+    <circle cx="20" cy="10" r="3" fill="#0e5c5c"/>
+    <circle cx="60" cy="10" r="3" fill="#0e5c5c"/>
+    <circle cx="100" cy="10" r="3" fill="#0e5c5c"/>
+    <line x1="20" y1="10" x2="60" y2="10" stroke="#0e5c5c" stroke-width="1"/>
+    <line x1="60" y1="10" x2="100" y2="10" stroke="#0e5c5c" stroke-width="1"/>
+  </svg>
+
+  <h3 id="clique"><span class="h3-tag">模块 1</span>Clique（团）</h3>
+
+  <div class="box box-def">
+    <div class="box-title">📘 定义</div>
+    一个 <strong>clique</strong>（团）是网络中的一组节点，其中
+    <strong>任意两个节点之间都存在一条边</strong>。
+    含 $n$ 个节点的 clique 就是 $K_n$（完全图），共有 $\binom{n}{2}$ 条边。
+  </div>
+
+  <div class="figure-row">
+    <div class="figure">
+      <svg viewBox="0 0 180 160" width="180" height="160">
+        <!-- 4-clique: 1,2,3,4 -->
+        <line x1="90"  y1="20"  x2="30"  y2="80"  stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="90"  y1="20"  x2="150" y2="80"  stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="90"  y1="20"  x2="90"  y2="140" stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="30"  y1="80"  x2="150" y2="80"  stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="30"  y1="80"  x2="90"  y2="140" stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="150" y1="80"  x2="90"  y2="140" stroke="#4a4e5c" stroke-width="1.2"/>
+        <g font-family="sans-serif" font-size="11" text-anchor="middle">
+          <circle cx="90"  cy="20"  r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="90" y="24">1</text>
+          <circle cx="30"  cy="80"  r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="30" y="84">2</text>
+          <circle cx="150" cy="80"  r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="150" y="84">3</text>
+          <circle cx="90"  cy="140" r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="90" y="144">4</text>
+        </g>
+      </svg>
+      <div class="figure-caption">一个 4-clique（$K_4$）</div>
+    </div>
+    <div class="figure">
+      <svg viewBox="0 0 180 160" width="180" height="160">
+        <!-- two triangles sharing edge 2-3 -->
+        <line x1="90"  y1="20"  x2="30"  y2="80"  stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="90"  y1="20"  x2="150" y2="80"  stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="30"  y1="80"  x2="150" y2="80"  stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="30"  y1="80"  x2="90"  y2="140" stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="150" y1="80"  x2="90"  y2="140" stroke="#4a4e5c" stroke-width="1.2"/>
+        <g font-family="sans-serif" font-size="11" text-anchor="middle">
+          <circle cx="90"  cy="20"  r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="90" y="24">1</text>
+          <circle cx="30"  cy="80"  r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="30" y="84">2</text>
+          <circle cx="150" cy="80"  r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="150" y="84">3</text>
+          <circle cx="90"  cy="140" r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="90" y="144">4</text>
+        </g>
+      </svg>
+      <div class="figure-caption">两个 3-clique，但没有 4-clique<br>（缺少 1-4 边）</div>
+    </div>
+  </div>
+
+  <h4>例子：与二分图的关系</h4>
+  <p>
+    把<strong>二分图</strong>（如 "物品-小组" 的隶属关系）做
+    <strong>one-mode projection（单模投影）</strong>，会自然产生一群 clique：
+  </p>
+  <ul>
+    <li>投影到"物品"侧：<em>每个小组</em>里的所有物品两两连边 → 一个 clique；</li>
+    <li>投影到"小组"侧：<em>每个物品</em>所在的所有小组两两连边 → 一个 clique。</li>
+  </ul>
+  <div class="box box-key">
+    <div class="box-title">🔑 关键洞察</div>
+    "投影会自动制造 clique" 解释了为什么很多真实网络（共同作者网、共同演员网、共同购物网）
+    显得"非常紧密"——它们本质上是二分关系的投影。
+  </div>
+
+  <svg class="net-divider" width="120" height="20" viewBox="0 0 120 20">
+    <circle cx="20" cy="10" r="3" fill="#0e5c5c"/>
+    <circle cx="60" cy="10" r="3" fill="#0e5c5c"/>
+    <circle cx="100" cy="10" r="3" fill="#0e5c5c"/>
+    <line x1="20" y1="10" x2="60" y2="10" stroke="#0e5c5c" stroke-width="1"/>
+    <line x1="60" y1="10" x2="100" y2="10" stroke="#0e5c5c" stroke-width="1"/>
+  </svg>
+
+  <h3 id="kcore"><span class="h3-tag">模块 2</span>$k$-core</h3>
+
+  <div class="box box-def">
+    <div class="box-title">📘 定义</div>
+    <strong>$k$-core</strong> 是一个连通的节点子集，使得其中
+    <strong>每个节点至少与该子集中的 $k$ 个其他成员相连</strong>。
+  </div>
+
+  <p>用大白话讲：<em>k-core</em> 比 clique 宽松——不要求两两都认识，
+  只要"每个人在群里都至少有 $k$ 个朋友"就行。</p>
+
+  <div class="box box-key">
+    <div class="box-title">🔑 联系 clique</div>
+    一个含有 $k+1$ 个节点的 $k$-core 就是一个 $(k+1)$-clique。<br>
+    <em>原因：</em>$k+1$ 个节点里，每个节点都要连到剩下的 $k$ 个 → 两两相连 → clique。
+  </div>
+
+  <h4>检测算法：迭代剥皮</h4>
+  <p>用一种"剥洋葱"的思路找 $k$-core：</p>
+  <ol>
+    <li><strong>删</strong>：删除所有度数 $< k$ 的节点（连同它们的边），得到子网络 $G'$。</li>
+    <li><strong>再删</strong>：在 $G'$ 中，可能因为边的删除导致某些节点度数掉到 $k$ 以下——继续删。</li>
+    <li><strong>重复</strong>，直到所有剩余节点度数都 $\geq k$。这些节点就构成了 $k$-core。</li>
+  </ol>
+
+  <div class="box box-warn">
+    <div class="box-title">⚠ 常见错误</div>
+    <ul>
+      <li><strong>只删一轮</strong> ❌ 删边会导致连锁反应——必须迭代直到稳定。</li>
+      <li><strong>$k$-core 的"度"是子图度</strong> ✅ 是在<em>剩下的子网络中</em>的度，
+        不是原图的度。</li>
+      <li><strong>$k$-core 不一定唯一连通分量</strong> 一个网络可以有几个互不连通的 $k$-core。</li>
+    </ul>
+  </div>
+
+  <div class="box box-key">
+    <div class="box-title">🔑 嵌套性质</div>
+    <strong>$k$-core 总是 $(k-1)$-core 的子集。</strong>
+    所以高 $k$ 的 core 像一层层"洋葱中心"，依次嵌套。
+  </div>
+
+  <h4>为什么我们关心 $k$-core？</h4>
+  <ul>
+    <li><strong>识别影响力</strong>：高 $k$-core 的节点处于互相强化的密集连接中，
+      非常适合传播信息/疾病。</li>
+    <li><strong>层级可视化</strong>：高 $k$ 放中心，低 $k$ 放外围，得到"洋葱图"。</li>
+    <li><strong>过滤</strong>：扔掉低 $k$ 的"叶子节点"，剩下网络的骨架。</li>
+    <li><strong>韧性研究</strong>：去掉大量节点之后还连通的部分往往就是高 $k$-core。</li>
+  </ul>
+
+  <h4>$k$-core 与各种中心性的关系</h4>
+  <p>每个节点都有一个 <strong>core number</strong>——它所属的最大 $k$-core 的 $k$ 值。</p>
+  <table class="term-table">
+    <thead>
+      <tr><th>中心性</th><th>与 core number 关系</th><th>原因</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Degree centrality</td>
+        <td>强相关</td>
+        <td>core number 为 $k$ 的节点度数至少为 $k$</td>
+      </tr>
+      <tr>
+        <td>Eigenvector centrality</td>
+        <td>常常强相关</td>
+        <td>都奖励"被连得好的邻居"</td>
+      </tr>
+      <tr>
+        <td>Closeness / Harmonic</td>
+        <td>关系弱</td>
+        <td>$k$-core 内部紧密 ≠ 距离全网都短</td>
+      </tr>
+      <tr>
+        <td>Betweenness</td>
+        <td>关系弱</td>
+        <td>桥接节点可能 core number 很低</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>课件用一个"两个 3-core 用一条链相连"的例子说明：链上的 $x$ 在 2-core，
+    betweenness 高达 16；两端的 $y, z$ 在 3-core 里，但 betweenness 反而只有 15 和 0。
+    这说明 <strong>"高 $k$-core ≠ 高 betweenness"</strong>。</p>
+
+  <svg class="net-divider" width="120" height="20" viewBox="0 0 120 20">
+    <circle cx="20" cy="10" r="3" fill="#0e5c5c"/>
+    <circle cx="60" cy="10" r="3" fill="#0e5c5c"/>
+    <circle cx="100" cy="10" r="3" fill="#0e5c5c"/>
+    <line x1="20" y1="10" x2="60" y2="10" stroke="#0e5c5c" stroke-width="1"/>
+    <line x1="60" y1="10" x2="100" y2="10" stroke="#0e5c5c" stroke-width="1"/>
+  </svg>
+
+  <h3 id="cluster"><span class="h3-tag">模块 3</span>Clustering Coefficient（聚类系数）</h3>
+
+  <h4>基本概念：connected triple 与 triangle</h4>
+  <div class="box box-def">
+    <div class="box-title">📘 定义</div>
+    <ul>
+      <li><strong>Connected triple（连通三元组）</strong>：三个节点 $A, B, C$，
+        其中 $B$ 同时与 $A$ 和 $C$ 相连（$B$ 处于"中间"）。</li>
+      <li><strong>Triangle（三角形）</strong>：三个节点两两相连。</li>
+    </ul>
+    一个 connected triple 是不是 triangle，取决于"两头"的 $A, C$ 是否也连着。
+  </div>
+
+  <h4>全局 clustering coefficient $C$</h4>
+  <div class="formula">
+    $$C = \frac{3 \times (\text{number of triangles})}{\text{number of connected triples}}$$
+  </div>
+  <p>分子的 <em>3</em> 是因为一个 triangle 包含 3 个 connected triple
+    （每个顶点都可以做"中间"）。所以 $C$ 也可理解为：
+    "所有 connected triples 中，闭合成 triangle 的比例"。</p>
+
+  <div class="figure">
+    <svg viewBox="0 0 200 160" width="200" height="160">
+      <line x1="100" y1="20"  x2="40"  y2="80"  stroke="#4a4e5c" stroke-width="1.2"/>
+      <line x1="100" y1="20"  x2="160" y2="80"  stroke="#4a4e5c" stroke-width="1.2"/>
+      <line x1="40"  y1="80"  x2="160" y2="80"  stroke="#4a4e5c" stroke-width="1.2"/>
+      <line x1="40"  y1="80"  x2="100" y2="140" stroke="#4a4e5c" stroke-width="1.2"/>
+      <line x1="160" y1="80"  x2="100" y2="140" stroke="#4a4e5c" stroke-width="1.2"/>
+      <g font-family="sans-serif" font-size="11" text-anchor="middle">
+        <circle cx="100" cy="20"  r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="100" y="24">1</text>
+        <circle cx="40"  cy="80"  r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="40" y="84">2</text>
+        <circle cx="160" cy="80"  r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="160" y="84">3</text>
+        <circle cx="100" cy="140" r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="100" y="144">4</text>
+      </g>
+    </svg>
+    <div class="figure-caption">
+      例子：2 个三角形（123 与 234），8 个 connected triple<br>
+      $C = \dfrac{3 \times 2}{8} = \dfrac{6}{8} = \dfrac{3}{4}$
+    </div>
+  </div>
+
+  <h4>Local clustering coefficient $C_i$</h4>
+  <div class="box box-def">
+    <div class="box-title">📘 定义</div>
+    节点 $i$ 的 <strong>local clustering coefficient</strong> 是：
+    "$i$ 的<em>邻居</em>两两之间，实际相连的比例"。
+    $$C_i = \frac{\text{$i$ 的邻居中相连的对数}}{\binom{d_i}{2}}$$
+    特别地：当 $d_i = 1$ 时，规定 $C_i = 0$（只有一个邻居，无法形成对）。
+  </div>
+
+  <h4>Watts-Strogatz 聚类系数 $C_{WS}$</h4>
+  <div class="formula">
+    $$C_{WS} = \frac{1}{n}\sum_{i=1}^{n} C_i$$
+  </div>
+  <p>即所有节点 local clustering 的<strong>平均值</strong>。</p>
+
+  <div class="box box-warn">
+    <div class="box-title">⚠ 易混淆：$C$ 与 $C_{WS}$ 不是同一个东西</div>
+    <ul>
+      <li>$C$（全局）<em>按 triangle 加权</em>：高度数节点参与更多 triangle，影响更大；</li>
+      <li>$C_{WS}$（平均）<em>按节点平均</em>：每个节点权重相同，低度数节点也能"投票"。</li>
+    </ul>
+    它们的数值通常<strong>不相等</strong>。论文里要看清楚作者用的是哪个！
+  </div>
+
+  <h3 id="summary"><span class="h3-tag">小结</span>三大工具的取舍</h3>
+  <table class="term-table">
+    <thead>
+      <tr><th>工具</th><th>本质</th><th>用什么时候</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Clique</td>
+        <td>"严丝合缝"的小团体</td>
+        <td>找完全互联的核心圈子</td>
+      </tr>
+      <tr>
+        <td>$k$-core</td>
+        <td>层层嵌套的稳健内核</td>
+        <td>过滤+识别影响力+研究韧性</td>
+      </tr>
+      <tr>
+        <td>Clustering Coef.</td>
+        <td>"三角闭合率"的统计量</td>
+        <td>量化整体 / 局部的"抱团程度"</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- PART 2: 考点梳理                                              -->
+<!-- ============================================================ -->
+<section class="part" id="part2">
+  <div class="part-header">
+    <span class="part-num">PART 02</span>
+    <h2>考点梳理</h2>
+  </div>
+
+  <p>按主题分类，标注重要程度：
+    <span class="importance high">★★★ 高频</span>
+    <span class="importance mid">★★ 中等</span>
+    <span class="importance low">★ 低频</span>。
+    标注"<em>记忆</em>"或"<em>理解/计算</em>"。</p>
+
+  <h3>2.1 Cliques（团）</h3>
+
+  <table class="term-table">
+    <thead>
+      <tr><th>考点</th><th>要点</th><th>类型</th><th>重要度</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Clique 定义</strong></td>
+        <td>一组节点，任意两个之间都有边。$n$ 节点的 clique 有 $\binom{n}{2}$ 条边。</td>
+        <td>记忆</td>
+        <td><span class="importance high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>识别 clique</strong></td>
+        <td>给定一个网络，判断/数出 clique 大小。</td>
+        <td>理解</td>
+        <td><span class="importance mid">★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>二分图 one-mode projection 形成 clique</strong></td>
+        <td>每个小组在 items 投影中形成 clique；每个 item 在 groups 投影中形成 clique。</td>
+        <td>理解</td>
+        <td><span class="importance mid">★★</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="box box-warn">
+    <div class="box-title">⚠ 易错点</div>
+    <ul>
+      <li>"两个共享边的 3-clique"<strong>不是</strong> 4-clique（必须任意两节点相连）。</li>
+      <li>$K_n$ 的<em>边数</em>是 $\binom{n}{2} = \dfrac{n(n-1)}{2}$，不是 $n^2$。</li>
+    </ul>
+  </div>
+
+  <h3>2.2 $k$-cores</h3>
+
+  <table class="term-table">
+    <thead>
+      <tr><th>考点</th><th>要点</th><th>类型</th><th>重要度</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>$k$-core 定义</strong></td>
+        <td>连通节点子集，子集中每个节点度数 $\geq k$。</td>
+        <td>记忆</td>
+        <td><span class="importance high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>检测算法</strong></td>
+        <td>迭代删去度 $&lt; k$ 的节点+边，直到稳定。</td>
+        <td>理解/计算</td>
+        <td><span class="importance high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>嵌套性</strong></td>
+        <td>$k$-core $\subseteq$ $(k-1)$-core。</td>
+        <td>记忆</td>
+        <td><span class="importance high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>Clique 关系</strong></td>
+        <td>$k+1$ 节点的 $k$-core $=$ $(k+1)$-clique。</td>
+        <td>理解</td>
+        <td><span class="importance mid">★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>Core number</strong></td>
+        <td>节点所属最大 $k$-core 的 $k$ 值。</td>
+        <td>记忆</td>
+        <td><span class="importance mid">★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>$k_{\max}$</strong></td>
+        <td>网络中存在 $k$-core 的最大 $k$。</td>
+        <td>理解</td>
+        <td><span class="importance mid">★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>应用</strong></td>
+        <td>影响力识别、层级可视化、过滤、韧性。</td>
+        <td>记忆</td>
+        <td><span class="importance mid">★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>与中心性关系</strong></td>
+        <td>与 degree、eigenvector 强相关；与 closeness、betweenness 弱相关。</td>
+        <td>理解</td>
+        <td><span class="importance high">★★★</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="box box-warn">
+    <div class="box-title">⚠ 易错点</div>
+    <ul>
+      <li><strong>"度"是子图度</strong>，不是原图度。剥层时<em>每删一次</em>都要更新。</li>
+      <li>$k$-core <strong>不要求两两相连</strong>，与 clique 区分清楚。</li>
+      <li>1-core 不等于"全网络"——只是没有孤立节点的部分。</li>
+      <li>嵌套方向：$k$ 大 $\subseteq$ $k$ 小，<em>不是反过来</em>。</li>
+    </ul>
+  </div>
+
+  <h3>2.3 Clustering Coefficient</h3>
+
+  <table class="term-table">
+    <thead>
+      <tr><th>考点</th><th>要点</th><th>类型</th><th>重要度</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Connected triple</strong></td>
+        <td>三节点 $A,B,C$，$B$ 与 $A$、$C$ 都相连。"中间"节点是 $B$。</td>
+        <td>记忆</td>
+        <td><span class="importance high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>Triangle</strong></td>
+        <td>三节点两两相连。</td>
+        <td>记忆</td>
+        <td><span class="importance high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>全局 $C$ 公式</strong></td>
+        <td>$C = \dfrac{3 \times \text{triangles}}{\text{connected triples}}$</td>
+        <td>记忆/计算</td>
+        <td><span class="importance high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>Local $C_i$</strong></td>
+        <td>$C_i = \dfrac{\text{$i$ 邻居中相连对数}}{\binom{d_i}{2}}$；度为 1 时 $C_i = 0$。</td>
+        <td>记忆/计算</td>
+        <td><span class="importance high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>$C_{WS}$（Watts-Strogatz）</strong></td>
+        <td>$C_{WS} = \dfrac{1}{n}\sum C_i$</td>
+        <td>记忆/计算</td>
+        <td><span class="importance high">★★★</span></td>
+      </tr>
+      <tr>
+        <td><strong>$C$ 与 $C_{WS}$ 区别</strong></td>
+        <td>$C$ 按三角形加权，$C_{WS}$ 按节点平均；两者数值通常不等。</td>
+        <td>理解</td>
+        <td><span class="importance mid">★★</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="box box-warn">
+    <div class="box-title">⚠ 易错点</div>
+    <ul>
+      <li>$C_i$ 的分母是 $\binom{d_i}{2}$，<strong>不是 $d_i$</strong>。</li>
+      <li>计算 connected triple 时，<em>每个 triangle 贡献 3 个</em> connected triple（每个顶点可以做中间）。所以公式分子要乘 3。</li>
+      <li>度为 1 的节点 $C_i = 0$（约定），不是"未定义"。</li>
+      <li>孤立节点（度为 0）：通常也设 $C_i = 0$；公式 $\binom{0}{2}=0$ 会让分母无意义。</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- PART 3: 复习题目                                              -->
+<!-- ============================================================ -->
+<section class="part" id="part3">
+  <div class="part-header">
+    <span class="part-num">PART 03</span>
+    <h2>复习题目</h2>
+  </div>
+
+  <p>题目按难度梯度排列：基础 → 进阶 → 综合。
+  每题标注 <span class="q-tag type">题型</span>
+  <span class="q-tag topic">考点</span>
+  <span class="q-tag diff-1">难度</span>。
+  选择题<strong>点击选项</strong>即可作答；其它题型点击"显示答案与解析"。</p>
+
+  <!-- ============================== 选择题 ============================== -->
+  <h3>3.1 选择题（点击选项作答）</h3>
+
+  <!-- Q1 -->
+  <div class="q" data-q="1" data-correct="B">
+    <div class="q-head">
+      <span class="q-num">Q1</span>
+      <span class="q-tag type">选择</span>
+      <span class="q-tag topic">Clique 定义</span>
+      <span class="q-tag diff-1">基础</span>
+    </div>
+    <div class="q-stem">下列哪个说法<strong>正确</strong>描述了 clique？</div>
+    <ul class="options">
+      <li class="opt" data-opt="A"><span class="opt-letter">A.</span><span class="opt-text">所有节点度数都恰好为 $k$ 的连通子图</span></li>
+      <li class="opt" data-opt="B"><span class="opt-letter">B.</span><span class="opt-text">一组节点，其中任意两个节点之间都有边相连</span></li>
+      <li class="opt" data-opt="C"><span class="opt-letter">C.</span><span class="opt-text">至少包含 $k$ 条边的连通子图</span></li>
+      <li class="opt" data-opt="D"><span class="opt-letter">D.</span><span class="opt-text">直径不超过 $k$ 的连通子图</span></li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：B</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          Clique 的定义就是"任意两节点之间都有边"（两两相连）。<br>
+          A 描述的是 $k$-正则子图；C 关心边数总量但不要求两两相连；D 是"直径"概念，与 clique 无关。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          $K_n$ 含 $n$ 个节点的 clique 中，每个节点度数为 $n-1$，
+          边数为 $\binom{n}{2}$——这是 clique 的"派生事实"，但不是定义本身。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q2 -->
+  <div class="q" data-q="2" data-correct="B">
+    <div class="q-head">
+      <span class="q-num">Q2</span>
+      <span class="q-tag type">选择</span>
+      <span class="q-tag topic">$k$-core 定义</span>
+      <span class="q-tag diff-1">基础</span>
+    </div>
+    <div class="q-stem">关于 $k$-core 的描述，<strong>正确</strong>的是：</div>
+    <ul class="options">
+      <li class="opt" data-opt="A"><span class="opt-letter">A.</span><span class="opt-text">$k$-core 中每个节点的度数<em>恰好</em>等于 $k$</span></li>
+      <li class="opt" data-opt="B"><span class="opt-letter">B.</span><span class="opt-text">$k$-core 中每个节点至少与子集中的 $k$ 个其他成员相连</span></li>
+      <li class="opt" data-opt="C"><span class="opt-letter">C.</span><span class="opt-text">$k$-core 是 $k$-clique 的别称</span></li>
+      <li class="opt" data-opt="D"><span class="opt-letter">D.</span><span class="opt-text">$k$-core 必须恰好包含 $k$ 个节点</span></li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：B</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          $k$-core 要求度数 <strong>$\geq k$</strong>（至少），不是恰好等于 $k$，故 A 错。
+          $k$-core 比 clique 宽松——不要求两两相连，所以 C 错。
+          节点数没有约束（可以远多于 $k$），D 错。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          "度数 $\geq k$" 中的"度数"是在<em>子图中</em>的度数，不是原网络中的度。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q3 -->
+  <div class="q" data-q="3" data-correct="B">
+    <div class="q-head">
+      <span class="q-num">Q3</span>
+      <span class="q-tag type">选择</span>
+      <span class="q-tag topic">$k$-core 嵌套性</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">关于 $k$-cores 的嵌套关系，下列说法<strong>正确</strong>的是：</div>
+    <ul class="options">
+      <li class="opt" data-opt="A"><span class="opt-letter">A.</span><span class="opt-text">$(k-1)$-core 是 $k$-core 的子集</span></li>
+      <li class="opt" data-opt="B"><span class="opt-letter">B.</span><span class="opt-text">$k$-core 是 $(k-1)$-core 的子集</span></li>
+      <li class="opt" data-opt="C"><span class="opt-letter">C.</span><span class="opt-text">$k$-core 与 $(k-1)$-core 没有包含关系</span></li>
+      <li class="opt" data-opt="D"><span class="opt-letter">D.</span><span class="opt-text">$k$-core 与 $(k+1)$-core 总是相等</span></li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：B</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          $k$ 越大，要求越严，能"留下"的节点越少。
+          所以 $k$-core 一定是 $(k-1)$-core 的<strong>子集</strong>。
+          想象洋葱：高 $k$ 在中心，低 $k$ 包在外面层层套住。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          方向<em>不要</em>记反！记口诀：<strong>"$k$ 大子集小"</strong>。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q4 -->
+  <div class="q" data-q="4" data-correct="B">
+    <div class="q-head">
+      <span class="q-num">Q4</span>
+      <span class="q-tag type">选择</span>
+      <span class="q-tag topic">Clique 与 $k$-core</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">一个恰好含有 $k+1$ 个节点的 $k$-core 等价于：</div>
+    <ul class="options">
+      <li class="opt" data-opt="A"><span class="opt-letter">A.</span><span class="opt-text">一个 $k$-clique</span></li>
+      <li class="opt" data-opt="B"><span class="opt-letter">B.</span><span class="opt-text">一个 $(k+1)$-clique</span></li>
+      <li class="opt" data-opt="C"><span class="opt-letter">C.</span><span class="opt-text">一棵树</span></li>
+      <li class="opt" data-opt="D"><span class="opt-letter">D.</span><span class="opt-text">一个完全二分图</span></li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：B</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          有 $k+1$ 个节点，每个节点都要至少连到子集中的 $k$ 个。
+          但子集中"其它节点"<em>恰好</em>只有 $k$ 个！所以每个节点必须连到<strong>所有</strong>其他节点
+          → 两两相连 → 一个 $(k+1)$-clique。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          注意 clique 的"$k$"和 $k$-core 的"$k$"<em>含义不同</em>：
+          clique 的 $k$ 是节点数；$k$-core 的 $k$ 是度数下限。
+          二者只在"节点数 $=$ 度数 $+ 1$"时统一。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q5 -->
+  <div class="q" data-q="5" data-correct="C">
+    <div class="q-head">
+      <span class="q-num">Q5</span>
+      <span class="q-tag type">选择</span>
+      <span class="q-tag topic">$k$-core 与中心性</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">在真实网络中，下列哪种中心性与 core number 通常表现出
+      <strong>较强相关性</strong>？</div>
+    <ul class="options">
+      <li class="opt" data-opt="A"><span class="opt-letter">A.</span><span class="opt-text">Betweenness centrality</span></li>
+      <li class="opt" data-opt="B"><span class="opt-letter">B.</span><span class="opt-text">Harmonic centrality</span></li>
+      <li class="opt" data-opt="C"><span class="opt-letter">C.</span><span class="opt-text">Eigenvector centrality</span></li>
+      <li class="opt" data-opt="D"><span class="opt-letter">D.</span><span class="opt-text">所有中心性都同样强相关</span></li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：C</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          Eigenvector centrality 度量"连接到<em>那些被连得好</em>的节点的程度"
+          ——这与 $k$-core "互相强化的密集连接"的思想吻合。
+          所以两者通常强相关。<br>
+          Betweenness 在意"桥梁性"，与"内部密集"不直接相关；
+          closeness/harmonic 关心距离，$k$-core 内部紧密不代表全网距离短。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          "通常强相关"不等于"<em>一定</em>强相关"——病态情形（pathological cases）依然存在。
+          但 $k$-core 计算<em>更直观、更易手算</em>。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q6 -->
+  <div class="q" data-q="6" data-correct="B">
+    <div class="q-head">
+      <span class="q-num">Q6</span>
+      <span class="q-tag type">选择</span>
+      <span class="q-tag topic">二分图投影</span>
+      <span class="q-tag diff-1">基础</span>
+    </div>
+    <div class="q-stem">关于二分图的 one-mode projection，<strong>正确</strong>的描述是：</div>
+    <ul class="options">
+      <li class="opt" data-opt="A"><span class="opt-letter">A.</span><span class="opt-text">投影后必然形成一棵树</span></li>
+      <li class="opt" data-opt="B"><span class="opt-letter">B.</span><span class="opt-text">在 items 投影中，每个 group 对应的成员自然形成一个 clique</span></li>
+      <li class="opt" data-opt="C"><span class="opt-letter">C.</span><span class="opt-text">投影结果总是稀疏的</span></li>
+      <li class="opt" data-opt="D"><span class="opt-letter">D.</span><span class="opt-text">投影与原二分图结构无关</span></li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：B</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          属于同一 group 的所有 item 在投影中两两相连——这正是 clique 的定义。
+          所以"二分图投影会自然产生 clique"。<br>
+          A、C 都是错误一般化——投影<em>常常很密</em>，因为大 group 会创造大 clique。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          这个性质提醒我们：在合作者网、共同观影网这类网络中观察到的"高聚类系数"
+          并不一定意味着"真实的强关系"，可能只是投影<em>制造</em>出来的。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q7 -->
+  <div class="q" data-q="7" data-correct="B">
+    <div class="q-head">
+      <span class="q-num">Q7</span>
+      <span class="q-tag type">选择</span>
+      <span class="q-tag topic">Clustering coefficient 公式</span>
+      <span class="q-tag diff-1">基础</span>
+    </div>
+    <div class="q-stem">全局 clustering coefficient $C$ 的正确公式是：</div>
+    <ul class="options">
+      <li class="opt" data-opt="A"><span class="opt-letter">A.</span><span class="opt-text">$C = \dfrac{\text{triangles}}{\text{node count}}$</span></li>
+      <li class="opt" data-opt="B"><span class="opt-letter">B.</span><span class="opt-text">$C = \dfrac{3 \times \text{triangles}}{\text{connected triples}}$</span></li>
+      <li class="opt" data-opt="C"><span class="opt-letter">C.</span><span class="opt-text">$C = \dfrac{\text{connected triples}}{3 \times \text{triangles}}$</span></li>
+      <li class="opt" data-opt="D"><span class="opt-letter">D.</span><span class="opt-text">$C = \dfrac{\text{triangles}}{\text{edge count}}$</span></li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：B</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          $C$ 衡量的是"connected triples 中闭合成 triangle 的比例"。
+          每个 triangle 包含 3 个 connected triple（每个顶点都能做中间），
+          所以分子要乘 3。<br>
+          C 是公式 B 的倒数；A、D 完全无对应概念。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          公式中的 "3" <strong>不能省略</strong>。如果省略，$C$ 的最大值就不是 1，
+          而是 $1/3$，不符合"比例"语义。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q8 -->
+  <div class="q" data-q="8" data-correct="C">
+    <div class="q-head">
+      <span class="q-num">Q8</span>
+      <span class="q-tag type">选择</span>
+      <span class="q-tag topic">Local clustering coefficient</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">设节点 $i$ 的度为 $d_i$。其 local clustering coefficient $C_i$ 的分母应为：</div>
+    <ul class="options">
+      <li class="opt" data-opt="A"><span class="opt-letter">A.</span><span class="opt-text">$d_i$</span></li>
+      <li class="opt" data-opt="B"><span class="opt-letter">B.</span><span class="opt-text">$2 d_i$</span></li>
+      <li class="opt" data-opt="C"><span class="opt-letter">C.</span><span class="opt-text">$\binom{d_i}{2} = \dfrac{d_i(d_i-1)}{2}$</span></li>
+      <li class="opt" data-opt="D"><span class="opt-letter">D.</span><span class="opt-text">$d_i^2$</span></li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：C</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          $C_i$ 是 "$i$ 的邻居中实际相连的对数 / 可能存在的邻居对总数"。
+          $d_i$ 个邻居能形成 $\binom{d_i}{2}$ 个不同的对，
+          这就是分母。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          当 $d_i = 1$，$\binom{1}{2} = 0$（分母为零）。
+          约定 $C_i = 0$（"形不成对"）。
+        </div>
+      </div>
+    </details>
+  </div>
+
+
+  <!-- ============================== 填空题 ============================== -->
+  <h3>3.2 填空题</h3>
+
+  <!-- F1 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">F1</span>
+      <span class="q-tag type">填空</span>
+      <span class="q-tag topic">$k$-core 嵌套</span>
+      <span class="q-tag diff-1">基础</span>
+    </div>
+    <div class="q-stem">
+      一个 4-core 同时也是 ____-core、____-core 和 ____-core。
+      （按从大到小填）
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：3、2、1</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          由嵌套性 $k\text{-core} \subseteq (k-1)\text{-core}$：
+          4-core 中的节点度数 $\geq 4 \geq 3 \geq 2 \geq 1$，
+          自动满足所有更小 $k$ 的条件。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- F2 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">F2</span>
+      <span class="q-tag type">填空</span>
+      <span class="q-tag topic">Core number</span>
+      <span class="q-tag diff-1">基础</span>
+    </div>
+    <div class="q-stem">
+      节点 $i$ 所属的<strong>最大</strong> $k$-core 中的 $k$ 值，叫做节点 $i$ 的 ____________。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：core number（核数）</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          这是 $k$-core 之上定义的节点级别指标，把"节点处于多深的洋葱中心"量化为一个数。
+          高 core number 节点往往同时具备高 degree centrality 和高 eigenvector centrality。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- F3 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">F3</span>
+      <span class="q-tag type">填空</span>
+      <span class="q-tag topic">公式默写</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">
+      Watts-Strogatz 聚类系数的公式为：$C_{WS}$ $=$ ____________。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：</span> $C_{WS} = \dfrac{1}{n}\sum_{i=1}^{n} C_i$
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          就是 local clustering coefficient 的<strong>算术平均</strong>。
+          它与全局 $C$ 不同：$C_{WS}$ 把每个节点同等对待，
+          $C$ 实际上以"参与的 triple 数"为权重，更重视高度数节点。
+        </div>
+      </div>
+    </details>
+  </div>
+
+
+  <!-- ============================== 判断题 ============================== -->
+  <h3>3.3 判断题</h3>
+
+  <!-- T1 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">T1</span>
+      <span class="q-tag type">判断</span>
+      <span class="q-tag topic">Clique vs $k$-core</span>
+      <span class="q-tag diff-1">基础</span>
+    </div>
+    <div class="q-stem">
+      <strong>$k$-core 中的所有节点都两两相连。</strong>（ 对 / 错 ）
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：错（False）</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          $k$-core 只要求每个节点<em>至少</em>与子集中的 $k$ 个其他成员相连，
+          并<strong>不要求两两相连</strong>。"两两相连"是 clique 的属性。
+          只有特殊情形（节点数 $= k+1$）下 $k$-core 才退化为 clique。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          这是 clique 和 $k$-core 最常考的<em>区分点</em>，必须分清。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- T2 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">T2</span>
+      <span class="q-tag type">判断</span>
+      <span class="q-tag topic">度与 core number</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">
+      <strong>一个节点度数很高，它的 core number 也一定很高。</strong>（ 对 / 错 ）
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：错（False）</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          一个节点度数高，只说明<em>邻居多</em>。但如果这些邻居之间彼此连接稀疏，
+          那么剥层算法很快就会把它们删掉，节点也会被"连坐"删除。<br>
+          反过来才对：<strong>core number 为 $k$ 的节点，度数 $\geq k$</strong>（必要条件）。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          典型反例：一个"星形结构"的中心节点度数极高，但 core number 只有 1
+          （它的叶子节点之间没有连接，剥一次就只剩它孤零零的）。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- T3 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">T3</span>
+      <span class="q-tag type">判断</span>
+      <span class="q-tag topic">$K_n$ 的 $C_i$</span>
+      <span class="q-tag diff-1">基础</span>
+    </div>
+    <div class="q-stem">
+      <strong>在完全图 $K_n$（$n \geq 2$）中，每个节点的 local clustering coefficient 都是 1。</strong>
+      （ 对 / 错 ）
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：</span>对于 $n \geq 3$ 时<strong>正确</strong>；
+          $n = 2$ 时 $C_i = 0$（约定，因度数为 1）。
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          $K_n$ 中节点 $i$ 的 $d_i = n-1$ 个邻居两两都相连，
+          所以邻居对中相连的占比 $= \dfrac{\binom{n-1}{2}}{\binom{n-1}{2}} = 1$。
+          只有 $n = 2$（即一条边）时 $d_i = 1$，按约定 $C_i = 0$。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- T4 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">T4</span>
+      <span class="q-tag type">判断</span>
+      <span class="q-tag topic">$C$ 与 $C_{WS}$</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">
+      <strong>对任意网络，全局 $C$ 与 Watts-Strogatz $C_{WS}$ 数值相等。</strong>（ 对 / 错 ）
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：错（False）</span>
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">解析</div>
+          两者定义不同：<br>
+          • $C$ 是"全网 triangle 数量 / 全网 connected triples 数量"，
+          隐含按 triple 加权 → 偏向<em>高度数节点</em>。<br>
+          • $C_{WS}$ 是"每个节点 $C_i$ 的平均"，每个节点权重相同 → 受<em>低度数节点</em>影响也大。<br>
+          只有当所有 $C_i$ 完全相等（极特殊情形）时它们才数值相等。
+        </div>
+      </div>
+    </details>
+  </div>
+
+
+  <!-- ============================== 简答题 ============================== -->
+  <h3>3.4 简答题</h3>
+
+  <!-- S1 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">S1</span>
+      <span class="q-tag type">简答</span>
+      <span class="q-tag topic">Clique vs $k$-core</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">
+      解释 clique 与 $k$-core 的<strong>区别</strong>，并说明二者之间的<strong>联系</strong>。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <div class="ans-section-title">参考答案（建议结构）</div>
+          <strong>区别（严格程度）</strong>：
+          <ul>
+            <li><strong>Clique</strong>：要求子集中任意两节点之间都有边——最严的"两两相连"。</li>
+            <li><strong>$k$-core</strong>：每个节点至少与子集中的 $k$ 个成员相连，不必两两相连——更宽松。</li>
+          </ul>
+          <strong>联系</strong>：$k$-core 是 clique 的<em>推广</em>。
+          特殊地，一个含有 $k+1$ 个节点的 $k$-core 就是 $(k+1)$-clique
+          （因为 $k+1$ 个节点中要连到剩余 $k$ 个 = 两两相连）。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          回答时一定要说"宽松/严格"这层关系，并用 $k+1$ 节点的例子说明它们何时统一。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- S2 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">S2</span>
+      <span class="q-tag type">简答</span>
+      <span class="q-tag topic">$k$-core 检测算法</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">
+      描述 $k$-core 检测算法的步骤，并说明<strong>为什么需要"迭代"</strong>。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <div class="ans-section-title">参考答案</div>
+          <strong>算法步骤</strong>：
+          <ol>
+            <li>在原网络 $G$ 中删除所有度数 $&lt; k$ 的节点（连同它们的边），得到 $G'$。</li>
+            <li>在 $G'$ 中继续删除度数 $&lt; k$ 的节点和边，得到 $G''$。</li>
+            <li>重复此过程，直到剩余节点的度数都 $\geq k$。最终剩下的节点集合就是 $k$-core。</li>
+          </ol>
+          <strong>为什么要迭代</strong>：删除一个节点会同时删除它的邻边，
+          这可能使原本度数 $\geq k$ 的节点度数<em>降至 $k$ 以下</em>，触发"连锁删除"。
+          只有不断重复删除，才能保证最后剩下的<em>每个节点</em>在<em>剩余子图中</em>度数都 $\geq k$。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- S3 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">S3</span>
+      <span class="q-tag type">简答</span>
+      <span class="q-tag topic">$k$-core 应用</span>
+      <span class="q-tag diff-1">基础</span>
+    </div>
+    <div class="q-stem">
+      请列举 $k$-core 的至少<strong>三种</strong>实际应用场景，并简要说明原因。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <div class="ans-section-title">参考答案（任选三项即可）</div>
+          <ul>
+            <li><strong>识别信息/疾病传播的关键节点</strong>——高 $k$ 节点的邻居互相强化连接，传播路径多。</li>
+            <li><strong>层级可视化</strong>——把高 $k$ 放中心、低 $k$ 放外围，形成"洋葱图"。</li>
+            <li><strong>网络过滤</strong>——剥掉低 $k$ 的"叶子"，留下结构骨架，便于分析。</li>
+            <li><strong>韧性研究</strong>——随机删节点后还连通的部分往往就是高 $k$-core。</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- S4 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">S4</span>
+      <span class="q-tag type">简答</span>
+      <span class="q-tag topic">$C$ 与 $C_{WS}$</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">
+      解释全局 clustering coefficient $C$ 与 Watts-Strogatz 系数 $C_{WS}$
+      的<strong>差异</strong>，并指出在哪种情况下高度数节点会让两者明显不同。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <div class="ans-section-title">参考答案</div>
+          <ul>
+            <li><strong>$C$（全局）</strong> $= \dfrac{3 \times \text{triangles}}{\text{connected triples}}$：
+              直接对 triangle 计数，<em>本质上按 triple 加权</em>。
+              高度数节点参与的 triple 多，对 $C$ 的影响远大于低度数节点。</li>
+            <li><strong>$C_{WS}$（平均）</strong> $= \dfrac{1}{n}\sum C_i$：
+              对每个节点的 $C_i$ 简单平均，<em>所有节点权重相同</em>。</li>
+          </ul>
+          <strong>差异显著的情形</strong>：当网络中存在"低度数但 $C_i = 1$"的节点
+          （例如"叶子三角形"），它们会拉高 $C_{WS}$；
+          而少数高度数中心节点若 $C_i$ 低（连接四散），会拉低 $C$。
+          于是 $C_{WS}$ 高、$C$ 低，差距明显。
+        </div>
+      </div>
+    </details>
+  </div>
+
+
+  <!-- ============================== 计算题 ============================== -->
+  <h3>3.5 计算题</h3>
+
+  <!-- C1 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">C1</span>
+      <span class="q-tag type">计算</span>
+      <span class="q-tag topic">全局 $C$</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">
+      对下面 4 个节点、5 条边的网络（节点 1,2,3,4；边：1-2, 1-3, 2-3, 2-4, 3-4），
+      计算其全局 clustering coefficient $C$。
+    </div>
+    <div class="figure">
+      <svg viewBox="0 0 200 160" width="180" height="144">
+        <line x1="100" y1="20"  x2="40"  y2="80"  stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="100" y1="20"  x2="160" y2="80"  stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="40"  y1="80"  x2="160" y2="80"  stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="40"  y1="80"  x2="100" y2="140" stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="160" y1="80"  x2="100" y2="140" stroke="#4a4e5c" stroke-width="1.2"/>
+        <g font-family="sans-serif" font-size="11" text-anchor="middle">
+          <circle cx="100" cy="20"  r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="100" y="24">1</text>
+          <circle cx="40"  cy="80"  r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="40" y="84">2</text>
+          <circle cx="160" cy="80"  r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="160" y="84">3</text>
+          <circle cx="100" cy="140" r="11" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="100" y="144">4</text>
+        </g>
+      </svg>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：</span>$C = \dfrac{3}{4}$（即 $6/8$）
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">完整步骤</div>
+          <strong>第 1 步：找 triangle。</strong><br>
+          节点 1,2,3：1-2, 1-3, 2-3 三边全在 → ✓ triangle (1,2,3)<br>
+          节点 2,3,4：2-3, 2-4, 3-4 三边全在 → ✓ triangle (2,3,4)<br>
+          节点 1,2,4：1-4 不存在 → ✗<br>
+          节点 1,3,4：1-4 不存在 → ✗<br>
+          <em>共 2 个 triangle。</em>
+          <br><br>
+          <strong>第 2 步：数 connected triples（按中间节点）。</strong>
+          <ul>
+            <li>中间是 1，邻居 $\{2,3\}$：1 个 triple (2-1-3)</li>
+            <li>中间是 2，邻居 $\{1,3,4\}$：$\binom{3}{2}=3$ 个 triples (1-2-3, 1-2-4, 3-2-4)</li>
+            <li>中间是 3，邻居 $\{1,2,4\}$：3 个 triples (1-3-2, 1-3-4, 2-3-4)</li>
+            <li>中间是 4，邻居 $\{2,3\}$：1 个 triple (2-4-3)</li>
+          </ul>
+          <em>共 $1+3+3+1 = 8$ 个 connected triple。</em>
+          <br><br>
+          <strong>第 3 步：套公式。</strong>
+          $$C = \dfrac{3 \times 2}{8} = \dfrac{6}{8} = \dfrac{3}{4}$$
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          数 connected triple 的标准方法是"按中间节点"：对每个节点 $i$，
+          其邻居中能形成的 triple 数为 $\binom{d_i}{2}$。本题中
+          $\binom{2}{2} + \binom{3}{2} + \binom{3}{2} + \binom{2}{2} = 1+3+3+1 = 8$。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- C2 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">C2</span>
+      <span class="q-tag type">计算</span>
+      <span class="q-tag topic">Local $C_i$ 与 $C_{WS}$</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">
+      在 C1 的同一网络（4 节点 5 边）中：<br>
+      (a) 计算每个节点的 local clustering coefficient $C_i$；<br>
+      (b) 计算 Watts-Strogatz 聚类系数 $C_{WS}$。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：</span>
+          $C_1 = 1$, $C_2 = \tfrac{2}{3}$, $C_3 = \tfrac{2}{3}$, $C_4 = 1$；
+          $C_{WS} = \dfrac{5}{6}$
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">完整步骤</div>
+          <strong>节点 1</strong>：邻居 $\{2,3\}$，$d_1 = 2$，
+          可能对数 $\binom{2}{2}=1$；实际相连对：$(2,3)$ ✓。
+          $$C_1 = \dfrac{1}{1} = 1.$$
+          <br>
+          <strong>节点 2</strong>：邻居 $\{1,3,4\}$，$d_2 = 3$，
+          可能对数 $\binom{3}{2}=3$；实际相连对：$(1,3)$ ✓, $(1,4)$ ✗, $(3,4)$ ✓ → 2 对。
+          $$C_2 = \dfrac{2}{3}.$$
+          <br>
+          <strong>节点 3</strong>：邻居 $\{1,2,4\}$，$d_3 = 3$。
+          实际相连对：$(1,2)$ ✓, $(1,4)$ ✗, $(2,4)$ ✓ → 2 对。
+          $$C_3 = \dfrac{2}{3}.$$
+          <br>
+          <strong>节点 4</strong>：邻居 $\{2,3\}$，$d_4 = 2$；$(2,3)$ ✓。
+          $$C_4 = 1.$$
+          <br>
+          <strong>$C_{WS}$</strong>：
+          $$C_{WS} = \dfrac{1}{4}\left(1 + \dfrac{2}{3} + \dfrac{2}{3} + 1\right)
+                   = \dfrac{1}{4} \cdot \dfrac{10}{3}
+                   = \dfrac{10}{12} = \dfrac{5}{6}.$$
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          注意 $C_{WS} = \tfrac{5}{6} \neq C = \tfrac{3}{4}$ ——
+          这就是教材说的"$C_{WS}$ 与全局 $C$ 是不同的概念"的具体例子。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- C3 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">C3</span>
+      <span class="q-tag type">计算</span>
+      <span class="q-tag topic">$k$-core 检测</span>
+      <span class="q-tag diff-2">进阶</span>
+    </div>
+    <div class="q-stem">
+      考虑一个 5 节点网络 $V = \{a,b,c,d,e\}$，
+      边集：$\{a$-$b, a$-$c, a$-$d, b$-$c, b$-$d, c$-$d, d$-$e\}$。<br>
+      请分别求出 1-core、2-core、3-core，并指出最大 $k_{\max}$。
+    </div>
+    <div class="figure">
+      <svg viewBox="0 0 240 160" width="220" height="148">
+        <line x1="60"  y1="40"  x2="60"  y2="120" stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="60"  y1="40"  x2="140" y2="40"  stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="60"  y1="40"  x2="140" y2="120" stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="60"  y1="120" x2="140" y2="40"  stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="60"  y1="120" x2="140" y2="120" stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="140" y1="40"  x2="140" y2="120" stroke="#4a4e5c" stroke-width="1.2"/>
+        <line x1="140" y1="120" x2="210" y2="120" stroke="#4a4e5c" stroke-width="1.2"/>
+        <g font-family="sans-serif" font-size="11" text-anchor="middle">
+          <circle cx="60"  cy="40"  r="13" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="60" y="44">a</text>
+          <circle cx="140" cy="40"  r="13" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="140" y="44">b</text>
+          <circle cx="60"  cy="120" r="13" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="60" y="124">c</text>
+          <circle cx="140" cy="120" r="13" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="140" y="124">d</text>
+          <circle cx="210" cy="120" r="13" fill="white" stroke="#0e5c5c" stroke-width="1.5"/><text x="210" y="124">e</text>
+        </g>
+      </svg>
+      <div class="figure-caption">$\{a,b,c,d\}$ 形成 $K_4$（四面体），节点 $e$ 通过 $d$-$e$ 边接在外面。</div>
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：</span>
+          1-core $= \{a,b,c,d,e\}$（全图）；
+          2-core $= \{a,b,c,d\}$；
+          3-core $= \{a,b,c,d\}$；
+          没有 4-core，故 $k_{\max} = 3$。
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">完整步骤</div>
+          <strong>各节点原始度数</strong>：$d_a=3, d_b=3, d_c=3, d_d=4, d_e=1$。<br><br>
+
+          <strong>1-core</strong>：删去度 $&lt; 1$ 的节点——没有，所以 1-core 就是全图 $\{a,b,c,d,e\}$。
+          <br><br>
+
+          <strong>2-core</strong>：
+          <ul>
+            <li>$e$ 的度 $= 1 &lt; 2$ → 删 $e$ 及边 $d$-$e$。</li>
+            <li>剩余子图 $\{a,b,c,d\}$ 中：$d_a=3, d_b=3, d_c=3, d_d=3$，全部 $\geq 2$。停止。</li>
+          </ul>
+          所以 2-core $= \{a,b,c,d\}$。
+          <br><br>
+
+          <strong>3-core</strong>：再剥一层
+          <ul>
+            <li>当前子图中各节点度均为 3 ≥ 3，无人被删。</li>
+          </ul>
+          所以 3-core $= \{a,b,c,d\}$（即 $K_4$ 本身——这也印证了"$k+1$ 节点的 $k$-core = $(k+1)$-clique"）。
+          <br><br>
+
+          <strong>4-core</strong>：要求度 $\geq 4$。$K_4$ 内每个节点度数 $= 3 &lt; 4$，全部要删——没有 4-core。
+          <br><br>
+
+          因此 $k_{\max} = 3$。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          注意"度"始终是在<em>当前子图</em>中算的。例如删了 $e$ 之后，
+          $d_d$ 从 4 降到 3，但仍 $\geq 3$，所以不会进一步触发删除。
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- C4 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">C4</span>
+      <span class="q-tag type">计算</span>
+      <span class="q-tag topic">综合：core + $C_i$</span>
+      <span class="q-tag diff-3">综合</span>
+    </div>
+    <div class="q-stem">
+      仍以 C3 的网络（$K_4$ + 尾节点 $e$）为例：<br>
+      (a) 写出每个节点的 core number；<br>
+      (b) 计算每个节点的 local clustering coefficient $C_i$；<br>
+      (c) 计算 $C_{WS}$。
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <span class="ans-label">答案：</span>
+          (a) $a, b, c, d$ 的 core number $= 3$，$e$ 的 $= 1$；
+          (b) $C_a = C_b = C_c = 1$, $C_d = \tfrac{1}{2}$, $C_e = 0$；
+          (c) $C_{WS} = \dfrac{7}{10}$。
+        </div>
+        <div class="ans-section">
+          <div class="ans-section-title">完整步骤</div>
+          <strong>(a) Core numbers</strong>：<br>
+          由 C3 结论，$a,b,c,d$ 在 3-core 中（最大可达 $k=3$）；
+          $e$ 只在 1-core 中。所以 $\text{cn}(a)=\text{cn}(b)=\text{cn}(c)=\text{cn}(d)=3$，
+          $\text{cn}(e)=1$。
+          <br><br>
+
+          <strong>(b) Local clustering</strong>：<br>
+          <em>节点 $a$</em>：邻居 $\{b,c,d\}$，$d_a=3$，对数 $\binom{3}{2}=3$；
+          相连对 $(b,c),(b,d),(c,d)$ 全部存在（$K_4$ 内）→ 3 对。
+          $$C_a = 3/3 = 1.$$
+          同理 $C_b = C_c = 1$（对称）。<br><br>
+
+          <em>节点 $d$</em>：邻居 $\{a,b,c,e\}$，$d_d=4$，对数 $\binom{4}{2}=6$；
+          相连对 $(a,b),(a,c),(b,c)$ 存在（$K_4$ 内）→ 3 对；
+          其余 $(a,e),(b,e),(c,e)$ 均不存在。
+          $$C_d = 3/6 = 1/2.$$
+          <br>
+          <em>节点 $e$</em>：$d_e=1$ → 按约定 $C_e = 0$。
+          <br><br>
+
+          <strong>(c) $C_{WS}$</strong>：
+          $$C_{WS} = \dfrac{1}{5}\left(1+1+1+\dfrac{1}{2}+0\right)
+                   = \dfrac{1}{5} \cdot \dfrac{7}{2}
+                   = \dfrac{7}{10}.$$
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">易错提醒：</span>
+          节点 $d$ 容易算错——它有 4 个邻居（包括 $e$），所以分母是 $\binom{4}{2}=6$，
+          而<em>不是</em>"算到 $K_4$ 内部"的 3。$e$ 虽然只孤零零地挂在外面，但作为 $d$ 的邻居，
+          它会拉低 $d$ 的 $C_d$。
+        </div>
+      </div>
+    </details>
+  </div>
+
+
+  <!-- ============================== 综合论述题 ============================== -->
+  <h3>3.6 综合论述题</h3>
+
+  <!-- D1 -->
+  <div class="q">
+    <div class="q-head">
+      <span class="q-num">D1</span>
+      <span class="q-tag type">论述</span>
+      <span class="q-tag topic">综合分析</span>
+      <span class="q-tag diff-3">综合</span>
+    </div>
+    <div class="q-stem">
+      在 2014 年航班网络的研究中，研究者发现 93 个机场构成了 31-core。
+      请结合本章内容，论述：<br>
+      (1) 这 93 个机场具有什么样的拓扑特征？<br>
+      (2) 为何 core number 与 degree、eigenvector centrality 相关性强，与 harmonic centrality 几乎不相关？<br>
+      (3) 你能否仅凭高 core number 就断定一个机场具有高 betweenness centrality？为什么？
+    </div>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <div class="ans-section">
+          <div class="ans-section-title">参考答案要点</div>
+          <strong>(1) 拓扑特征</strong>：93 个机场构成 31-core 意味着在<em>这个 93 节点的子图</em>中，
+          每个节点都至少与其他 31 个机场有直飞航线相连。
+          这表明这是一个<strong>极度密集互联</strong>的"枢纽圈"：
+          全是大型国际航空枢纽，互相之间几乎都有直飞，可形成大量冗余路径与"互相强化"的连接。<br><br>
+
+          <strong>(2) 关系差异</strong>：<br>
+          • 与 <em>degree</em>：core number 为 31 的节点度数必然 $\geq 31$ → 必然属于"超高度数集群"；<br>
+          • 与 <em>eigenvector</em>：eigenvector 测量"连接到那些被连得好的节点的程度"——
+            高 $k$-core 的节点正是<em>邻居也都被连得好</em>，互相强化提升 eigenvector 值；<br>
+          • 与 <em>harmonic/closeness</em>：core 强调"内部紧密"，
+            不等于"到全网平均距离短"。许多大枢纽地理上集中（如欧美），
+            到其他大陆小机场的距离仍可能较长 → 相关性弱甚至几乎为零。<br><br>
+
+          <strong>(3) 高 core ≠ 高 betweenness</strong>：<br>
+          不能仅凭 core number 推断 betweenness。
+          一个 core 内部节点彼此有多条冗余最短路径，
+          它们之间的最短路径不必经过任何特定节点 → 反而<em>稀释了 betweenness</em>。
+          课件中"两个 3-core 用一条链相连"的例子（$x$ 在链中间为 2-core，betweenness 最高 16；
+          两端 3-core 中的 $y, z$ betweenness 反而是 15 和 0）正说明这一点：
+          <strong>桥梁性</strong>由网络的"瓶颈位置"决定，而非"内部抱团程度"。
+        </div>
+        <div class="pitfall">
+          <span class="pitfall-title">答题建议：</span>
+          论述题要分层次：先准确翻译概念（"31-core 意味着什么"），
+          再解释机制（为什么相关 / 不相关），最后用反例支撑结论。
+        </div>
+      </div>
+    </details>
+  </div>
+
+</section>
+
+</main>
+
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+
+<footer>
+  L5: Group of Nodes · 期末复习辅助文档<br>
+  基于课件内容整理 · 仅供学习参考
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // ------- Question state tracking -------
+  const totalChoiceQuestions = document.querySelectorAll('.q[data-correct]').length;
+  document.getElementById('stat-total').textContent = totalChoiceQuestions;
+  let answered = 0;
+  let correct = 0;
+
+  function refreshStats() {
+    document.getElementById('stat-done').textContent = answered;
+    document.getElementById('stat-correct').textContent = correct;
+  }
+
+  // ------- Event delegation for clicks -------
+  document.addEventListener('click', function (event) {
+    // Multiple-choice option click
+    const opt = event.target.closest('.opt');
+    if (opt) {
+      const q = opt.closest('.q');
+      if (!q || q.classList.contains('locked')) return; // already answered
+
+      const chosen = opt.getAttribute('data-opt');
+      const ans    = q.getAttribute('data-correct');
+      if (!chosen || !ans) return;
+
+      // highlight all options
+      q.querySelectorAll('.opt').forEach(function (o) {
+        const lt = o.getAttribute('data-opt');
+        if (lt === ans) {
+          o.classList.add('correct');
+        } else if (lt === chosen) {
+          o.classList.add('wrong');
+        }
+      });
+
+      // open the explanation details
+      const det = q.querySelector('details.answer-block');
+      if (det) det.open = true;
+
+      // lock the question
+      q.classList.add('locked');
+
+      // update stats
+      answered += 1;
+      if (chosen === ans) correct += 1;
+      refreshStats();
+      return;
+    }
+
+    // Expand all / Collapse all buttons
+    if (event.target.id === 'btn-expand') {
+      document.querySelectorAll('details.answer-block').forEach(function (d) {
+        d.open = true;
+      });
+      return;
+    }
+    if (event.target.id === 'btn-collapse') {
+      document.querySelectorAll('details.answer-block').forEach(function (d) {
+        d.open = false;
+      });
+      return;
+    }
+
+    // Back to top
+    if (event.target.id === 'to-top' || event.target.closest('#to-top')) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+  });
+
+  // ------- Show/Hide back-to-top -------
+  const topBtn = document.getElementById('to-top');
+  window.addEventListener('scroll', function () {
+    if (window.scrollY > 600) topBtn.classList.add('show');
+    else topBtn.classList.remove('show');
+  });
+
+  // ------- MathJax load failure safety net -------
+  // (the inline `onerror` already shows the fallback notice; nothing more needed)
+})();
+</script>
+
+</body>
+</html>

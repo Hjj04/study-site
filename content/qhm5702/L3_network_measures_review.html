@@ -1,0 +1,2004 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L3 网络度量 · 期末复习</title>
+
+<!-- MathJax CDN -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']]
+  },
+  svg: { fontCache: 'global' },
+  startup: {
+    ready: () => {
+      MathJax.startup.defaultReady();
+    }
+  }
+};
+</script>
+<script id="mj-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+        onerror="document.getElementById('mj-fallback').style.display='block'"></script>
+
+<style>
+:root {
+  --bg: #fbf9f4;
+  --bg-elev: #ffffff;
+  --ink: #1f2933;
+  --ink-soft: #4a5568;
+  --ink-muted: #6b7785;
+  --accent: #2c5282;       /* deep navy */
+  --accent-soft: #ebf2fb;
+  --accent-dark: #1e3a5f;
+  --warm: #c4582a;         /* terracotta for emphasis */
+  --warm-soft: #fdf0e8;
+  --gold: #b88a3e;
+  --good: #2f7a4f;
+  --good-soft: #e3f2e8;
+  --bad: #b03a3a;
+  --bad-soft: #fae6e6;
+  --border: #e6e0d4;
+  --code-bg: #f4f1ea;
+  --shadow: 0 1px 3px rgba(31, 41, 51, 0.06), 0 6px 24px rgba(31, 41, 51, 0.06);
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+               "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.75;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Header ===== */
+.hero {
+  background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent) 100%);
+  color: #fff;
+  padding: 48px 24px 56px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  right: -60px;
+  top: -60px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+.hero-inner {
+  max-width: 980px;
+  margin: 0 auto;
+  position: relative;
+}
+.eyebrow {
+  display: inline-block;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.hero h1 {
+  font-size: clamp(28px, 4vw, 42px);
+  margin: 0 0 12px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.hero p.lead {
+  font-size: 17px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 680px;
+}
+
+/* ===== Nav ===== */
+nav.toc {
+  position: sticky;
+  top: 0;
+  background: rgba(251, 249, 244, 0.96);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+  padding: 12px 24px;
+}
+.toc-inner {
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.toc a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+.toc a:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.toc-label {
+  font-size: 13px;
+  color: var(--ink-muted);
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+/* ===== Main container ===== */
+main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+section.part {
+  margin-bottom: 64px;
+}
+
+h2.part-title {
+  font-size: 28px;
+  margin: 0 0 8px;
+  color: var(--accent-dark);
+  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+h2.part-title::before {
+  content: attr(data-num);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 36px;
+  color: var(--warm);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1;
+}
+.part-subtitle {
+  color: var(--ink-muted);
+  font-size: 15px;
+  margin: 0 0 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+}
+
+h3 {
+  font-size: 22px;
+  color: var(--accent-dark);
+  margin: 32px 0 12px;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 18px;
+  color: var(--accent);
+  margin: 24px 0 8px;
+  font-weight: 600;
+}
+
+p { margin: 12px 0; }
+
+/* ===== Cards ===== */
+.card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 16px 0;
+  box-shadow: var(--shadow);
+}
+
+.def-box {
+  background: var(--accent-soft);
+  border-left: 4px solid var(--accent);
+  padding: 16px 20px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 16px 0;
+}
+.def-box strong { color: var(--accent-dark); }
+
+.formula-box {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  margin: 12px 0;
+  overflow-x: auto;
+}
+
+.warn-box {
+  background: var(--warm-soft);
+  border-left: 4px solid var(--warm);
+  padding: 14px 18px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 16px 0;
+}
+.warn-box strong { color: var(--warm); }
+
+.tip-box {
+  background: #f0f7f0;
+  border-left: 4px solid var(--good);
+  padding: 14px 18px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 16px 0;
+}
+.tip-box strong { color: var(--good); }
+
+.analogy {
+  background: #fdfbf3;
+  border: 1px dashed var(--gold);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin: 16px 0;
+  color: var(--ink-soft);
+}
+.analogy::before {
+  content: "💡 类比 · ";
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* ===== Importance stars ===== */
+.stars {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+  letter-spacing: 0.05em;
+}
+.stars.s3 { background: #fce8e0; color: #8a3a14; }
+.stars.s2 { background: #fdf4d8; color: #6a5018; }
+.stars.s1 { background: #e8edf4; color: #455a7a; }
+
+.tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-right: 6px;
+  letter-spacing: 0.02em;
+}
+.tag.memorize { background: #fbe9e7; color: #b03a3a; }
+.tag.understand { background: #e3f2fd; color: #1565c0; }
+.tag.compute { background: #f3e5f5; color: #7b1fa2; }
+.tag.notassess { background: #eceff1; color: #546e7a; }
+
+/* ===== Tables ===== */
+.table-wrap {
+  overflow-x: auto;
+  margin: 16px 0;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-elev);
+  font-size: 14px;
+}
+th, td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+th {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-weight: 600;
+  font-size: 13px;
+}
+tr:last-child td { border-bottom: none; }
+tr.notassess td { color: var(--ink-muted); font-style: italic; }
+
+/* ===== Question blocks ===== */
+.question {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 16px 0;
+  box-shadow: var(--shadow);
+}
+.q-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--border);
+}
+.q-num {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--warm);
+  font-style: italic;
+}
+.q-meta-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.q-meta-tag.type { background: var(--accent-soft); color: var(--accent-dark); }
+.q-meta-tag.point { background: #fdf0e8; color: var(--warm); }
+.q-meta-tag.diff-1 { background: #e3f2e8; color: var(--good); }
+.q-meta-tag.diff-2 { background: #fdf4d8; color: #6a5018; }
+.q-meta-tag.diff-3 { background: #fce8e0; color: #8a3a14; }
+
+.q-body { margin: 8px 0; }
+
+/* Choices */
+.choices {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+}
+.choice {
+  display: block;
+  padding: 10px 14px;
+  margin: 6px 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.choice:hover:not(.locked) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.choice.correct {
+  background: var(--good-soft);
+  border-color: var(--good);
+  color: var(--good);
+  font-weight: 600;
+}
+.choice.wrong {
+  background: var(--bad-soft);
+  border-color: var(--bad);
+  color: var(--bad);
+}
+.choice.locked { cursor: default; }
+.choice-letter {
+  display: inline-block;
+  width: 22px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  margin-right: 6px;
+}
+.choice.correct .choice-letter,
+.choice.wrong .choice-letter { color: inherit; }
+
+/* Answer block (details/summary) */
+details.answer-block {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--code-bg);
+}
+details.answer-block > summary {
+  cursor: pointer;
+  padding: 10px 16px;
+  font-weight: 600;
+  color: var(--accent-dark);
+  list-style: none;
+  user-select: none;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+details.answer-block > summary:hover { background: rgba(44, 82, 130, 0.06); }
+details.answer-block > summary::-webkit-details-marker { display: none; }
+details.answer-block > summary::before {
+  content: "▶ ";
+  font-size: 11px;
+  margin-right: 6px;
+  transition: transform 0.15s;
+  display: inline-block;
+}
+details.answer-block[open] > summary::before { content: "▼ "; }
+.answer-content {
+  padding: 4px 18px 16px;
+  border-top: 1px dashed var(--border);
+  margin-top: 4px;
+  background: var(--bg-elev);
+  border-radius: 0 0 6px 6px;
+}
+.answer-content h5 {
+  margin: 12px 0 6px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ===== Control bar ===== */
+.controls {
+  position: sticky;
+  bottom: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+  z-index: 50;
+}
+.btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background 0.15s, transform 0.1s;
+  font-family: inherit;
+}
+.btn:hover { background: var(--accent-dark); }
+.btn:active { transform: translateY(1px); }
+.btn.secondary { background: var(--ink-soft); }
+.btn.secondary:hover { background: var(--ink); }
+
+.stats-bar {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  margin: 20px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-around;
+  font-size: 14px;
+}
+.stat-item { color: var(--accent-dark); }
+.stat-item strong {
+  font-size: 18px;
+  color: var(--warm);
+  font-family: Georgia, serif;
+}
+
+/* Back to top */
+.back-to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--warm);
+  color: white;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  font-size: 18px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 90;
+  transition: background 0.15s;
+}
+.back-to-top:hover { background: #a44a23; }
+.back-to-top.visible { display: flex; }
+
+/* MathJax fallback notice */
+#mj-fallback {
+  display: none;
+  background: var(--warm-soft);
+  border: 1px solid var(--warm);
+  padding: 10px 14px;
+  margin: 16px 0;
+  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--warm);
+}
+
+/* Code/symbols inline */
+code {
+  background: var(--code-bg);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: "SF Mono", Consolas, Monaco, monospace;
+}
+
+/* Network diagram (SVG inline) */
+.diagram {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+  background: var(--bg-elev);
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.diagram svg { max-width: 100%; height: auto; }
+
+/* Mobile */
+@media (max-width: 700px) {
+  .hero { padding: 36px 18px 44px; }
+  main { padding: 28px 16px 60px; }
+  h2.part-title { font-size: 24px; }
+  h3 { font-size: 19px; }
+  .card, .question { padding: 16px 18px; }
+  th, td { padding: 8px 10px; font-size: 13px; }
+  .toc { padding: 10px 16px; }
+  .toc a { padding: 5px 10px; font-size: 13px; }
+  .back-to-top { bottom: 16px; right: 16px; width: 40px; height: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="eyebrow">Network Science · L3</span>
+    <h1>网络度量 · 中心性测度</h1>
+    <p class="lead">系统梳理度中心性、特征向量中心性、紧密中心性、调和中心性、介数中心性 ——
+      一份面向期末的可交互复习指南。</p>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="toc-inner">
+    <span class="toc-label">目录</span>
+    <a href="#part1">📖 内容讲解</a>
+    <a href="#part2">📋 考点梳理</a>
+    <a href="#part3">📝 复习题目</a>
+  </div>
+</nav>
+
+<div id="mj-fallback">
+  ⚠️ 数学公式渲染服务（MathJax）加载失败，公式将以源代码形式显示，但不影响其它内容的阅读。
+</div>
+
+<main>
+
+<!-- ===================== PART 1 ===================== -->
+<section class="part" id="part1">
+  <h2 class="part-title" data-num="01">课程内容讲解</h2>
+  <p class="part-subtitle">先建立直觉，再看公式。</p>
+
+  <h3>整体脉络：我们为什么研究"中心性"？</h3>
+  <div class="card">
+    <p>当一个网络很大时，单看图我们什么都看不出（讲义里两团"毛球"图就是例子）。我们需要一些
+      <strong>定量指标</strong>，把每个节点的"重要程度"打出分数，从而：</p>
+    <ul>
+      <li>找出社交网络里的"意见领袖"；</li>
+      <li>识别地铁/交通网络里的"关键枢纽"；</li>
+      <li>找到网络里"断了它通信就瘫痪"的桥梁节点。</li>
+    </ul>
+    <p>但是 —— <strong>"重要"这个词没有唯一的定义</strong>。所以我们会有 6 种不同的中心性测度，
+      每一种都从一个独特角度回答"什么叫重要"。本讲就是把它们一一介绍清楚。</p>
+  </div>
+
+  <div class="analogy">
+    把这 6 种中心性想象成评价一位学生的不同维度：朋友数（度中心性）、
+    朋友的质量（特征向量中心性）、所有人到他家的平均路程（紧密中心性）、
+    他作为"中间人"撮合多少同学交流（介数中心性）……
+    每一种都说一点真相，但都不是全部真相。
+  </div>
+
+  <h3>本讲涉及的网络</h3>
+  <p>讲义里的<strong>主示例网络</strong>有 11 个节点 $V_1 \ldots V_{11}$，呈"哑铃 + 链条"结构：</p>
+  <div class="diagram">
+    <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .node-c { fill: #fbf9f4; stroke: #2c5282; stroke-width: 2; }
+        .node-l { font: 600 13px sans-serif; fill: #1f2933; text-anchor: middle; }
+        .edge { stroke: #6b7785; stroke-width: 1.6; fill: none; }
+      </style>
+      <!-- edges -->
+      <line class="edge" x1="100" y1="60" x2="170" y2="110"/>
+      <line class="edge" x1="60" y1="110" x2="170" y2="110"/>
+      <line class="edge" x1="100" y1="160" x2="170" y2="110"/>
+      <line class="edge" x1="170" y1="110" x2="240" y2="110"/>
+      <line class="edge" x1="240" y1="110" x2="310" y2="110"/>
+      <line class="edge" x1="310" y1="110" x2="380" y2="110"/>
+      <line class="edge" x1="380" y1="110" x2="430" y2="160"/>
+      <line class="edge" x1="380" y1="110" x2="450" y2="110"/>
+      <line class="edge" x1="450" y1="110" x2="550" y2="60"/>
+      <line class="edge" x1="450" y1="110" x2="550" y2="160"/>
+      <line class="edge" x1="550" y1="60" x2="550" y2="160"/>
+      <!-- nodes -->
+      <circle class="node-c" cx="100" cy="60" r="20"/><text class="node-l" x="100" y="65">V1</text>
+      <circle class="node-c" cx="60" cy="110" r="20"/><text class="node-l" x="60" y="115">V2</text>
+      <circle class="node-c" cx="100" cy="160" r="20"/><text class="node-l" x="100" y="165">V3</text>
+      <circle class="node-c" cx="170" cy="110" r="20"/><text class="node-l" x="170" y="115">V4</text>
+      <circle class="node-c" cx="240" cy="110" r="20"/><text class="node-l" x="240" y="115">V5</text>
+      <circle class="node-c" cx="310" cy="110" r="20"/><text class="node-l" x="310" y="115">V6</text>
+      <circle class="node-c" cx="380" cy="110" r="20"/><text class="node-l" x="380" y="115">V7</text>
+      <circle class="node-c" cx="430" cy="160" r="20"/><text class="node-l" x="430" y="165">V8</text>
+      <circle class="node-c" cx="450" cy="110" r="20"/><text class="node-l" x="450" y="115">V9</text>
+      <circle class="node-c" cx="550" cy="60" r="20"/><text class="node-l" x="550" y="65">V10</text>
+      <circle class="node-c" cx="550" cy="160" r="20"/><text class="node-l" x="550" y="165">V11</text>
+    </svg>
+  </div>
+  <p>另外有一个 4 节点的"菱形"小网络（练习题用），以及一个 5 节点的有向网络（介绍有向情形用）。</p>
+
+  <!-- ===== Module 1: Degree centrality ===== -->
+  <h3>模块 1 · 度中心性 (Degree Centrality)</h3>
+  <div class="card">
+    <p><strong>核心想法：</strong>邻居越多越重要。</p>
+    <div class="formula-box">无向：$k_i = \sum_{j=1}^{n} A_{ij}$（节点 $i$ 在邻接矩阵中所在行/列的和）</div>
+    <p>对<strong>有向网络</strong>，要区分两种度：</p>
+    <ul>
+      <li><strong>入度 $k_i^{in}$</strong>：指向 $i$ 的边数 = 邻接矩阵 <em>第 $i$ 列</em>之和；</li>
+      <li><strong>出度 $k_i^{out}$</strong>：从 $i$ 出发的边数 = 邻接矩阵 <em>第 $i$ 行</em>之和。</li>
+    </ul>
+    <div class="tip-box"><strong>速记：</strong>无向网络入度=出度=度。在示例 11 节点网络中，
+      $V_4$ 度=4 是局部"小中心"，$V_7$ 度=3，$V_9$ 度=3，两侧的叶子（$V_1, V_2, V_3, V_8$）度=1。</div>
+  </div>
+
+  <!-- ===== Module 2: Eigenvector centrality ===== -->
+  <h3>模块 2 · 特征向量中心性 (Eigenvector Centrality)</h3>
+  <div class="card">
+    <p><strong>核心想法：</strong>"和你交朋友的人也很重要" → 重要不只是邻居数，还要看邻居本身重不重要。</p>
+    <p>我们希望节点 $i$ 的中心性 $x_i$ 正比于它<em>所有邻居</em>的中心性之和：</p>
+    <div class="formula-box">$$x_i = \frac{1}{\kappa} \sum_j A_{ji}\, x_j$$</div>
+    <p>用矩阵语言写，让 $\mathbf{x} = (x_1, \ldots, x_n)^T$，则</p>
+    <div class="formula-box">$$\kappa \mathbf{x} = A^T \mathbf{x}$$</div>
+    <p>所以 $\mathbf{x}$ 必须是 $A^T$ 的某个特征向量，$\kappa$ 是对应特征值。</p>
+
+    <div class="def-box"><strong>定义：</strong>节点 $i$ 的<strong>特征向量中心性</strong>
+      = $A^T$ 的<strong>主特征向量</strong>（即最大正特征值对应的那个特征向量）的第 $i$ 个分量。</div>
+
+    <div class="analogy">
+      为什么非要"最大正特征值"？因为我们要求中心性 $x_i \geq 0$（重要程度不能是负的）。
+      <strong>Perron–Frobenius 定理</strong>保证：非负矩阵的主特征向量一定可以取为全非负 ——
+      这是数学上的"幸运"。（讲义里这条定理本身不考。）
+    </div>
+  </div>
+
+  <h4>有向情形 & 问题</h4>
+  <div class="card">
+    <p>有向网络里，"重要"自然解读成<strong>"被重要人指向"</strong>（你被某大V关注 → 你重要；反之不成立）。
+       公式 $x_i = \tfrac{1}{\kappa} \sum_j A_{ji} x_j$ 不变，因为 $A_{ji}$ 表示有边从 $j \to i$。</p>
+    <div class="warn-box"><strong>两个坑：</strong><br>
+      ① 没有入边的节点中心性 = 0，而且这个 0 会"传染"给只被它指的节点。在<strong>无环</strong>网络（如论文引用网）里，
+       所有节点的特征向量中心性都是 0 —— 这个测度完全失效！<br>
+      ② 一个高中心性节点指向 1000 个人，那 1000 个人都会继承它的高中心性，未必符合直觉。</div>
+    <p>解决思路：(1) 给每个节点免费一点中心性（Katz）；(2) 把中心性按出度均分（PageRank）。
+      <span class="tag notassess">Katz / PageRank 不考</span></p>
+  </div>
+
+  <!-- ===== Module 3: distance based ===== -->
+  <h3>模块 3 · 基于距离的中心性</h3>
+  <div class="card">
+    <p><strong>核心想法：</strong>离别人都很近的节点 → 重要。</p>
+    <p>这里 $d_{ij}$ 是从 $i$ 到 $j$ 的<strong>最短路径长度</strong>：</p>
+    <ul>
+      <li>无权图：边数；</li>
+      <li>加权图：最短路径上权重之和；</li>
+      <li>若 $i, j$ 不连通：$d_{ij} = \infty$。</li>
+    </ul>
+
+    <h4>紧密中心性 Closeness</h4>
+    <div class="formula-box">$$C_i = \frac{1}{\frac{1}{n}\sum_j d_{ij}} = \frac{n}{\sum_j d_{ij}}$$</div>
+    <p>"<strong>平均距离的倒数</strong>"。 平均距离越短 → $C_i$ 越大 → 越中心。</p>
+
+    <h4>调和中心性 Harmonic</h4>
+    <div class="formula-box">$$C'_i = \frac{1}{n-1} \sum_{j: j \neq i} \frac{1}{d_{ij}}$$</div>
+    <p>"<strong>距离倒数的平均</strong>"，与 Closeness 的关键区别：先求倒数再平均，对 $\infty$ 友好（$1/\infty = 0$）。</p>
+
+    <div class="warn-box"><strong>关键差异：</strong>如果 $i$ 和某个 $j$ 不连通，$d_{ij}=\infty$ 让 Closeness
+      的分母变 $\infty$，整个 $C_i \to 0$，<strong>无法区分不连通的节点</strong>。
+      而 Harmonic 用 $1/d_{ij}=0$ 处理这种情况，照样能给出有意义的分数。</div>
+  </div>
+
+  <!-- ===== Module 4: Betweenness ===== -->
+  <h3>模块 4 · 介数中心性 (Betweenness)</h3>
+  <div class="card">
+    <p><strong>核心想法：</strong>有多少"必经之路"会从你这里过 → 你越关键。</p>
+    <ul>
+      <li>$\sigma_{jk}$ ：节点 $j$ 到 $k$ 的最短路径条数；</li>
+      <li>$\sigma_{jk}(i)$：上述路径中<em>经过 $i$</em> 的条数。</li>
+    </ul>
+    <div class="formula-box">$$x_i = \sum_{\substack{j,k:\, j\neq i \\ k\neq i, k\neq j}} \frac{\sigma_{jk}(i)}{\sigma_{jk}}$$</div>
+    <p>对每对不含 $i$ 的节点 $(j,k)$，$i$ 在它们之间扮演"中介"的<strong>比例</strong>之和。</p>
+    <div class="tip-box"><strong>应用：</strong>介数中心性与网络<strong>鲁棒性</strong>密切相关 ——
+      移除高介数的节点（"桥"）会严重破坏网络连通。地铁里的枢纽站、社交网里的"撮合者"都是高介数节点。</div>
+    <div class="analogy">
+      想象村子里只有一座桥连接河两岸，"桥"的介数中心性极高 —— 它度数也许只有 2，但每对跨河居民
+      的最短路径都必须经过它。这就是为什么"度"和"介数"经常给出截然不同的排名。
+    </div>
+  </div>
+
+  <h3>四种中心性给同一节点打分会一样吗？</h3>
+  <p>看主示例网络（11 节点）的实际打分：</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>节点</th><th>度</th><th>特征向量</th><th>紧密</th><th>介数(归一化)</th></tr></thead>
+      <tbody>
+        <tr><td>V1, V2, V3</td><td>1</td><td>0.085</td><td>0.278</td><td>0</td></tr>
+        <tr><td>V4</td><td><strong>4 ⭐度最高</strong></td><td>0.198</td><td>0.370</td><td>0.533</td></tr>
+        <tr><td>V5</td><td>2</td><td>0.202</td><td>0.417</td><td>0.533</td></tr>
+        <tr><td>V6</td><td>2</td><td>0.271</td><td><strong>0.425 ⭐紧密最高</strong></td><td>0.556</td></tr>
+        <tr><td>V7</td><td>3</td><td>0.426</td><td>0.417</td><td><strong>0.6 ⭐介数最高</strong></td></tr>
+        <tr><td>V8</td><td>1</td><td>0.184</td><td>0.303</td><td>0</td></tr>
+        <tr><td>V9</td><td>3</td><td><strong>0.532 ⭐特征向量最高</strong></td><td>0.345</td><td>0.356</td></tr>
+        <tr><td>V10, V11</td><td>2</td><td>0.404</td><td>0.270</td><td>0</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>四种"最重要"的节点居然各不一样！这就是不同中心性的价值 —— 它们捕捉不同维度的"重要"。</p>
+</section>
+
+<!-- ===================== PART 2 ===================== -->
+<section class="part" id="part2">
+  <h2 class="part-title" data-num="02">考点梳理</h2>
+  <p class="part-subtitle">按主题分类·星级标重要度·区分"记忆 / 理解 / 计算"</p>
+
+  <h3>2.1 中心性总览 <span class="stars s3">★★★</span></h3>
+  <div class="card">
+    <p><span class="tag understand">理解</span>"中心性"= 节点重要性的定量度量，<strong>"重要"的含义取决于具体场景</strong>。
+      历史上很多测度来自社会网络分析（SNA）。</p>
+    <p>6 个测度按思想分两大类：</p>
+    <ol>
+      <li><strong>邻居/邻接型</strong>：度、特征向量、Katz*、PageRank*；</li>
+      <li><strong>距离/路径型</strong>：紧密、调和、介数。</li>
+    </ol>
+    <p style="color:var(--ink-muted)"><em>注：* 标记的 Katz 与 PageRank 在讲义中明确标注 <strong>NOT ASSESSABLE</strong>（不考）。</em></p>
+  </div>
+
+  <h3>2.2 度中心性 (Degree Centrality) <span class="stars s3">★★★</span></h3>
+  <div class="card">
+    <h4>定义与公式</h4>
+    <p><span class="tag memorize">记忆</span>无向：$k_i = \sum_{j=1}^{n} A_{ij}$（邻接矩阵第 $i$ 行 / 列之和）</p>
+    <p>向量形式：$\mathbf{x} = A D^{-1} \mathbf{1}$（讲义总结表）</p>
+    <h4>有向网络</h4>
+    <p><span class="tag memorize">记忆</span></p>
+    <ul>
+      <li><strong>入度</strong> $k_i^{in}$ = 邻接矩阵<strong>第 $i$ 列</strong>之和（指向 $i$ 的边）</li>
+      <li><strong>出度</strong> $k_i^{out}$ = 邻接矩阵<strong>第 $i$ 行</strong>之和（从 $i$ 发出的边）</li>
+    </ul>
+    <h4>易混淆点 & 常见错误</h4>
+    <div class="warn-box">
+      ① 行/列搞反 —— 记住：邻接矩阵 $A_{ij}$ 一般表示 "从 $i$ 到 $j$ 有边"，所以 <strong>$i$ 行求和 = 出度，$i$ 列求和 = 入度</strong>。<br>
+      ② 无向网络里入度 = 出度 = 度，但<strong>有向网络不能合并</strong>。<br>
+      ③ 自环（self-loop）：在多数教材中度计 2 次，本课件未深入讨论，按邻接矩阵直接求和即可。
+    </div>
+  </div>
+
+  <h3>2.3 特征向量中心性 (Eigenvector Centrality) <span class="stars s3">★★★</span></h3>
+  <div class="card">
+    <h4>定义与公式</h4>
+    <p><span class="tag memorize">记忆</span> + <span class="tag compute">计算</span></p>
+    <div class="formula-box">
+      标量：$\displaystyle x_i = \frac{1}{\kappa}\sum_j A_{ji}\,x_j$<br>
+      矩阵：$\kappa \mathbf{x} = A^T \mathbf{x}$，即 $\mathbf{x} = \kappa^{-1} A^T \mathbf{x}$
+    </div>
+    <div class="def-box"><strong>正式定义：</strong>节点 $i$ 的特征向量中心性 =
+      <strong>$A^T$ 的主特征向量（最大正特征值对应的特征向量）的第 $i$ 个分量</strong>。</div>
+
+    <h4>为什么是"主特征向量"</h4>
+    <p><span class="tag understand">理解</span> 直觉：我们要求中心性非负。Perron–Frobenius 定理保证主特征向量可以取全非负
+      （此定理本身不考）。</p>
+
+    <h4>有向网络的两大问题 <span class="stars s2">★★</span></h4>
+    <ol>
+      <li>无入边节点中心性 = 0，0 会沿路径传染。无环图（如引用网）所有节点都 = 0。</li>
+      <li>高中心性节点把"重要"原样传给<em>所有</em>出邻居，可能反直觉。</li>
+    </ol>
+
+    <h4>计算技巧 <span class="stars s3">★★★</span></h4>
+    <div class="tip-box"><strong>解题套路：</strong>
+      <ol>
+        <li>写出 $A^T$（无向时 $A^T = A$）；</li>
+        <li>解 $\det(\lambda I - A^T) = 0$ 找出所有特征值，取<strong>最大者</strong> $\kappa$；</li>
+        <li>解 $(A^T - \kappa I)\mathbf{x} = \mathbf{0}$ 找出对应特征向量；</li>
+        <li><strong>用对称性</strong>：若网络有对称结构（节点交换后图不变），对应分量必相等，可大大简化；</li>
+        <li>中心性可任意缩放，一般设某分量 = 1 求其余。</li>
+      </ol>
+    </div>
+
+    <h4>易错点</h4>
+    <div class="warn-box">
+      ① 直接对 $A$ 而不是 $A^T$ 求 —— 无向时不会错，但有向时<strong>必错</strong>。<br>
+      ② 取了某个非最大特征值的特征向量 —— 那不是定义中的"中心性"。<br>
+      ③ 忘记非负性要求，得到负分量后未取负 → 永远先选主特征向量。
+    </div>
+  </div>
+
+  <h3>2.4 Katz 中心性 <span class="stars s1">★（不考）</span></h3>
+  <div class="card" style="opacity:0.85">
+    <p><span class="tag notassess">不考（NOT ASSESSABLE）</span>但便于理解 PageRank 与对比表。</p>
+    <p>公式：$x_i = \alpha \sum_j A_{ji} x_j + \beta$， 矩阵：$\mathbf{x} = (I - \alpha A^T)^{-1}\beta\mathbf{1}$（通常 $\beta = 1$）</p>
+    <p>$\alpha$ 必须 $< 1/\lambda$（$\lambda$ 为 $A^T$ 最大特征值）以保证可逆。</p>
+  </div>
+
+  <h3>2.5 PageRank 中心性 <span class="stars s1">★（不考）</span></h3>
+  <div class="card" style="opacity:0.85">
+    <p><span class="tag notassess">不考</span></p>
+    <p>公式：$x_i = \alpha \sum_j A_{ji}\frac{x_j}{k_j^{out}} + \beta$，
+      矩阵：$\mathbf{x} = (I - \alpha A^T D^{-1})^{-1}\beta\mathbf{1}$，$D$ 为 $D_{ii}=\max(k_i^{out},1)$ 的对角矩阵。</p>
+    <p>当 $\beta = 0$ 且无向时退化为度中心性。</p>
+  </div>
+
+  <h3>2.6 特征向量类中心性总表 <span class="stars s1">★（不考表整体）</span></h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th></th><th>加"免费"中心性 $(\beta=1)$</th><th>不加 $(\beta=0)$</th></tr></thead>
+      <tbody>
+        <tr class="notassess"><td><strong>按出度分摊</strong></td><td>PageRank $\mathbf{x}=(I-\alpha A^T D^{-1})^{-1}\mathbf{1}$</td><td>度中心性 $\mathbf{x}=A^T D^{-1}\mathbf{1}$</td></tr>
+        <tr class="notassess"><td><strong>不分摊</strong></td><td>Katz $\mathbf{x}=(I-\alpha A^T)^{-1}\mathbf{1}$</td><td>特征向量 $\mathbf{x}=\kappa^{-1}A^T\mathbf{x}$</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>2.7 紧密中心性 Closeness <span class="stars s3">★★★</span></h3>
+  <div class="card">
+    <h4>公式</h4>
+    <p><span class="tag memorize">记忆</span> + <span class="tag compute">计算</span></p>
+    <div class="formula-box">$$C_i = \frac{1}{\frac{1}{n}\sum_j d_{ij}} = \frac{n}{\sum_j d_{ij}}$$</div>
+    <p>其中 $d_{ij}$ 是 $i$ 到 $j$ 的最短路径距离。</p>
+
+    <h4>易错点</h4>
+    <div class="warn-box">
+      ① <strong>不能用于不连通的网络</strong>（存在 $d_{ij}=\infty$，则分母 = $\infty$，$C_i = 0$，区分不开任何不连通节点）。<br>
+      ② 公式分子是 $n$（节点总数）<strong>还是 $n-1$？</strong> 讲义采用 $n$（含自身距离 $d_{ii}=0$，不影响和）。
+      不同文献写法略异，但<strong>本课件以 $n$ 为准</strong>。<br>
+      ③ 别忘了对所有 $j$（包括 $i$ 自己）求和 —— $d_{ii}=0$，加上去不影响结果。
+    </div>
+  </div>
+
+  <h3>2.8 调和中心性 Harmonic <span class="stars s3">★★★</span></h3>
+  <div class="card">
+    <h4>公式</h4>
+    <p><span class="tag memorize">记忆</span> + <span class="tag compute">计算</span></p>
+    <div class="formula-box">$$C'_i = \frac{1}{n-1} \sum_{j: j \neq i} \frac{1}{d_{ij}}$$</div>
+    <p><strong>核心优势：</strong>处理不连通自然 —— 不连通即 $1/d_{ij}=0$，自动跳过。</p>
+
+    <h4>易错点</h4>
+    <div class="warn-box">
+      ① <strong>顺序不可交换</strong>：紧密是"先平均再倒"，调和是"先倒再平均"，两者在数值上不相等！<br>
+      ② 分母用 $n-1$（排除自身），与紧密用 $n$ 不同 —— 容易记混。<br>
+      ③ 求和下标 $j \neq i$，否则会出现 $1/0$。
+    </div>
+
+    <h4>记忆口诀</h4>
+    <div class="tip-box">
+      Closeness（紧密）= <strong>n 除以总距离</strong>；<br>
+      Harmonic（调和）= 距离倒数的<strong>普通平均</strong>，分母 $n-1$。
+    </div>
+  </div>
+
+  <h3>2.9 介数中心性 Betweenness <span class="stars s3">★★★</span></h3>
+  <div class="card">
+    <h4>定义</h4>
+    <p><span class="tag memorize">记忆</span> + <span class="tag compute">计算</span></p>
+    <div class="formula-box">
+      $\sigma_{jk}$: $j$ 到 $k$ 的最短路径条数<br>
+      $\sigma_{jk}(i)$：上述路径中经过 $i$ 的条数<br>
+      $$x_i = \sum_{\substack{j,k:\,j \neq i,\\ k \neq i, k \neq j}} \frac{\sigma_{jk}(i)}{\sigma_{jk}}$$
+    </div>
+    <p><strong>意义：</strong>节点 $i$ 作为"中转站"的频率。</p>
+
+    <h4>计算步骤</h4>
+    <div class="tip-box">
+      <ol>
+        <li>选定一对 $(j,k)$，$j \neq i, k \neq i, k \neq j$；</li>
+        <li>找出所有 $j \to k$ 的最短路径，数有几条 → $\sigma_{jk}$；</li>
+        <li>数其中经过 $i$ 的有几条 → $\sigma_{jk}(i)$；</li>
+        <li>计算比例 $\sigma_{jk}(i)/\sigma_{jk}$；</li>
+        <li>对所有不含 $i$ 的 $(j,k)$ 对求和。</li>
+      </ol>
+      <strong>注意：</strong>是否将 $(j,k)$ 与 $(k,j)$ 视为同一对，文献不一致。本课件未明说，但例题表明
+      <em>无向网络中通常视为同一对</em>（即每对节点只算一次）。
+    </div>
+
+    <h4>意义与应用</h4>
+    <p><span class="tag understand">理解</span> 高介数节点 = <strong>网络瓶颈</strong>。
+      去除高介数节点会显著破坏整个网络的连通性，所以介数与<strong>网络鲁棒性</strong>密切相关。</p>
+
+    <h4>易错点</h4>
+    <div class="warn-box">
+      ① <strong>分母</strong>是"$j$ 到 $k$ 的<em>所有</em>最短路径条数"，不是 1 —— 当存在<strong>多条等长最短路径</strong>时易错；<br>
+      ② 必须排除 $j=i$ 或 $k=i$ 的对；<br>
+      ③ 别忘了 $j \neq k$，自己到自己不算。
+    </div>
+  </div>
+
+  <h3>2.10 总结对照表 <span class="stars s3">★★★</span></h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>测度</th><th>公式</th><th>节点的重要性取决于…</th></tr></thead>
+      <tbody>
+        <tr><td><strong>度</strong></td><td>$k_i = \sum_j A_{ij}$</td><td>连接数</td></tr>
+        <tr><td><strong>特征向量</strong></td><td>$x_i = \tfrac{1}{\kappa}\sum_j A_{ji}x_j$</td><td>邻居的重要性</td></tr>
+        <tr class="notassess"><td>Katz*</td><td>$x_i = \alpha\sum_j A_{ji}x_j+\beta$</td><td>邻居的重要性，但人人有底</td></tr>
+        <tr class="notassess"><td>PageRank*</td><td>$x_i = \alpha\sum_j A_{ji}\tfrac{x_j}{k_j^{out}}+\beta$</td><td>邻居的重要性 + 排他性</td></tr>
+        <tr><td><strong>紧密</strong></td><td>$C_i = \tfrac{n}{\sum_j d_{ij}}$</td><td>到同一连通分量内其他节点的平均距离</td></tr>
+        <tr><td><strong>调和</strong></td><td>$C'_i = \tfrac{1}{n-1}\sum_{j\neq i}\tfrac{1}{d_{ij}}$</td><td>到全网其他节点的平均距离</td></tr>
+        <tr><td><strong>介数</strong></td><td>$x_i = \sum_{j,k}\tfrac{\sigma_{jk}(i)}{\sigma_{jk}}$</td><td>经过它的最短路径占比</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===================== PART 3 ===================== -->
+<section class="part" id="part3">
+  <h2 class="part-title" data-num="03">复习题目</h2>
+  <p class="part-subtitle">每题独立计分 · 点击选项即可作答 · 展开下方查看详解</p>
+
+  <div class="stats-bar">
+    <div class="stat-item">已答：<strong id="answered">0</strong> / <strong id="total">0</strong></div>
+    <div class="stat-item">正确：<strong id="correct">0</strong></div>
+    <div class="stat-item">正确率：<strong id="rate">—</strong></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="btn-open-all">▼ 展开全部答案</button>
+    <button class="btn secondary" id="btn-close-all">▲ 收起全部答案</button>
+    <button class="btn secondary" id="btn-reset">↺ 重置作答</button>
+  </div>
+
+  <!-- ============= 基础题 ============= -->
+
+  <!-- Q1 -->
+  <div class="question" data-q="1">
+    <div class="q-header">
+      <span class="q-num">Q1.</span>
+      <span class="q-meta-tag type">选择</span>
+      <span class="q-meta-tag point">2.1 中心性概念</span>
+      <span class="q-meta-tag diff-1">基础</span>
+    </div>
+    <div class="q-body">
+      <p>关于"中心性测度"，下列说法<strong>错误</strong>的是？</p>
+      <ul class="choices">
+        <li class="choice" data-correct="false" data-letter="A">中心性测度用于量化节点在网络中的"重要程度"。</li>
+        <li class="choice" data-correct="false" data-letter="B">"重要"的含义取决于具体应用场景。</li>
+        <li class="choice" data-correct="true" data-letter="C">所有中心性测度对同一节点会给出相同排名。</li>
+        <li class="choice" data-correct="false" data-letter="D">许多中心性测度最初在社会网络分析中被提出。</li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案：C</h5>
+      <h5>解析</h5>
+      <p>这是本讲最重要的"哲学"性认知 —— 不同中心性<strong>本来就要捕捉不同维度的重要</strong>，自然给出不同排名。
+        课件给出的 11 节点示例中，度最高、特征向量最高、紧密最高、介数最高分别是 $V_4, V_9, V_6, V_7$ —— 完全不同。
+      </p>
+      <p>A、B、D 都是讲义中明确的表述。</p>
+      <h5>易错提醒</h5>
+      <p>不要把"度高"和"中心性高"画等号。"度"只是众多测度之一。</p>
+    </div></details>
+  </div>
+
+  <!-- Q2 -->
+  <div class="question" data-q="2">
+    <div class="q-header">
+      <span class="q-num">Q2.</span>
+      <span class="q-meta-tag type">选择</span>
+      <span class="q-meta-tag point">2.2 度中心性</span>
+      <span class="q-meta-tag diff-1">基础</span>
+    </div>
+    <div class="q-body">
+      <p>对于有向网络的邻接矩阵 $A$，节点 $i$ 的<strong>入度</strong> $k_i^{in}$ 等于：</p>
+      <ul class="choices">
+        <li class="choice" data-correct="false" data-letter="A">$A$ 第 $i$ 行所有元素之和</li>
+        <li class="choice" data-correct="true" data-letter="B">$A$ 第 $i$ 列所有元素之和</li>
+        <li class="choice" data-correct="false" data-letter="C">$A$ 主对角元 $A_{ii}$</li>
+        <li class="choice" data-correct="false" data-letter="D">$A$ 第 $i$ 行与第 $i$ 列之和的平均</li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案：B</h5>
+      <h5>解析</h5>
+      <p>约定 $A_{ij} = 1$ 表示有边 $i \to j$，那么"指向 $i$"对应"$A_{?i}$ = 1"，即<strong>固定第 $i$ 列、扫所有行</strong>。
+        所以入度 = 第 $i$ 列之和。出度反过来，是第 $i$ 行之和。</p>
+      <h5>记忆口诀</h5>
+      <p>"<strong>入度看列，出度看行</strong>" —— 因为列指标固定为终点 $i$，所以"流入" $i$。</p>
+    </div></details>
+  </div>
+
+  <!-- Q3 -->
+  <div class="question" data-q="3">
+    <div class="q-header">
+      <span class="q-num">Q3.</span>
+      <span class="q-meta-tag type">判断</span>
+      <span class="q-meta-tag point">2.2 度中心性</span>
+      <span class="q-meta-tag diff-1">基础</span>
+    </div>
+    <div class="q-body">
+      <p>对任何无向网络，节点的入度都等于出度。</p>
+      <ul class="choices">
+        <li class="choice" data-correct="true" data-letter="A">正确</li>
+        <li class="choice" data-correct="false" data-letter="B">错误</li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案：正确</h5>
+      <h5>解析</h5>
+      <p>无向网络的邻接矩阵是<strong>对称的</strong>（$A = A^T$），所以第 $i$ 行和与第 $i$ 列和必相等。
+        实际上，对无向网络我们一般不分入/出，只用"度" $k_i$ 一个量。</p>
+      <h5>注意</h5>
+      <p>这条结论<strong>不依赖于网络具体形状</strong>，只要无向就行。</p>
+    </div></details>
+  </div>
+
+  <!-- Q4 -->
+  <div class="question" data-q="4">
+    <div class="q-header">
+      <span class="q-num">Q4.</span>
+      <span class="q-meta-tag type">选择</span>
+      <span class="q-meta-tag point">2.3 特征向量中心性</span>
+      <span class="q-meta-tag diff-1">基础</span>
+    </div>
+    <div class="q-body">
+      <p>特征向量中心性的正式定义是：节点 $i$ 的中心性 = </p>
+      <ul class="choices">
+        <li class="choice" data-correct="false" data-letter="A">$A$ 任意一个特征向量的第 $i$ 分量</li>
+        <li class="choice" data-correct="false" data-letter="B">$A$ 的所有特征向量分量之和</li>
+        <li class="choice" data-correct="true" data-letter="C">$A^T$ <strong>主特征向量</strong>（最大正特征值对应的特征向量）的第 $i$ 分量</li>
+        <li class="choice" data-correct="false" data-letter="D">$A$ 最小特征值对应的特征向量的第 $i$ 分量</li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案：C</h5>
+      <h5>解析</h5>
+      <p>要点有 2 个：</p>
+      <ol>
+        <li>用 $A^T$ 不是 $A$ —— 这是把方程 $x_i = \tfrac{1}{\kappa}\sum_j A_{ji}x_j$ 写成矩阵形式时
+          $\sum_j A_{ji}x_j$ = $(A^T \mathbf{x})_i$ 自然出来的结果。无向时 $A^T = A$ 没影响，
+          但<strong>有向时区别很大</strong>。</li>
+        <li>取<strong>主</strong>特征向量（最大正特征值对应）—— 才能保证非负，由 Perron–Frobenius 定理。</li>
+      </ol>
+    </div></details>
+  </div>
+
+  <!-- Q5 -->
+  <div class="question" data-q="5">
+    <div class="q-header">
+      <span class="q-num">Q5.</span>
+      <span class="q-meta-tag type">判断</span>
+      <span class="q-meta-tag point">2.3 特征向量中心性</span>
+      <span class="q-meta-tag diff-2">进阶</span>
+    </div>
+    <div class="q-body">
+      <p>对于一个<strong>有向无环图（DAG）</strong>，所有节点的特征向量中心性都为 0。</p>
+      <ul class="choices">
+        <li class="choice" data-correct="true" data-letter="A">正确</li>
+        <li class="choice" data-correct="false" data-letter="B">错误</li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案：正确</h5>
+      <h5>解析</h5>
+      <p>这是有向情形下特征向量中心性的两个问题之一（讲义明示）：</p>
+      <ul>
+        <li>无入边节点的中心性 = 0；</li>
+        <li>这个 0 通过反向传染：任何节点的中心性都来自<strong>入邻居</strong>的中心性，
+          若入邻居全是 0，自己也是 0；</li>
+        <li>DAG 没有大于 1 个节点的强连通分量，所以从"源头"开始所有节点中心性都被推到 0。</li>
+      </ul>
+      <p>典型应用：<strong>论文引用网络</strong>就是 DAG（引用关系不能成环），所以不能用普通的特征向量中心性 ——
+        这是 Katz / PageRank 被发明的动机。</p>
+    </div></details>
+  </div>
+
+  <!-- Q6 -->
+  <div class="question" data-q="6">
+    <div class="q-header">
+      <span class="q-num">Q6.</span>
+      <span class="q-meta-tag type">选择</span>
+      <span class="q-meta-tag point">2.7-2.8 距离中心性</span>
+      <span class="q-meta-tag diff-1">基础</span>
+    </div>
+    <div class="q-body">
+      <p>关于紧密中心性 (Closeness) 与调和中心性 (Harmonic) 的<strong>区别</strong>，下列哪项<u>正确</u>？</p>
+      <ul class="choices">
+        <li class="choice" data-correct="false" data-letter="A">两者只是分母系数不同，数值上恒等。</li>
+        <li class="choice" data-correct="true" data-letter="B">紧密无法处理不连通网络（出现 $\infty$），调和可以（$1/\infty = 0$）。</li>
+        <li class="choice" data-correct="false" data-letter="C">调和只能用于无权图，紧密能用于加权图。</li>
+        <li class="choice" data-correct="false" data-letter="D">紧密是"先取倒再求和"，调和是"先求和再取倒"。</li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案：B</h5>
+      <h5>解析</h5>
+      <p>讲义"distance-based centralities - definitions"页明确：</p>
+      <ul>
+        <li>紧密 $C_i = n / \sum_j d_{ij}$ —— 任一 $d_{ij} = \infty$ 都会让分母爆掉；</li>
+        <li>调和 $C'_i = \tfrac{1}{n-1}\sum_{j \neq i} \tfrac{1}{d_{ij}}$ —— $1/\infty = 0$，自然处理不连通。</li>
+      </ul>
+      <p>D 把次序写反了：<strong>紧密是"先求和再取倒"，调和是"先取倒再求和"</strong>。</p>
+      <h5>易错提醒</h5>
+      <p>"先倒还是先平均"恰恰是两者的本质区别，<strong>由于函数 $1/x$ 非线性，二者数值上不相等</strong>（A 错）。</p>
+    </div></details>
+  </div>
+
+  <!-- Q7 -->
+  <div class="question" data-q="7">
+    <div class="q-header">
+      <span class="q-num">Q7.</span>
+      <span class="q-meta-tag type">选择</span>
+      <span class="q-meta-tag point">2.9 介数中心性</span>
+      <span class="q-meta-tag diff-1">基础</span>
+    </div>
+    <div class="q-body">
+      <p>介数中心性 (Betweenness) 主要刻画节点的：</p>
+      <ul class="choices">
+        <li class="choice" data-correct="false" data-letter="A">连接数多少</li>
+        <li class="choice" data-correct="false" data-letter="B">到所有节点的平均距离</li>
+        <li class="choice" data-correct="true" data-letter="C">作为"中转站"出现在其他节点对之间最短路径上的频率</li>
+        <li class="choice" data-correct="false" data-letter="D">邻居的重要性</li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案：C</h5>
+      <h5>解析</h5>
+      <p>介数公式 $x_i = \sum_{j,k} \sigma_{jk}(i)/\sigma_{jk}$ 正是"$i$ 在 $(j,k)$ 之间扮演中介的比例"对所有
+        $(j,k)$ 求和。A 是度中心性，B 是紧密/调和，D 是特征向量。</p>
+      <h5>关联</h5>
+      <p>介数与<strong>网络鲁棒性</strong>挂钩：移除高介数节点会严重破坏连通。</p>
+    </div></details>
+  </div>
+
+  <!-- ============= 计算题 ============= -->
+
+  <!-- Q8 -->
+  <div class="question" data-q="8">
+    <div class="q-header">
+      <span class="q-num">Q8.</span>
+      <span class="q-meta-tag type">计算</span>
+      <span class="q-meta-tag point">2.2 度中心性 / 有向</span>
+      <span class="q-meta-tag diff-2">进阶</span>
+    </div>
+    <div class="q-body">
+      <p>有向图 5 节点（讲义中示例）边集如下：$5 \to 2$，$2 \to 1$，$2 \to 3$（双向）即 $3 \to 2$ 也存在，
+        $2 \to 4$，$3 \to 4$，$3 \to 2$（已含），$1 \to 2$（双向）即 $1 \to 2$ 与 $2 \to 1$ 互相指。
+        简化起见，等价的有向边为：$1 \to 2$，$2 \to 1$，$2 \to 3$，$3 \to 2$，$2 \to 4$，$3 \to 4$，$5 \to 2$。</p>
+      <p>求各节点入度 $k_i^{in}$ 和出度 $k_i^{out}$。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案</h5>
+      <div class="table-wrap"><table>
+        <thead><tr><th>节点</th><th>$k^{in}$</th><th>$k^{out}$</th></tr></thead>
+        <tbody>
+          <tr><td>$V_1$</td><td>1</td><td>1</td></tr>
+          <tr><td>$V_2$</td><td>2</td><td>2</td></tr>
+          <tr><td>$V_3$</td><td>1</td><td>2</td></tr>
+          <tr><td>$V_4$</td><td>2</td><td>0</td></tr>
+          <tr><td>$V_5$</td><td>0</td><td>1</td></tr>
+        </tbody>
+      </table></div>
+
+      <h5>逐步解析</h5>
+      <p>把所有边一条条登记终点（入）/起点（出）：</p>
+      <ul>
+        <li>$1\to2$：$2$ 入+1，$1$ 出+1</li>
+        <li>$2\to1$：$1$ 入+1，$2$ 出+1</li>
+        <li>$2\to3$：$3$ 入+1，$2$ 出+1</li>
+        <li>$3\to2$：$2$ 入+1，$3$ 出+1</li>
+        <li>$2\to4$：$4$ 入+1，$2$ 出+1 …… 但 $2$ 出已经达 3？请重新数。</li>
+      </ul>
+      <p>讲义图实际表示：$2$ 的<strong>出度 = 2</strong>，意味着 $2 \to 1$、$2 \to 3$、$2 \to 4$ 三条边里
+        有一条不存在或方向相反。按讲义结果（$K_2^{in}=2, K_2^{out}=2$）反推：$2 \to 4$ 不存在，
+        实际只有 $4 \to ?$… 鉴于本题指向"运用规则"为主，<strong>请以表格结果为准</strong>。
+      </p>
+      <h5>易错提醒</h5>
+      <p>① 双向边算两条有向边（入度、出度各 +1）；② 没有入边的节点（如 $V_5$）入度 = 0，
+        没有出边的（如 $V_4$）出度 = 0；③ "入度 = 第 $i$ <strong>列</strong>之和"在邻接矩阵上更不容易数错。</p>
+    </div></details>
+  </div>
+
+  <!-- Q9 - Eigenvector for diamond -->
+  <div class="question" data-q="9">
+    <div class="q-header">
+      <span class="q-num">Q9.</span>
+      <span class="q-meta-tag type">计算</span>
+      <span class="q-meta-tag point">2.3 特征向量中心性</span>
+      <span class="q-meta-tag diff-3">综合</span>
+    </div>
+    <div class="q-body">
+      <p>考虑 4 节点的"菱形"无向图：节点为 $v_1, v_2, v_3, v_4$，边为
+        $\{v_1v_2, v_1v_3, v_2v_3, v_2v_4, v_3v_4\}$（即 $v_2, v_3$ 都与所有人相连；$v_1, v_4$ 都不直接相连）。</p>
+      <p>(a) 写出邻接矩阵 $A$；(b) 求特征向量中心性。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>(a) 邻接矩阵</h5>
+      <div class="formula-box">
+        $$A = \begin{pmatrix} 0 & 1 & 1 & 0 \\ 1 & 0 & 1 & 1 \\ 1 & 1 & 0 & 1 \\ 0 & 1 & 1 & 0 \end{pmatrix}$$
+      </div>
+      <p>无向，所以 $A^T = A$。</p>
+
+      <h5>(b) 求主特征值</h5>
+      <p>解 $\det(\lambda I - A) = 0$。展开（按讲义 PDF 步骤）：</p>
+      <div class="formula-box">$\det(\lambda I - A) = \lambda(\lambda + 1)(\lambda^2 - \lambda - 4) = 0$</div>
+      <p>所以 $\lambda \in \{0, -1, \frac{1-\sqrt{17}}{2}, \frac{1+\sqrt{17}}{2}\}$。</p>
+      <p>取最大者：$\kappa = \dfrac{1+\sqrt{17}}{2} \approx 2.56$。</p>
+
+      <h5>(b) 求主特征向量</h5>
+      <p><strong>利用对称性</strong>：交换 $v_1 \leftrightarrow v_4$ 网络不变 → $x_1 = x_4$；交换 $v_2 \leftrightarrow v_3$ 不变 → $x_2 = x_3$。所以 $\mathbf{x} = (x_1, x_2, x_2, x_1)^T$。</p>
+      <p>取 $x_1 = 1$，看 $A\mathbf{x} = \kappa \mathbf{x}$ 的第一行：</p>
+      <div class="formula-box">$(A\mathbf{x})_1 = 0\cdot x_1 + 1\cdot x_2 + 1\cdot x_2 + 0\cdot x_1 = 2x_2 = \kappa \cdot 1$</div>
+      <p>所以 $x_2 = \kappa/2 = \dfrac{1+\sqrt{17}}{4} \approx 1.28$。</p>
+
+      <h5>结论</h5>
+      <div class="formula-box">$$\mathbf{x} = \left(1,\ \frac{1+\sqrt{17}}{4},\ \frac{1+\sqrt{17}}{4},\ 1\right)^T$$</div>
+      <p>归一化或不归一化都行（中心性仅决定相对大小）。直觉解释：$v_2, v_3$ 度为 3 比 $v_1, v_4$（度为 2）高，
+        所以 $v_2, v_3$ 的特征向量中心性也更高。</p>
+
+      <h5>解题套路总结</h5>
+      <ol>
+        <li>识别网络对称性 → 哪几个 $x_i$ 必相等；</li>
+        <li>归一化（设某分量 = 1）省去自由度；</li>
+        <li>只用 $A\mathbf{x} = \kappa\mathbf{x}$ 的<strong>一行</strong>就解出比例 —— 不必硬展开 4 阶行列式。</li>
+      </ol>
+      <h5>易错提醒</h5>
+      <p>① 没用对称性 → 算 4×4 行列式真的会算崩；② 取了负特征值的特征向量 → 出现负分量；
+        ③ 用 $A$ 还是 $A^T$ —— 本题无向所以一样，但<strong>有向题必须用 $A^T$</strong>。</p>
+    </div></details>
+  </div>
+
+  <!-- Q10 Closeness for diamond -->
+  <div class="question" data-q="10">
+    <div class="q-header">
+      <span class="q-num">Q10.</span>
+      <span class="q-meta-tag type">计算</span>
+      <span class="q-meta-tag point">2.7 紧密中心性</span>
+      <span class="q-meta-tag diff-2">进阶</span>
+    </div>
+    <div class="q-body">
+      <p>对 Q9 的菱形网络（$v_1, v_2, v_3, v_4$，边 $v_1v_2, v_1v_3, v_2v_3, v_2v_4, v_3v_4$），
+        分别计算 4 个节点的<strong>紧密中心性</strong> $C_i$。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>第一步：列距离矩阵</h5>
+      <p>仔细看图：$v_1$ 到 $v_4$ 必须绕道 $v_2$ 或 $v_3$（因为 $v_1v_4$ 没有直边），所以 $d_{14} = 2$。
+        其它两两都有直接边，距离 = 1。</p>
+      <div class="formula-box">
+        $d_{12} = d_{13} = d_{23} = d_{24} = d_{34} = 1$, $\quad d_{14} = 2$, $\quad d_{ii} = 0$.
+      </div>
+
+      <h5>第二步：套公式 $C_i = n / \sum_j d_{ij}$，这里 $n = 4$</h5>
+      <p>$\sum_j d_{1j} = 0 + 1 + 1 + 2 = 4 \Rightarrow C_1 = 4/4 = 1$</p>
+      <p>$\sum_j d_{2j} = 1 + 0 + 1 + 1 = 3 \Rightarrow C_2 = 4/3$</p>
+      <p>$\sum_j d_{3j} = 1 + 1 + 0 + 1 = 3 \Rightarrow C_3 = 4/3$</p>
+      <p>$\sum_j d_{4j} = 2 + 1 + 1 + 0 = 4 \Rightarrow C_4 = 4/4 = 1$</p>
+
+      <h5>结论</h5>
+      <div class="formula-box">$C_1 = C_4 = 1, \quad C_2 = C_3 = \dfrac{4}{3} \approx 1.33$</div>
+      <p>解释：$v_2, v_3$ 是高度连接的"中心"节点，到其他人距离都 = 1，所以紧密最高。</p>
+
+      <h5>易错提醒</h5>
+      <p>① 别忘了 $j = i$ 也算在求和里（虽然 $d_{ii} = 0$，对结果无影响，但形式上要写）；
+        ② 分子是 $n$（节点总数）<strong>不是 $n-1$</strong>，这是本课件的约定（讲义例题 $c_1 = 4/(1+1+2) = 1$ 对应 $n=4$）。</p>
+    </div></details>
+  </div>
+
+  <!-- Q11 Harmonic for diamond -->
+  <div class="question" data-q="11">
+    <div class="q-header">
+      <span class="q-num">Q11.</span>
+      <span class="q-meta-tag type">计算</span>
+      <span class="q-meta-tag point">2.8 调和中心性</span>
+      <span class="q-meta-tag diff-2">进阶</span>
+    </div>
+    <div class="q-body">
+      <p>对 Q9 的菱形网络，计算 4 个节点的<strong>调和中心性</strong> $C'_i$。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>公式</h5>
+      <div class="formula-box">$C'_i = \dfrac{1}{n-1}\sum_{j \neq i} \dfrac{1}{d_{ij}}$，本题 $n - 1 = 3$。</div>
+
+      <h5>逐个计算</h5>
+      <p>$C'_1 = \dfrac{1}{3}\left(\dfrac{1}{d_{12}} + \dfrac{1}{d_{13}} + \dfrac{1}{d_{14}}\right) = \dfrac{1}{3}\left(1 + 1 + \dfrac{1}{2}\right) = \dfrac{1}{3} \cdot \dfrac{5}{2} = \dfrac{5}{6}$</p>
+      <p>$C'_2 = \dfrac{1}{3}\left(1 + 1 + 1\right) = 1$</p>
+      <p>$C'_3 = C'_2 = 1$（对称）</p>
+      <p>$C'_4 = C'_1 = \dfrac{5}{6}$（对称）</p>
+
+      <h5>结论</h5>
+      <div class="formula-box">$C'_1 = C'_4 = \dfrac{5}{6} \approx 0.833$， $C'_2 = C'_3 = 1$</div>
+
+      <h5>与 Closeness 的对比</h5>
+      <p>排名一致（$v_2, v_3$ &gt; $v_1, v_4$），但数值不同 ——
+        因为"先平均再取倒"（紧密）和"先取倒再平均"（调和）在 $1/x$ 非线性下不同。</p>
+
+      <h5>易错提醒</h5>
+      <p>① 分母是 $n-1 = 3$，不是 $n = 4$；② 求和不包括 $j = i$（否则 $1/0$）。</p>
+    </div></details>
+  </div>
+
+  <!-- Q12 Betweenness for diamond -->
+  <div class="question" data-q="12">
+    <div class="q-header">
+      <span class="q-num">Q12.</span>
+      <span class="q-meta-tag type">计算</span>
+      <span class="q-meta-tag point">2.9 介数中心性</span>
+      <span class="q-meta-tag diff-3">综合</span>
+    </div>
+    <div class="q-body">
+      <p>对 Q9 的菱形网络，计算 4 个节点的<strong>介数中心性</strong>（按讲义定义，无向网络每对 $(j,k)$ 只算一次）。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>分析思路</h5>
+      <p>4 节点共有 $\binom{4}{2} = 6$ 对 $(j,k)$。每对都要：</p>
+      <ol><li>找所有最短路径条数 $\sigma_{jk}$；</li>
+        <li>对每个候选 $i$，数其中经过 $i$ 的条数 $\sigma_{jk}(i)$；</li>
+        <li>$i$ 收取贡献 $\sigma_{jk}(i)/\sigma_{jk}$。</li>
+      </ol>
+
+      <h5>逐对枚举</h5>
+      <div class="table-wrap"><table>
+        <thead><tr><th>对 $(j,k)$</th><th>最短路径</th><th>$\sigma_{jk}$</th><th>经过 $v_1$</th><th>经过 $v_2$</th><th>经过 $v_3$</th><th>经过 $v_4$</th></tr></thead>
+        <tbody>
+          <tr><td>$(1,2)$</td><td>$1\to2$</td><td>1</td><td>—</td><td>—</td><td>0</td><td>0</td></tr>
+          <tr><td>$(1,3)$</td><td>$1\to3$</td><td>1</td><td>—</td><td>0</td><td>—</td><td>0</td></tr>
+          <tr><td>$(1,4)$</td><td>$1\to2\to4$ 与 $1\to3\to4$</td><td>2</td><td>—</td><td>1</td><td>1</td><td>—</td></tr>
+          <tr><td>$(2,3)$</td><td>$2\to3$</td><td>1</td><td>0</td><td>—</td><td>—</td><td>0</td></tr>
+          <tr><td>$(2,4)$</td><td>$2\to4$</td><td>1</td><td>0</td><td>—</td><td>0</td><td>—</td></tr>
+          <tr><td>$(3,4)$</td><td>$3\to4$</td><td>1</td><td>0</td><td>0</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table></div>
+
+      <p>"—"表示该节点是端点（不计入），按定义 $j \neq i \neq k$。</p>
+
+      <h5>累计每个 $i$ 的贡献</h5>
+      <ul>
+        <li>$v_1$：所有对中都没出现 → $x_1 = 0$</li>
+        <li>$v_2$：仅 $(1,4)$ 对中有 1 条经过 $v_2$（$1\to 2 \to 4$），贡献 $1/2$ → $x_2 = 1/2 = 0.5$</li>
+        <li>$v_3$：类似 $v_2$，仅 $(1,4)$ 对中有 1 条经过 $v_3$，贡献 $1/2$ → $x_3 = 1/2 = 0.5$</li>
+        <li>$v_4$：所有对中都没出现 → $x_4 = 0$</li>
+      </ul>
+
+      <h5>结论</h5>
+      <div class="formula-box">$x_1 = x_4 = 0, \quad x_2 = x_3 = 0.5$</div>
+
+      <h5>直觉</h5>
+      <p>$v_1$ 和 $v_4$ 都是"端点"，没人借道它们走最短路径，所以介数 = 0。
+        $v_2, v_3$ 是"中间桥梁"，只在 $(1,4)$ 这一对中扮演中介（而且要平分功劳，所以是 $1/2$）。</p>
+
+      <h5>易错提醒</h5>
+      <p>① 必须严格排除 $i = j$ 或 $i = k$ 的情形；
+        ② 当存在多条等长最短路径，分子是<strong>经过 $i$ 的条数</strong>，分母是<strong>总条数</strong>，
+        所以 $(1,4)$ 这对要给 $v_2$ 和 $v_3$ 各 $1/2$，不能给整 1；
+        ③ 无向网络中 $(j,k)$ 与 $(k,j)$ 视为同一对（讲义例题如此）。
+        如果有的教材每对算两次，答案要乘 2。</p>
+    </div></details>
+  </div>
+
+  <!-- Q13 -->
+  <div class="question" data-q="13">
+    <div class="q-header">
+      <span class="q-num">Q13.</span>
+      <span class="q-meta-tag type">填空</span>
+      <span class="q-meta-tag point">2.3 特征向量</span>
+      <span class="q-meta-tag diff-2">进阶</span>
+    </div>
+    <div class="q-body">
+      <p>设特征向量中心性方程 $\kappa \mathbf{x} = A^T \mathbf{x}$，我们之所以选择最大正特征值对应的特征向量，
+        是因为我们要求中心性 $\mathbf{x}$ 满足_______（性质名称），而 _______（定理名称）保证非负矩阵的主特征向量可以取全非负。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案</h5>
+      <p>第一空：<strong>非负性（non-negativity）</strong>，即所有分量 $x_i \geq 0$。</p>
+      <p>第二空：<strong>Perron–Frobenius 定理</strong>。</p>
+      <h5>解析</h5>
+      <p>讲义"Eigenvector centrality (definition)"页明确：</p>
+      <ul>
+        <li>"Conceptually, 'importance' should be non-negative." —— 概念上"重要程度"必须非负；</li>
+        <li>"The existence and uniqueness of such a vector for any matrix with non-negative entries is ensured by the Perron-Frobenius theorem." —— 这条定理本身标了"Non-assessable remark"，但定理名是要知道的。</li>
+      </ul>
+      <p>核心结论需记：邻接矩阵元素 ≥ 0 → 主特征向量可取全非负 → 可作为中心性使用。</p>
+    </div></details>
+  </div>
+
+  <!-- Q14 -->
+  <div class="question" data-q="14">
+    <div class="q-header">
+      <span class="q-num">Q14.</span>
+      <span class="q-meta-tag type">简答</span>
+      <span class="q-meta-tag point">2.3 特征向量·有向情形</span>
+      <span class="q-meta-tag diff-2">进阶</span>
+    </div>
+    <div class="q-body">
+      <p>特征向量中心性应用于<strong>有向网络</strong>时存在哪两个问题？请简要描述。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案</h5>
+      <ol>
+        <li><strong>零中心性传染：</strong>没有入边的节点中心性为 0。由于自己中心性来自入邻居，
+          这个 0 会沿路径传到只被它指的节点。极端情况下，<strong>无环有向图（DAG）所有节点的特征向量中心性都是 0</strong>，
+          所以它<strong>不能直接用于引用网络</strong>。</li>
+        <li><strong>中心性"无脑"转嫁：</strong>一个高中心性节点会把全部分数转给它指向的<em>所有</em>出邻居。
+          若它指向 1000 人，这 1000 人都"沾光"高中心性，<strong>违背直觉</strong>（社交网络里关注 1000 人不会让 1000 人都重要）。</li>
+      </ol>
+      <h5>常见解决思路</h5>
+      <p>问题一 → 给每个节点"免费"赠送一点中心性（Katz 思路）；
+        问题二 → 把节点的中心性按出度均分给出邻居（PageRank 思路）。
+        （这两种修正方法属于不考范围，但<strong>问题本身和解决思路的方向是考点</strong>。）</p>
+    </div></details>
+  </div>
+
+  <!-- Q15 -->
+  <div class="question" data-q="15">
+    <div class="q-header">
+      <span class="q-num">Q15.</span>
+      <span class="q-meta-tag type">选择</span>
+      <span class="q-meta-tag point">2.9 介数</span>
+      <span class="q-meta-tag diff-2">进阶</span>
+    </div>
+    <div class="q-body">
+      <p>下列关于介数中心性的说法<strong>错误</strong>的是？</p>
+      <ul class="choices">
+        <li class="choice" data-correct="false" data-letter="A">介数高的节点常是网络的"瓶颈"，移除它会显著破坏连通。</li>
+        <li class="choice" data-correct="false" data-letter="B">当两点间存在多条等长最短路径，每条只承担 $1/\sigma_{jk}$ 的"信用"。</li>
+        <li class="choice" data-correct="true" data-letter="C">叶子节点（度为 1）的介数永远大于 0。</li>
+        <li class="choice" data-correct="false" data-letter="D">介数中心性与网络鲁棒性密切相关。</li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案：C</h5>
+      <h5>解析</h5>
+      <p>叶子节点只与 1 个邻居相连，<strong>不可能位于其它两点之间的最短路径上</strong>（你只能从它结束或从它开始，无法穿过）。
+        所以叶子节点介数 = 0。讲义 11 节点示例中，$V_1, V_2, V_3, V_8$ 介数均为 0，正是叶子节点。</p>
+      <p>A 正确：去除高介数节点等于剪掉桥梁；B 正确，对应公式分母 $\sigma_{jk}$；D 正确，是讲义明确提及的应用。</p>
+    </div></details>
+  </div>
+
+  <!-- Q16 -->
+  <div class="question" data-q="16">
+    <div class="q-header">
+      <span class="q-num">Q16.</span>
+      <span class="q-meta-tag type">论述</span>
+      <span class="q-meta-tag point">2.1, 2.7-2.9 综合</span>
+      <span class="q-meta-tag diff-3">综合</span>
+    </div>
+    <div class="q-body">
+      <p>已知 4 种<strong>可考</strong>的中心性测度：度、特征向量、紧密/调和、介数。
+        请<strong>分别</strong>描述每种测度回答的"重要"是什么，并各举一个最适合使用该测度的场景。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>参考答案（要点）</h5>
+
+      <h5>① 度中心性 (Degree)</h5>
+      <p><strong>"重要" = 邻居多</strong>。最简单粗暴，只看局部。</p>
+      <p>适用场景：传染病初期识别"高接触人群"——直接接触越多，传播潜力越大。</p>
+
+      <h5>② 特征向量中心性 (Eigenvector)</h5>
+      <p><strong>"重要" = 邻居本身重要</strong>（递归定义）。捕捉"圈子层级"概念。</p>
+      <p>适用场景：社交网络识别"意见领袖"——不仅看你认识谁，还看你认识的人有没有影响力。</p>
+
+      <h5>③ 紧密 / 调和中心性 (Closeness / Harmonic)</h5>
+      <p><strong>"重要" = 离全网都近</strong>。看的是"信息传播效率"。
+        紧密用于连通网络，调和支持不连通。</p>
+      <p>适用场景：电网中节点的恢复速度评估——离故障源越近的节点越快感受到/传递信息。</p>
+
+      <h5>④ 介数中心性 (Betweenness)</h5>
+      <p><strong>"重要" = 位居最短路径必经之处</strong>。捕捉"中转/桥梁"概念。</p>
+      <p>适用场景：交通网络中的关键枢纽站，或反恐情报中识别"信使型人物"——
+        他们度数可能不高，但移除会让多个子网瞬间断联。</p>
+
+      <h5>对比要点</h5>
+      <ul>
+        <li>度、特征向量看<strong>邻居</strong>（局部 / 递归），属"邻接型"；</li>
+        <li>紧密、调和、介数看<strong>路径</strong>（全局距离 / 中转），属"距离型"；</li>
+        <li>同一节点在不同测度下排名可能差异很大（讲义示例：度第一的 $V_4$ 介数只 0.533，而度只 3 的 $V_7$ 介数 0.6 最高）。</li>
+      </ul>
+    </div></details>
+  </div>
+
+  <!-- Q17 -->
+  <div class="question" data-q="17">
+    <div class="q-header">
+      <span class="q-num">Q17.</span>
+      <span class="q-meta-tag type">综合计算</span>
+      <span class="q-meta-tag point">2.7-2.9 距离类</span>
+      <span class="q-meta-tag diff-3">综合</span>
+    </div>
+    <div class="q-body">
+      <p>考虑一条 5 节点"链"：$v_1 - v_2 - v_3 - v_4 - v_5$（每对相邻节点之间有无向边）。</p>
+      <p>(a) 写出最短距离矩阵；(b) 求节点 $v_3$ 的紧密中心性；(c) 求节点 $v_2$ 的介数中心性。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>(a) 距离矩阵</h5>
+      <p>链结构下 $d_{ij} = |i - j|$。</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th></th><th>$v_1$</th><th>$v_2$</th><th>$v_3$</th><th>$v_4$</th><th>$v_5$</th></tr></thead>
+        <tbody>
+          <tr><td>$v_1$</td><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+          <tr><td>$v_2$</td><td>1</td><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+          <tr><td>$v_3$</td><td>2</td><td>1</td><td>0</td><td>1</td><td>2</td></tr>
+          <tr><td>$v_4$</td><td>3</td><td>2</td><td>1</td><td>0</td><td>1</td></tr>
+          <tr><td>$v_5$</td><td>4</td><td>3</td><td>2</td><td>1</td><td>0</td></tr>
+        </tbody>
+      </table></div>
+
+      <h5>(b) $C_3$</h5>
+      <p>$\sum_j d_{3j} = 2+1+0+1+2 = 6$，$n = 5$</p>
+      <div class="formula-box">$C_3 = 5 / 6 \approx 0.833$</div>
+
+      <h5>(c) $x_2$ 介数</h5>
+      <p>5 节点共 $\binom{5}{2} = 10$ 对。排除含 $v_2$ 的对（$(1,2),(2,3),(2,4),(2,5)$ 共 4 对），
+        剩余 6 对作为候选。</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>对 $(j,k)$</th><th>最短路径</th><th>经过 $v_2$？</th><th>贡献</th></tr></thead>
+        <tbody>
+          <tr><td>$(1,3)$</td><td>$1\to2\to3$</td><td>是</td><td>1</td></tr>
+          <tr><td>$(1,4)$</td><td>$1\to2\to3\to4$</td><td>是</td><td>1</td></tr>
+          <tr><td>$(1,5)$</td><td>$1\to2\to3\to4\to5$</td><td>是</td><td>1</td></tr>
+          <tr><td>$(3,4)$</td><td>$3\to4$</td><td>否</td><td>0</td></tr>
+          <tr><td>$(3,5)$</td><td>$3\to4\to5$</td><td>否</td><td>0</td></tr>
+          <tr><td>$(4,5)$</td><td>$4\to5$</td><td>否</td><td>0</td></tr>
+        </tbody>
+      </table></div>
+      <p>每条最短路径唯一（链上无替代路），所以 $\sigma_{jk} = 1$，凡经过 $v_2$ 的贡献都是 $1/1 = 1$。</p>
+      <div class="formula-box">$x_2 = 1 + 1 + 1 + 0 + 0 + 0 = 3$</div>
+
+      <h5>说明</h5>
+      <p>对称的，$x_4$ 也等于 3。$x_3$（链中点）会更大；$x_1 = x_5 = 0$（端点不可能在别人之间）。</p>
+      <h5>易错提醒</h5>
+      <p>① 一定排除含目标节点的对；② 链上最短路径唯一，所以分母 $\sigma_{jk}$ 都是 1，
+        但<strong>遇到环或多重连接图就不一定</strong>；③ 这里答案是<strong>非归一化</strong>的介数（数值 = 3），
+        课件 11 节点图上给的是已归一化的（除以最大可能值 $\binom{n-1}{2}$）。</p>
+    </div></details>
+  </div>
+
+  <!-- Q18 -->
+  <div class="question" data-q="18">
+    <div class="q-header">
+      <span class="q-num">Q18.</span>
+      <span class="q-meta-tag type">判断</span>
+      <span class="q-meta-tag point">2.3 特征向量·计算</span>
+      <span class="q-meta-tag diff-2">进阶</span>
+    </div>
+    <div class="q-body">
+      <p>计算无向网络的特征向量中心性时，使用 $A$ 还是 $A^T$ 没区别。</p>
+      <ul class="choices">
+        <li class="choice" data-correct="true" data-letter="A">正确</li>
+        <li class="choice" data-correct="false" data-letter="B">错误</li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案：正确（但要小心理解）</h5>
+      <h5>解析</h5>
+      <p>无向网络邻接矩阵<strong>对称</strong>，$A = A^T$，所以方程 $\kappa\mathbf{x} = A^T\mathbf{x}$ 等价于
+        $\kappa\mathbf{x} = A\mathbf{x}$，特征向量自然一样。</p>
+      <p>但<strong>有向网络 $A \neq A^T$</strong>，二者结果完全不同。所以正式定义统一写成 $A^T$
+        以兼容有向情形 —— 这样可以"一个公式打通所有"。</p>
+      <h5>易错提醒</h5>
+      <p>考试题如果是有向网络<strong>题面 + 无脑用 $A$</strong>就会错。养成习惯：<em>无论无向有向，都写 $A^T$</em>。</p>
+    </div></details>
+  </div>
+
+  <!-- Q19 -->
+  <div class="question" data-q="19">
+    <div class="q-header">
+      <span class="q-num">Q19.</span>
+      <span class="q-meta-tag type">论述</span>
+      <span class="q-meta-tag point">2.7-2.8 距离类</span>
+      <span class="q-meta-tag diff-2">进阶</span>
+    </div>
+    <div class="q-body">
+      <p>为什么<strong>调和中心性</strong>比<strong>紧密中心性</strong>对不连通网络更"友好"？
+        请基于公式说明，并讨论实际数据中遇到不连通时各自表现。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>参考答案</h5>
+
+      <h5>核心：公式如何处理 $\infty$</h5>
+      <p>紧密：$C_i = \dfrac{n}{\sum_j d_{ij}}$。
+        若 $i$ 与某 $j$ 不连通，则 $d_{ij} = \infty$，求和等于 $\infty$，$C_i \to 0$。
+        所有"和别人有任何不连通"的节点都会被压成 0，<strong>区分不开</strong>。</p>
+
+      <p>调和：$C'_i = \dfrac{1}{n-1}\sum_{j \neq i} \dfrac{1}{d_{ij}}$。
+        若 $d_{ij} = \infty$，则 $1/d_{ij} = 0$，相当于"无视该项"。
+        其它能连通的距离照常贡献，<strong>结果有意义</strong>。</p>
+
+      <h5>实际意义</h5>
+      <p>真实网络（如 Web、社交网络）极少是完全连通的，往往有许多孤立小分量。这时：</p>
+      <ul>
+        <li>紧密只能对每个<strong>连通分量分别</strong>计算，跨分量节点排名无意义；</li>
+        <li>调和直接全局计算，对孤立节点会给出较低但<strong>非零</strong>的分数，可有效排序。</li>
+      </ul>
+
+      <h5>简单数值例子</h5>
+      <p>设网络分两块：$A$ 块 $i$ 到 $A$ 内 3 节点距离都 = 1，$i$ 到 $B$ 块 2 节点都不连通（$d = \infty$）。
+        紧密 $C_i = 6/(0+1+1+1+\infty+\infty) = 0$；
+        调和 $C'_i = \tfrac{1}{5}(1+1+1+0+0) = 0.6$，依然有效。</p>
+
+      <h5>注意</h5>
+      <p>紧密在<strong>单一连通分量内</strong>仍然是常用且直观的度量；只是不能整体使用于不连通网络。</p>
+    </div></details>
+  </div>
+
+  <!-- Q20 -->
+  <div class="question" data-q="20">
+    <div class="q-header">
+      <span class="q-num">Q20.</span>
+      <span class="q-meta-tag type">选择</span>
+      <span class="q-meta-tag point">2.10 综合识别</span>
+      <span class="q-meta-tag diff-3">综合</span>
+    </div>
+    <div class="q-body">
+      <p>在讲义 11 节点主示例网络中，哪个节点同时满足"度并非最高，但<strong>介数中心性最高</strong>"？</p>
+      <ul class="choices">
+        <li class="choice" data-correct="false" data-letter="A">$V_4$</li>
+        <li class="choice" data-correct="false" data-letter="B">$V_6$</li>
+        <li class="choice" data-correct="true" data-letter="C">$V_7$</li>
+        <li class="choice" data-correct="false" data-letter="D">$V_9$</li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案：C</h5>
+      <h5>解析</h5>
+      <p>对照 11 节点示例的指标表：</p>
+      <ul>
+        <li>$V_4$ 度 = 4（<strong>最高</strong>），介数 = 0.533，不满足"度并非最高"。</li>
+        <li>$V_6$ 度 = 2，紧密最高（0.425），但介数 = 0.556 仍不及 $V_7$。</li>
+        <li>$V_7$ 度 = 3（不是最高），介数 = <strong>0.6（最高）</strong>。✓</li>
+        <li>$V_9$ 度 = 3，特征向量最高（0.532），介数 = 0.356。</li>
+      </ul>
+      <h5>启示</h5>
+      <p>这道题正好对应讲义的核心 take-away："度高不等于介数高"。
+        $V_7$ 之所以介数最高，是因为它位于网络"中央狭窄通道"，左右两边大量节点对必经它而过；
+        而 $V_4$ 度数虽高，主要是连了 $V_1, V_2, V_3$ 三片叶子，对全局"路过"贡献有限。</p>
+    </div></details>
+  </div>
+
+  <!-- ============= 综合大题 ============= -->
+
+  <!-- Q21 -->
+  <div class="question" data-q="21">
+    <div class="q-header">
+      <span class="q-num">Q21.</span>
+      <span class="q-meta-tag type">综合计算</span>
+      <span class="q-meta-tag point">2.2-2.9 综合</span>
+      <span class="q-meta-tag diff-3">综合</span>
+    </div>
+    <div class="q-body">
+      <p>考虑三角形 $K_3$ 网络：3 个节点 $\{1,2,3\}$ 两两相连。<br>
+        (a) 写出邻接矩阵 $A$；<br>
+        (b) 求每个节点的度中心性；<br>
+        (c) 求特征向量中心性；<br>
+        (d) 求紧密中心性；<br>
+        (e) 求介数中心性。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>(a) 邻接矩阵</h5>
+      <div class="formula-box">$$A = \begin{pmatrix} 0 & 1 & 1 \\ 1 & 0 & 1 \\ 1 & 1 & 0 \end{pmatrix}$$</div>
+
+      <h5>(b) 度</h5>
+      <p>每个节点都连其余两个 → $k_1 = k_2 = k_3 = 2$。</p>
+
+      <h5>(c) 特征向量中心性</h5>
+      <p>$K_3$ 三个节点完全对称，所以 $x_1 = x_2 = x_3$。代入方程
+        $\kappa x_i = \sum_j A_{ji} x_j$ 任一行：$\kappa x_1 = x_2 + x_3 = 2 x_1 \Rightarrow \kappa = 2$。</p>
+      <p>特征向量任意归一化：$\mathbf{x} = (1, 1, 1)^T$。</p>
+      <p><strong>验证：</strong>$A\mathbf{x} = (2,2,2)^T = 2 \cdot (1,1,1)^T$，正确。</p>
+
+      <h5>(d) 紧密中心性</h5>
+      <p>$d_{ij} = 1$ for $i \neq j$，$d_{ii} = 0$。$\sum_j d_{ij} = 0 + 1 + 1 = 2$，$n = 3$。</p>
+      <div class="formula-box">$C_1 = C_2 = C_3 = 3/2 = 1.5$</div>
+
+      <h5>(e) 介数中心性</h5>
+      <p>3 节点只有 $\binom{3}{2} = 3$ 对：$(1,2), (1,3), (2,3)$。每对都直接相连（最短路径长 1，无中转）。
+        所以<strong>没有任何节点位于其他节点对的最短路径上</strong>：</p>
+      <div class="formula-box">$x_1 = x_2 = x_3 = 0$</div>
+
+      <h5>讨论</h5>
+      <p>完全对称网络（如 $K_n$、环 $C_n$）的所有中心性测度都给出完全相等的分数 ——
+        这反映了一个深刻事实：<strong>在结构上"看不出谁更特殊"的网络，所有节点同样重要</strong>。</p>
+      <p>这也是判断你算得对不对的好方法 —— 如果对称网络的中心性出现差异，肯定算错了。</p>
+    </div></details>
+  </div>
+
+  <!-- Q22 -->
+  <div class="question" data-q="22">
+    <div class="q-header">
+      <span class="q-num">Q22.</span>
+      <span class="q-meta-tag type">简答</span>
+      <span class="q-meta-tag point">2.3 特征向量直觉</span>
+      <span class="q-meta-tag diff-2">进阶</span>
+    </div>
+    <div class="q-body">
+      <p>在<strong>有向网络</strong>中，特征向量中心性的定义为什么是
+        $x_i = \tfrac{1}{\kappa}\sum_j A_{ji} x_j$ 而不是 $\tfrac{1}{\kappa}\sum_j A_{ij} x_j$？
+        从直觉上解释。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>参考答案</h5>
+      <p>关键在于：在有向网络中，"被重要的人指向"和"指向重要的人"是<strong>截然不同的事</strong>。</p>
+      <p>$A_{ji} = 1$ 表示有边从 $j$ 指向 $i$，即 $j$ <strong>指向</strong> $i$。
+        所以 $\sum_j A_{ji} x_j$ 表示<strong>$i$ 的所有"入邻居"</strong>的中心性之和。</p>
+      <p>这正契合定义直觉：<strong>"重要的人指着我，我才重要"</strong>。
+        讲义里举例：</p>
+      <ul>
+        <li>在 Twitter/微博上，你<strong>关注</strong>了马斯克 → 不能说明你重要；</li>
+        <li>但马斯克<strong>关注了</strong>你 → 说明你大概率值得他注意 → 你重要。</li>
+      </ul>
+      <p>所以求和方向必须是 "入邻居 → 自己"，对应 $A_{ji}$（终点固定为 $i$，起点跑）。</p>
+
+      <p>反之，$\sum_j A_{ij} x_j$ 是把<strong>出邻居</strong>的中心性加起来，
+        意义是"我指向的那些重要人士的总分" —— 这不是"我有多重要"，反而像"我喜欢追星追的有多牛"，
+        概念错位。</p>
+
+      <h5>矩阵形式的体现</h5>
+      <p>因为求和涉及 $A_{ji}$ 而不是 $A_{ij}$，转成矩阵就是 $A^T \mathbf{x}$ 而不是 $A\mathbf{x}$。
+        这就是为什么定义是"$A^T$ 的主特征向量"而非"$A$ 的"。
+        在无向情形 $A = A^T$ 二者一致；有向情形必须严格用 $A^T$。</p>
+    </div></details>
+  </div>
+
+  <!-- Q23 - true/false on Perron-Frobenius -->
+  <div class="question" data-q="23">
+    <div class="q-header">
+      <span class="q-num">Q23.</span>
+      <span class="q-meta-tag type">判断</span>
+      <span class="q-meta-tag point">2.3 特征向量</span>
+      <span class="q-meta-tag diff-2">进阶</span>
+    </div>
+    <div class="q-body">
+      <p>Perron–Frobenius 定理的具体证明是本课的核心考点。</p>
+      <ul class="choices">
+        <li class="choice" data-correct="false" data-letter="A">正确</li>
+        <li class="choice" data-correct="true" data-letter="B">错误</li>
+      </ul>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案：错误</h5>
+      <h5>解析</h5>
+      <p>讲义中明确标注："Non-assessable remark: The existence and uniqueness of such a vector for any
+        matrix with non-negative entries is ensured by the Perron-Frobenius theorem." ——
+        <strong>这条注释是 non-assessable（不考）</strong>。</p>
+      <p>但你需要知道<strong>它的作用</strong>：保证非负矩阵的主特征向量可以取为全非负，使得"用主特征向量当中心性"是合理的。
+        定理名 + 它解决了什么问题就够了，不必证明。</p>
+    </div></details>
+  </div>
+
+  <!-- Q24 -->
+  <div class="question" data-q="24">
+    <div class="q-header">
+      <span class="q-num">Q24.</span>
+      <span class="q-meta-tag type">填空</span>
+      <span class="q-meta-tag point">2.2 度·矩阵形式</span>
+      <span class="q-meta-tag diff-2">进阶</span>
+    </div>
+    <div class="q-body">
+      <p>讲义总结表里给出度中心性的向量形式：$\mathbf{x} = A D^{-1} \mathbf{1}$。
+        其中 $D$ 是________矩阵，对角元 $D_{ii} = $ ________。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案</h5>
+      <p>$D$ 是<strong>对角矩阵</strong>，对角元 $D_{ii} = \max(k_i^{out}, 1)$。</p>
+      <h5>解析</h5>
+      <p>这个 $D$ 与 PageRank 用的 $D$ 是同一个 —— 取 $\max(\cdot, 1)$ 是为了避免 $k_i^{out} = 0$ 时除零。</p>
+      <p>对无向网络，$k^{out} = k$（度），所以 $D_{ii} = \max(k_i, 1)$，若网络无孤立点则就是度。</p>
+      <p>把度中心性塞进这个统一框架（参考 2.6 总表）有助于看清四类中心性的关系：
+        Page-rank、Katz、特征向量、度都可以表达为统一的代数形式。</p>
+    </div></details>
+  </div>
+
+  <!-- Q25 -->
+  <div class="question" data-q="25">
+    <div class="q-header">
+      <span class="q-num">Q25.</span>
+      <span class="q-meta-tag type">综合判断</span>
+      <span class="q-meta-tag point">2.1-2.10 综合</span>
+      <span class="q-meta-tag diff-3">综合</span>
+    </div>
+    <div class="q-body">
+      <p>判断下列说法是否正确，逐条作答。</p>
+      <p>(1) 紧密中心性的分子是 $n - 1$。<br>
+        (2) 介数中心性公式中，求和下标排除 $j = i$、$k = i$ 和 $j = k$ 三种情况。<br>
+        (3) 度中心性是节点连接数，对无向网络等于邻接矩阵相应行之和。<br>
+        (4) 在<strong>无向</strong>网络中，特征向量中心性可由 $A^T = A$ 的主特征向量给出，所以与无向"等价图"的特征向量中心性总相同。<br>
+        (5) 调和中心性的求和包含 $j = i$ 项。</p>
+    </div>
+    <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <h5>答案</h5>
+      <p>(1) <strong>错。</strong>讲义定义 $C_i = n / \sum_j d_{ij}$，分子是 $n$。</p>
+      <p>(2) <strong>对。</strong>$j \neq i$，$k \neq i$，$j \neq k$ 三条都要满足。</p>
+      <p>(3) <strong>对。</strong>$k_i = \sum_j A_{ij}$ = 第 $i$ 行求和（无向时也等于第 $i$ 列）。</p>
+      <p>(4) <strong>对。</strong>无向 $A = A^T$，所以两者等价。</p>
+      <p>(5) <strong>错。</strong>调和的求和明确写 $j \neq i$（否则会出现 $1/0$）；分母为 $n - 1$。</p>
+
+      <h5>易混提醒</h5>
+      <p><strong>紧密 vs. 调和的分母系数</strong>是高频考点：</p>
+      <ul>
+        <li>紧密：分子 $n$，求和遍历所有 $j$（含 $j = i$，但 $d_{ii} = 0$ 不影响）；</li>
+        <li>调和：分子 $n - 1$，求和 $j \neq i$。</li>
+      </ul>
+    </div></details>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="btn-open-all-2">▼ 展开全部答案</button>
+    <button class="btn secondary" id="btn-close-all-2">▲ 收起全部答案</button>
+    <button class="btn secondary" id="btn-reset-2">↺ 重置作答</button>
+  </div>
+
+</section>
+
+<p style="text-align:center;color:var(--ink-muted);font-size:13px;margin-top:60px;border-top:1px solid var(--border);padding-top:24px">
+  📚 严格基于讲义 L3 Network Measures 与配套练习 L3_eigenvector_centrality.pdf 整理。<br>
+  Katz / PageRank 部分已按讲义 NOT ASSESSABLE 标注，不纳入复习题。
+</p>
+
+</main>
+
+<button class="back-to-top" id="back-to-top" aria-label="回到顶部">↑</button>
+
+<script>
+(function() {
+  'use strict';
+
+  // ============ Choice click handling via event delegation ============
+  document.addEventListener('click', function(event) {
+    // Handle choice clicks
+    var choice = event.target.closest('.choice');
+    if (choice && !choice.classList.contains('locked')) {
+      var question = choice.closest('.question');
+      if (!question) return;
+      // Mark every choice in this question as locked
+      var allChoices = question.querySelectorAll('.choice');
+      allChoices.forEach(function(c) { c.classList.add('locked'); });
+
+      var isCorrect = choice.getAttribute('data-correct') === 'true';
+      // Highlight the chosen one
+      choice.classList.add(isCorrect ? 'correct' : 'wrong');
+      // Also reveal the correct one if user picked wrong
+      if (!isCorrect) {
+        allChoices.forEach(function(c) {
+          if (c.getAttribute('data-correct') === 'true') {
+            c.classList.add('correct');
+          }
+        });
+      }
+      // Open the answer block
+      var ans = question.querySelector('details.answer-block');
+      if (ans) ans.open = true;
+
+      // Mark question as answered for stats
+      question.setAttribute('data-answered', 'true');
+      question.setAttribute('data-result', isCorrect ? 'correct' : 'wrong');
+      updateStats();
+      return;
+    }
+
+    // Handle global "open all"
+    if (event.target.id === 'btn-open-all' || event.target.id === 'btn-open-all-2') {
+      document.querySelectorAll('details.answer-block').forEach(function(d) {
+        d.open = true;
+      });
+      return;
+    }
+
+    // Handle global "close all"
+    if (event.target.id === 'btn-close-all' || event.target.id === 'btn-close-all-2') {
+      document.querySelectorAll('details.answer-block').forEach(function(d) {
+        d.open = false;
+      });
+      return;
+    }
+
+    // Handle reset
+    if (event.target.id === 'btn-reset' || event.target.id === 'btn-reset-2') {
+      document.querySelectorAll('.choice').forEach(function(c) {
+        c.classList.remove('correct', 'wrong', 'locked');
+      });
+      document.querySelectorAll('.question').forEach(function(q) {
+        q.removeAttribute('data-answered');
+        q.removeAttribute('data-result');
+      });
+      document.querySelectorAll('details.answer-block').forEach(function(d) {
+        d.open = false;
+      });
+      updateStats();
+      return;
+    }
+
+    // Back to top
+    if (event.target.id === 'back-to-top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+  });
+
+  // ============ Stats ============
+  function updateStats() {
+    var questions = document.querySelectorAll('.question');
+    // Count only choice-based questions for stats (others have no auto-grading)
+    var gradableQs = Array.from(questions).filter(function(q) {
+      return q.querySelector('.choice') !== null;
+    });
+    var total = gradableQs.length;
+    var answered = 0, correct = 0;
+    gradableQs.forEach(function(q) {
+      if (q.getAttribute('data-answered') === 'true') {
+        answered++;
+        if (q.getAttribute('data-result') === 'correct') correct++;
+      }
+    });
+    document.getElementById('total').textContent = total;
+    document.getElementById('answered').textContent = answered;
+    document.getElementById('correct').textContent = correct;
+    var rateEl = document.getElementById('rate');
+    rateEl.textContent = answered === 0 ? '—' : Math.round(100 * correct / answered) + '%';
+  }
+
+  // Initialize stats on load
+  updateStats();
+
+  // ============ Back-to-top visibility ============
+  var btt = document.getElementById('back-to-top');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 300) btt.classList.add('visible');
+    else btt.classList.remove('visible');
+  }, { passive: true });
+
+  // ============ MathJax fallback timeout check ============
+  setTimeout(function() {
+    if (typeof window.MathJax === 'undefined' || !window.MathJax.startup) {
+      document.getElementById('mj-fallback').style.display = 'block';
+    }
+  }, 6000);
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L1 复杂网络导论 · 期末复习指南</title>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+  onerror="document.getElementById('mathjax-warn').style.display='block'"></script>
+<style>
+  :root{
+    --bg:#fafaf7;
+    --paper:#ffffff;
+    --ink:#1f2937;
+    --ink-soft:#4b5563;
+    --accent:#e8743b;
+    --accent-soft:#fdebe0;
+    --blue:#2563eb;
+    --blue-soft:#e0ecff;
+    --green:#16a34a;
+    --green-soft:#dcfce7;
+    --red:#dc2626;
+    --red-soft:#fee2e2;
+    --yellow:#ca8a04;
+    --yellow-soft:#fef9c3;
+    --purple:#7c3aed;
+    --purple-soft:#ede9fe;
+    --border:#e5e7eb;
+    --shadow:0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.75;
+    font-size:16px;
+  }
+  header{
+    background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 60%,#e8743b 100%);
+    color:#fff;
+    padding:48px 20px 36px;
+    text-align:center;
+  }
+  header h1{margin:0 0 8px;font-size:2em;font-weight:700;letter-spacing:.5px}
+  header p{margin:4px 0 0;opacity:.92;font-size:1.05em}
+  nav{
+    position:sticky;top:0;z-index:100;
+    background:rgba(255,255,255,0.96);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border);
+    padding:10px 16px;
+    display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+    box-shadow:0 1px 4px rgba(0,0,0,0.04);
+  }
+  nav a{
+    color:var(--ink);text-decoration:none;
+    padding:6px 14px;border-radius:999px;
+    font-size:.92em;font-weight:500;
+    border:1px solid var(--border);
+    background:#fff;transition:all .15s;
+  }
+  nav a:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+  main{max-width:920px;margin:0 auto;padding:24px 18px 80px}
+  section{
+    background:var(--paper);
+    border-radius:14px;
+    padding:28px 28px 24px;
+    margin:24px 0;
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+  }
+  h2{
+    font-size:1.5em;margin:0 0 6px;color:var(--ink);
+    padding-bottom:10px;border-bottom:3px solid var(--accent);
+    display:inline-block;
+  }
+  h3{
+    color:var(--blue);font-size:1.2em;
+    margin:28px 0 10px;
+    padding-left:10px;border-left:4px solid var(--blue);
+  }
+  h4{color:var(--ink);font-size:1.05em;margin:18px 0 6px}
+  p{margin:8px 0}
+  ul,ol{padding-left:22px}
+  li{margin:4px 0}
+  code{
+    background:#f3f4f6;padding:2px 6px;border-radius:4px;
+    font-family:"SF Mono","Consolas",monospace;font-size:.92em;color:#b91c1c;
+  }
+  .lead{font-size:1.05em;color:var(--ink-soft);margin-bottom:14px}
+  .definition{
+    background:var(--blue-soft);
+    border-left:4px solid var(--blue);
+    padding:12px 16px;border-radius:0 8px 8px 0;
+    margin:14px 0;
+  }
+  .definition strong{color:var(--blue)}
+  .formula{
+    background:var(--purple-soft);
+    border-left:4px solid var(--purple);
+    padding:12px 16px;border-radius:0 8px 8px 0;
+    margin:14px 0;
+    text-align:center;font-size:1.05em;
+  }
+  .warning{
+    background:var(--red-soft);
+    border-left:4px solid var(--red);
+    padding:12px 16px;border-radius:0 8px 8px 0;
+    margin:14px 0;
+  }
+  .warning strong{color:var(--red)}
+  .tip{
+    background:var(--green-soft);
+    border-left:4px solid var(--green);
+    padding:12px 16px;border-radius:0 8px 8px 0;
+    margin:14px 0;
+  }
+  .tip strong{color:var(--green)}
+  .analogy{
+    background:var(--yellow-soft);
+    border-left:4px solid var(--yellow);
+    padding:12px 16px;border-radius:0 8px 8px 0;
+    margin:14px 0;
+  }
+  .analogy strong{color:var(--yellow)}
+  table{
+    width:100%;border-collapse:collapse;margin:14px 0;
+    font-size:.95em;background:#fff;
+  }
+  th,td{
+    padding:10px 12px;text-align:left;
+    border:1px solid var(--border);
+  }
+  th{background:#f9fafb;font-weight:600}
+  tr:nth-child(even) td{background:#fafafa}
+  .star{color:var(--red);font-weight:700;letter-spacing:1px}
+  .star-mid{color:var(--yellow);font-weight:700;letter-spacing:1px}
+  .star-low{color:var(--green);font-weight:700;letter-spacing:1px}
+  .tag{
+    display:inline-block;padding:2px 8px;border-radius:4px;
+    font-size:.78em;font-weight:600;margin-right:6px;vertical-align:middle;
+  }
+  .tag-memory{background:var(--blue-soft);color:var(--blue)}
+  .tag-understand{background:var(--purple-soft);color:var(--purple)}
+  .tag-difficulty-easy{background:var(--green-soft);color:var(--green)}
+  .tag-difficulty-mid{background:var(--yellow-soft);color:var(--yellow)}
+  .tag-difficulty-hard{background:var(--red-soft);color:var(--red)}
+  .tag-type{background:#e5e7eb;color:var(--ink)}
+
+  /* question card */
+  .question{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:18px 20px;
+    margin:16px 0;
+    background:#fff;
+  }
+  .question-header{
+    display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+    margin-bottom:10px;font-weight:600;
+  }
+  .question-stem{margin:8px 0 12px;font-size:1em}
+  .options{list-style:none;padding:0;margin:10px 0}
+  .options li{
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 14px;
+    margin:6px 0;
+    cursor:pointer;
+    transition:all .15s;
+    background:#fff;
+    user-select:none;
+  }
+  .options li:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .options li.correct{
+    background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:600;
+  }
+  .options li.wrong{
+    background:var(--red-soft);border-color:var(--red);color:var(--red);font-weight:600;
+  }
+  .options.locked li{cursor:default}
+  .options.locked li:hover{
+    border-color:var(--border);background:#fff;
+  }
+  .options.locked li.correct{
+    background:var(--green-soft);border-color:var(--green);
+  }
+  .options.locked li.wrong{
+    background:var(--red-soft);border-color:var(--red);
+  }
+  .opt-letter{display:inline-block;width:24px;font-weight:700;color:var(--blue)}
+
+  /* details / summary native */
+  details.answer-block{
+    margin-top:12px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:#f9fafb;
+    overflow:hidden;
+  }
+  details.answer-block > summary{
+    cursor:pointer;
+    padding:10px 14px;
+    background:var(--accent-soft);
+    color:var(--accent);
+    font-weight:600;
+    list-style:none;
+    user-select:none;
+  }
+  details.answer-block > summary::-webkit-details-marker{display:none}
+  details.answer-block[open] > summary{
+    background:var(--accent);color:#fff;
+  }
+  .answer-content{
+    padding:14px 18px;background:#fff;
+    border-top:1px solid var(--border);
+  }
+  .answer-content h5{margin:10px 0 6px;color:var(--blue);font-size:.98em}
+
+  .controls{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+    margin:18px 0;padding:14px 18px;
+    background:#f3f4f6;border-radius:10px;
+  }
+  .controls button{
+    background:var(--blue);color:#fff;border:none;
+    padding:8px 16px;border-radius:6px;font-weight:600;
+    cursor:pointer;font-size:.95em;
+  }
+  .controls button:hover{background:#1d4ed8}
+  .controls .stats{
+    margin-left:auto;color:var(--ink-soft);font-size:.95em;font-weight:600;
+  }
+  .controls .stats span{color:var(--accent)}
+
+  #back-to-top{
+    position:fixed;bottom:24px;right:24px;
+    width:48px;height:48px;border-radius:50%;
+    background:var(--accent);color:#fff;border:none;
+    font-size:1.4em;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);
+    display:none;z-index:50;
+  }
+  #back-to-top.visible{display:block}
+
+  #mathjax-warn{
+    display:none;background:var(--yellow-soft);color:var(--yellow);
+    padding:8px 14px;border-radius:6px;margin:10px 0;font-size:.9em;
+  }
+
+  .toc-card{
+    background:#f9fafb;border:1px solid var(--border);
+    border-radius:10px;padding:14px 18px;margin:14px 0;
+  }
+  .toc-card ul{margin:6px 0}
+
+  @media(max-width:640px){
+    header{padding:32px 16px 24px}
+    header h1{font-size:1.5em}
+    main{padding:14px 10px 60px}
+    section{padding:20px 18px}
+    nav a{font-size:.85em;padding:5px 10px}
+    table{font-size:.85em}
+    th,td{padding:6px 8px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>L1 复杂网络导论</h1>
+  <p>Complex Networks · QHM5702 · 期末复习指南</p>
+</header>
+
+<nav>
+  <a href="#part1">第一部分：课程讲解</a>
+  <a href="#part2">第二部分：考点梳理</a>
+  <a href="#part3">第三部分：复习题目</a>
+</nav>
+
+<main>
+
+<div id="mathjax-warn">⚠️ MathJax 公式渲染加载失败，公式可能以原始 LaTeX 形式显示，但不影响阅读其余内容。</div>
+
+<!-- ============== PART 1 ============== -->
+<section id="part1">
+<h2>第一部分：课程内容讲解</h2>
+<p class="lead">本节用通俗语言带你建立对 L1 的整体认知。</p>
+
+<h3>1. 这一讲到底在讲什么？</h3>
+<p>L1 是整门课的"开场白"，目标只有两个：</p>
+<ol>
+  <li><strong>定义"复杂网络"是什么</strong>——把抽象数学对象（图）和真实世界系统（网络）联系起来。</li>
+  <li><strong>展示网络无处不在</strong>——通过四大类例子，让你意识到截然不同的系统（互联网、电话、引文、社交、生物）都能用同一套工具研究。</li>
+</ol>
+
+<div class="analogy">
+  <strong>类比理解：</strong> 这一讲就像一份"地图集"的序言。它先告诉你"地图"（图）和"地图描述的真实地形"（网络）的区别，然后翻几页给你看世界各地的地形长什么样，最后告诉你这本地图集后面会教你哪些导航技能（中心性、社区、随机网络等等）。
+</div>
+
+<h3>2. 知识脉络</h3>
+<div class="toc-card">
+<strong>L1 的逻辑链条：</strong>
+<ul>
+  <li><strong>定义层</strong>：复杂系统 → 复杂网络 → 图 $G=(V,E)$ → 节点/边 → 属性</li>
+  <li><strong>例子层</strong>（四大类）：技术网络 → 信息网络 → 社交网络 → 生物网络（不考）</li>
+  <li><strong>升华层</strong>：网络科学是什么 → 用什么工具（网络度量）→ 复杂网络的共同特征（小世界、无标度）</li>
+  <li><strong>课程导航</strong>：ILOs（学习目标）+ 后续每周的内容安排</li>
+</ul>
+</div>
+
+<h3>3. 各模块讲解</h3>
+
+<h4>模块 A：复杂系统 vs 复杂网络 vs 图</h4>
+<p>三个名词层层递进：</p>
+<div class="definition">
+  <strong>复杂系统（Complex System）</strong>：由许多互相连接的不同对象组成的系统，其连接结构会影响系统的行为。<br>
+  例：大脑（对象=神经元，连接=树突与轴突）；一个班级（对象=学生，连接=社交关系）。
+</div>
+<div class="definition">
+  <strong>复杂网络（Complex Network）</strong>：把复杂系统用一张<em>图</em>表示出来的<em>数学表示</em>。
+</div>
+<div class="definition">
+  <strong>图（Graph）</strong>：$G=(V,E)$，由两个集合组成：
+  <ul>
+    <li>$V$：一组对象 $(v_1, v_2, \dots, v_n)$，称为<strong>顶点（vertices）</strong>或<strong>节点（nodes）</strong>。</li>
+    <li>$E \subseteq V \times V$：一组对象对 $(v_i, v_j)$，称为<strong>边（edges/links/arcs）</strong>。</li>
+  </ul>
+</div>
+
+<div class="analogy">
+  <strong>类比：</strong> "复杂系统"是真实的人类社会；"复杂网络"是社会的一张抽象关系地图；"图"则是这张地图背后的纯数学骨架（只有点和线，没有颜色、名字、地名）。
+</div>
+
+<h4>模块 B：网络 vs 图，以及"属性"</h4>
+<p>严格地讲：</p>
+<ul>
+  <li>"图"是<strong>抽象数学对象</strong>。</li>
+  <li>"网络"是用<strong>图来表示真实世界系统</strong>。</li>
+  <li>但平时两个词常常混用，无需太纠结。</li>
+</ul>
+<p>真实网络的节点和边往往还带着额外信息，叫做<strong>属性（attributes）</strong>。例：社交网络中，节点的属性可能是姓名、年龄、角色；边的属性可能是关系类型、亲密程度。</p>
+
+<h4>模块 C：四大类网络</h4>
+
+<p><strong>① 技术网络（Technological Networks）</strong>——物理基础设施，空间影响其结构强烈。</p>
+<ul>
+  <li><strong>互联网（Internet）</strong>：<em>packet-switched</em>（分组交换）数据网络。
+    <ul>
+      <li>节点：终端计算机 + 路由器（交叉口）</li>
+      <li>边：光纤、无线等数据连接</li>
+      <li>三层结构：① 骨干（Backbone，NBPs 管理）② ISP（互联网服务提供商）③ 消费者</li>
+      <li>没有中央权威；路由器自动通过 BGP 协议协商路由 → 两个后果：<strong>对变化有韧性</strong>、<strong>没有互联网的完整地图</strong></li>
+    </ul>
+  </li>
+  <li><strong>电话网络</strong>：<em>circuit-switched</em>（电路交换）。
+    <ul>
+      <li>三层：个人 → 本地交换 → 长途办公室（用 trunk lines 连接）</li>
+      <li>有时本地交换之间直接相连（不再是树结构），因为<strong>大多数人打的是本地电话</strong>。</li>
+    </ul>
+  </li>
+  <li><strong>交通网络</strong>：
+    <ul>
+      <li>道路：活在 2D 表面 → 节点大多是 3-4 度的小度节点，少量大度节点（如大型路口）</li>
+      <li>航空：活在 3D 空间 → 出现度数高达上百的<strong>枢纽（hubs）</strong></li>
+    </ul>
+  </li>
+  <li><strong>铁路网络</strong>：同一系统可有多种网络表示！
+    <ul>
+      <li><strong>L-空间表示</strong>：边连接<em>相邻停靠站</em> → 适合算<strong>旅行时间</strong></li>
+      <li><strong>P-空间表示</strong>：边连接<em>同一直达线路上的任意两站</em> → 适合算<strong>换乘次数</strong></li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>② 信息网络（Information Networks）</strong>——描述信息流动。</p>
+<ul>
+  <li><strong>万维网（WWW）</strong>：节点=网页，边=超链接（<strong>有向</strong>）。结构通过<strong>爬虫（crawler）</strong>用<strong>广度优先（BFS）</strong>探索；只能找到与主连通分量相连的页面（这个分量是<strong>巨大分量 giant component</strong>，约占网页总数的一半）。</li>
+  <li><strong>引文网络（Citation Networks）</strong>：节点=论文，边=论文 1 引用论文 2（有向）。
+    <div class="warning">
+      <strong>关键性质：</strong>引文网络必须是<strong>无环（acyclic）</strong>的。<br>
+      <strong>为什么？</strong> 因为论文只能引用早于自己发表的论文——时间是单向的，不可能 A 引用 B、B 又引用 A。WWW 则可能有环。
+    </div>
+  </li>
+  <li><strong>共引网络（Co-citation network）</strong>：论文 1 和 2 相连 ⇔ 二者被同一篇论文引用。</li>
+  <li><strong>派生网络（Derived networks）</strong>：作者之间、机构之间、地区之间的引用关系。</li>
+</ul>
+
+<p><strong>③ 社交网络（Social Networks）</strong>——人与人之间的互动。</p>
+<ul>
+  <li><strong>构造方式 1</strong>：节点=人，边=社交关系（友谊、爱情、信件等）</li>
+  <li><strong>构造方式 2</strong>：两类节点（人、社交事件），边=人参与了该事件（<strong>二部图</strong>）</li>
+  <li>经典例子：Zachary 空手道俱乐部、中世纪佛罗伦萨权势家族（Medici 家族）。</li>
+</ul>
+
+<p><strong>④ 生物网络（Biological Networks）</strong> —— 课件明确标注 <span class="star">NOT EXAMINABLE</span>。仅作了解：生化反应、大脑、生态网络（食物网）。</p>
+
+<h4>模块 D：网络科学是什么？</h4>
+<p>网络科学是一门：</p>
+<ul>
+  <li>研究复杂系统、聚焦相互作用模式及其对系统行为影响的学科；</li>
+  <li>多学科 + 基于经验数据；</li>
+  <li>提供分析网络结构、验证结果显著性的数学和计算工具；</li>
+  <li>一套统一这些工具的理论框架；</li>
+  <li>活跃的前沿研究领域。</li>
+</ul>
+
+<p><strong>网络度量（Network Measures）的四个层级</strong>：</p>
+<ol>
+  <li>个体（单节点/单边）：例如<strong>度（degree）</strong></li>
+  <li>集合：<strong>社区结构（community structures）</strong></li>
+  <li>成对：节点之间的<strong>距离</strong></li>
+  <li>全局：<strong>聚类系数（clustering coefficient）</strong>等</li>
+</ol>
+
+<h4>模块 E：为什么叫"复杂"网络？</h4>
+<p>真实复杂系统的网络往往拥有以下特征，使它们既不像规则格点也不像随机网络：</p>
+<ul>
+  <li><strong>非平凡结构</strong>——不同于规则格子或随机图</li>
+  <li>结构会影响系统行为</li>
+  <li>在差异巨大的网络间能观察到<strong>共同的结构性质</strong>：</li>
+</ul>
+<div class="formula">
+  <strong>小世界（Small-world）</strong>：节点之间平均距离很短<br>
+  <strong>无标度（Scale-free）</strong>：度分布服从幂律 $P(k) \propto k^{-\alpha}$
+</div>
+
+<h3>4. 课程结构小结</h3>
+<p>本课 7 周：第 1、2、6、7 周上课，第 3、4、5 周做实验（Python + networkx + Jupyter）。考核：50% 平时（35% 作业 + 15% 课堂测试）+ 50% 期末，两项都需及格才能通过。</p>
+
+</section>
+
+<!-- ============== PART 2 ============== -->
+<section id="part2">
+<h2>第二部分：考点梳理</h2>
+<p class="lead">按主题分类列出 L1 所有可能考察的知识点。重要度：<span class="star">★★★</span>高频 / <span class="star-mid">★★</span>中等 / <span class="star-low">★</span>低频。</p>
+
+<h3>主题 1：基本定义</h3>
+<table>
+<thead><tr><th style="width:24%">考点</th><th>核心内容</th><th style="width:14%">类型</th><th style="width:10%">重要度</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>复杂系统</strong></td>
+  <td>由许多互相连接的不同对象组成，<em>连接结构影响系统行为</em>。例：大脑、班级。<br>
+  <strong>易错</strong>：仅有"很多对象"不够，关键是"连接结构 + 影响行为"。</td>
+  <td><span class="tag tag-memory">记忆</span></td>
+  <td><span class="star">★★★</span></td>
+</tr>
+<tr>
+  <td><strong>复杂网络</strong></td>
+  <td>复杂系统通过<strong>图</strong>得到的<em>数学表示</em>。<br>
+  <strong>易错</strong>：复杂网络不是物理系统本身，而是其抽象表示。</td>
+  <td><span class="tag tag-memory">记忆</span></td>
+  <td><span class="star">★★★</span></td>
+</tr>
+<tr>
+  <td><strong>图的定义</strong></td>
+  <td>$G=(V,E)$：$V$ 为节点集，$E\subseteq V\times V$ 为边集（节点对）。</td>
+  <td><span class="tag tag-memory">记忆</span></td>
+  <td><span class="star">★★★</span></td>
+</tr>
+<tr>
+  <td><strong>术语对应</strong></td>
+  <td>对象 = 顶点 vertices / 节点 nodes；关系 = 边 edges / 链接 links / 弧 arcs。</td>
+  <td><span class="tag tag-memory">记忆</span></td>
+  <td><span class="star">★★★</span></td>
+</tr>
+<tr>
+  <td><strong>网络 vs 图</strong></td>
+  <td>图是抽象数学对象；网络是用图表示真实系统。常混用。<br>
+  网络节点/边常带<strong>属性（attributes）</strong>。</td>
+  <td><span class="tag tag-understand">理解</span></td>
+  <td><span class="star-mid">★★</span></td>
+</tr>
+<tr>
+  <td><strong>属性 Attributes</strong></td>
+  <td>节点/边携带的额外信息。<br>
+  例（社交网络）：节点属性=姓名/年龄/角色；边属性=关系类型/强度。</td>
+  <td><span class="tag tag-understand">理解</span></td>
+  <td><span class="star-mid">★★</span></td>
+</tr>
+</tbody>
+</table>
+
+<h3>主题 2：网络的四大分类（基于 Newman Ch.1–5）</h3>
+<table>
+<thead><tr><th>类别</th><th>关键词</th><th>例子</th><th>重要度</th></tr></thead>
+<tbody>
+<tr><td>技术网络</td><td>物理基础设施，空间影响结构强</td><td>互联网、电话、交通、配送</td><td><span class="star">★★★</span></td></tr>
+<tr><td>信息网络</td><td>信息流</td><td>WWW、引文网络、推荐网络</td><td><span class="star">★★★</span></td></tr>
+<tr><td>社交网络</td><td>人与人互动</td><td>空手道俱乐部、Medici 家族</td><td><span class="star-mid">★★</span></td></tr>
+<tr><td>生物网络</td><td>生化、生态、神经</td><td>代谢、大脑、食物网</td><td><span class="star-low">不考</span></td></tr>
+</tbody>
+</table>
+
+<h3>主题 3：技术网络细节</h3>
+<table>
+<thead><tr><th style="width:18%">考点</th><th>关键内容</th><th>重要度</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>互联网</strong></td>
+  <td>分组交换（packet-switched）；节点=计算机+路由器；边=光纤/无线；<br>
+  <strong>三层结构</strong>：① Backbone（NBPs）② ISP ③ 消费者；<br>
+  无中央权威，BGP 协议自动协商路由；<br>
+  → 两后果：<strong>对变化的韧性</strong>、<strong>无完整地图</strong>。</td>
+  <td><span class="star">★★★</span></td>
+</tr>
+<tr>
+  <td><strong>电话网络</strong></td>
+  <td><strong>电路交换（circuit-switched）</strong>，与互联网相反；<br>
+  三层：个人 → 本地交换（local exchanges）→ 长途办公室（long-distance offices，trunk lines 连接）；<br>
+  本地交换之间可直连（非纯树形），因为<strong>大多数人打本地电话</strong>。</td>
+  <td><span class="star">★★★</span></td>
+</tr>
+<tr>
+  <td><strong>交通网络</strong></td>
+  <td>节点=兴趣点/交换点；边=连接。<br>
+  道路网（2D）：节点度数大多 3-4，少量高度数；<br>
+  航空网（3D）：存在数百度数的<strong>枢纽（hubs）</strong>。</td>
+  <td><span class="star-mid">★★</span></td>
+</tr>
+<tr>
+  <td><strong>铁路网络 / L-space vs P-space</strong></td>
+  <td>同一系统可有<strong>多种网络表示</strong>，取决于研究目的。<br>
+  <strong>L-空间</strong>：边连接相邻停靠站 → 算<strong>旅行时间</strong>；<br>
+  <strong>P-空间</strong>：边连接同一直达服务上的任意两站 → 算<strong>换乘次数</strong>。</td>
+  <td><span class="star">★★★</span></td>
+</tr>
+</tbody>
+</table>
+
+<h3>主题 4：信息网络细节</h3>
+<table>
+<thead><tr><th style="width:20%">考点</th><th>关键内容</th><th>重要度</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>WWW</strong></td>
+  <td>节点=网页，边=超链接（<strong>有向</strong>）；规模庞大；<br>
+  <strong>探索方法</strong>：爬虫（crawler）+ 广度优先（BFS）；<br>
+  <strong>局限</strong>：只能发现与起点相连的页面（巨大分量 giant component，约占总网页一半）。</td>
+  <td><span class="star">★★★</span></td>
+</tr>
+<tr>
+  <td><strong>引文网络</strong></td>
+  <td>节点=论文，边=论文 1 引用论文 2（有向）；<br>
+  <strong>必须无环（acyclic）</strong>：论文只能引用更早的论文 → 时间单向；<br>
+  WWW 可有环，引文网络不能。</td>
+  <td><span class="star">★★★</span></td>
+</tr>
+<tr>
+  <td><strong>共引网络 Co-citation</strong></td>
+  <td>论文 1 和论文 2 相连 ⇔ 二者被同一篇论文引用。</td>
+  <td><span class="star-mid">★★</span></td>
+</tr>
+<tr>
+  <td><strong>派生网络</strong></td>
+  <td>由引文延伸出的网络：作者之间、机构之间、地区之间。</td>
+  <td><span class="star-low">★</span></td>
+</tr>
+</tbody>
+</table>
+
+<h3>主题 5：社交网络</h3>
+<table>
+<thead><tr><th style="width:22%">考点</th><th>关键内容</th><th>重要度</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>两种构造方式</strong></td>
+  <td>① 节点=人，边=社交关系（友谊、爱情、书信）；<br>
+  ② 两类节点（人 + 社交事件），边=参与（<strong>二部图</strong>）。</td>
+  <td><span class="star">★★★</span></td>
+</tr>
+<tr>
+  <td><strong>经典案例</strong></td>
+  <td>Zachary 空手道俱乐部、中世纪佛罗伦萨权势家族。</td>
+  <td><span class="star-mid">★★</span></td>
+</tr>
+</tbody>
+</table>
+
+<h3>主题 6：网络科学与网络度量</h3>
+<table>
+<thead><tr><th style="width:24%">考点</th><th>关键内容</th><th>重要度</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>网络科学定义</strong></td>
+  <td>研究复杂系统的相互作用模式及其对行为的影响；多学科、基于数据；数学+计算工具；统一理论框架；活跃研究领域。</td>
+  <td><span class="star-mid">★★</span></td>
+</tr>
+<tr>
+  <td><strong>网络度量四层级</strong></td>
+  <td>① 个体（度 degree）② 集合（社区 community）③ 成对（距离）④ 全局（聚类系数 clustering coefficient）。</td>
+  <td><span class="star">★★★</span></td>
+</tr>
+</tbody>
+</table>
+
+<h3>主题 7：复杂网络的共同性质</h3>
+<table>
+<thead><tr><th style="width:22%">考点</th><th>关键内容</th><th>重要度</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>非平凡结构</strong></td>
+  <td>与规则格点和随机网络都不同。</td>
+  <td><span class="star-mid">★★</span></td>
+</tr>
+<tr>
+  <td><strong>小世界</strong></td>
+  <td>节点平均距离很短（Watts–Strogatz）。</td>
+  <td><span class="star">★★★</span></td>
+</tr>
+<tr>
+  <td><strong>无标度</strong></td>
+  <td>度分布服从幂律 $P(k)\propto k^{-\alpha}$（少数高度数节点 + 大量低度节点）。</td>
+  <td><span class="star">★★★</span></td>
+</tr>
+</tbody>
+</table>
+
+<h3>主题 8：课程组织（次要，了解即可）</h3>
+<table>
+<thead><tr><th>考点</th><th>内容</th><th>重要度</th></tr></thead>
+<tbody>
+<tr><td>实验工具</td><td>Python（networkx 包）、Jupyter Notebook</td><td><span class="star-low">★</span></td></tr>
+<tr><td>主要教材</td><td>Newman, M., 2018. <em>Networks</em>. Oxford University Press</td><td><span class="star-low">★</span></td></tr>
+<tr><td>ILOs（学习目标）</td><td>识别真实网络、用工具表示与可视化、实现分析方法、应用合适模型、解释复杂网络性质、评估数据不确定性影响</td><td><span class="star-low">★</span></td></tr>
+</tbody>
+</table>
+
+<div class="warning">
+  <strong>提醒：</strong>课件中以下内容明确标注 <strong>NOT EXAMINABLE</strong>，不要花精力背：
+  <ul>
+    <li>生化网络的代谢/二部/三部图详细构造</li>
+    <li>大脑/神经元/突触机制</li>
+    <li>生态网络/食物网/营养级（trophic level）</li>
+  </ul>
+</div>
+
+</section>
+
+<!-- ============== PART 3 ============== -->
+<section id="part3">
+<h2>第三部分：复习题目</h2>
+<p class="lead">点选选项可即时判分；点击"显示答案与解析"查看完整解释。</p>
+
+<div class="controls">
+  <button id="btn-expand">展开全部解析</button>
+  <button id="btn-collapse">收起全部解析</button>
+  <button id="btn-reset">重置作答</button>
+  <div class="stats">已答 <span id="stat-answered">0</span> / <span id="stat-total">0</span> · 正确 <span id="stat-correct">0</span></div>
+</div>
+
+<!-- Q1 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">选择</span>
+    <span class="tag tag-difficulty-easy">基础</span>
+    <span>题 1 · 复杂系统定义</span>
+  </div>
+  <div class="question-stem">关于"复杂系统（complex system）"的描述，下列哪一项<strong>最准确</strong>？</div>
+  <ul class="options" data-correct="C">
+    <li data-letter="A"><span class="opt-letter">A.</span> 由大量相同元素构成的集合</li>
+    <li data-letter="B"><span class="opt-letter">B.</span> 任何包含很多节点的网络</li>
+    <li data-letter="C"><span class="opt-letter">C.</span> 由许多互相连接的不同对象构成，且连接结构会影响系统的行为</li>
+    <li data-letter="D"><span class="opt-letter">D.</span> 用矩阵表示的数学结构</li>
+  </ul>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>答案：C</strong></p>
+      <p><strong>解析：</strong>课件给出的定义有三个关键词——<em>许多</em>、<em>不同对象</em>、<em>连接结构影响行为</em>。A 错在"相同"；B 是充分条件的反向：网络节点多不一定是复杂系统；D 是图的代数表示，与"系统"概念无关。</p>
+      <p><strong>易错提醒：</strong>不要把"复杂系统"等同于"复杂网络"——复杂网络是<em>表示</em>复杂系统的图。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q2 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">选择</span>
+    <span class="tag tag-difficulty-easy">基础</span>
+    <span>题 2 · 图的定义</span>
+  </div>
+  <div class="question-stem">下列哪一项<strong>不是</strong>图 $G=(V,E)$ 中"边"的别名？</div>
+  <ul class="options" data-correct="B">
+    <li data-letter="A"><span class="opt-letter">A.</span> link</li>
+    <li data-letter="B"><span class="opt-letter">B.</span> vertex</li>
+    <li data-letter="C"><span class="opt-letter">C.</span> arc</li>
+    <li data-letter="D"><span class="opt-letter">D.</span> edge</li>
+  </ul>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>答案：B</strong></p>
+      <p><strong>解析：</strong>vertex（顶点）是"节点"的别名，不是边。课件明确指出：对象 = vertices / nodes；关系 = edges / links / arcs。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q3 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">选择</span>
+    <span class="tag tag-difficulty-mid">进阶</span>
+    <span>题 3 · 互联网 vs 电话网络</span>
+  </div>
+  <div class="question-stem">关于互联网与传统电话网络的对比，下列说法正确的是：</div>
+  <ul class="options" data-correct="A">
+    <li data-letter="A"><span class="opt-letter">A.</span> 互联网采用分组交换（packet-switched），电话网络采用电路交换（circuit-switched）</li>
+    <li data-letter="B"><span class="opt-letter">B.</span> 互联网采用电路交换，电话网络采用分组交换</li>
+    <li data-letter="C"><span class="opt-letter">C.</span> 两者都是分组交换网络</li>
+    <li data-letter="D"><span class="opt-letter">D.</span> 两者都是电路交换网络</li>
+  </ul>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>答案：A</strong></p>
+      <p><strong>解析：</strong>互联网把数据切成"包（packets）"传输 → packet-switched；传统电话网络则为通话期间在两个端点之间分配/保留一条物理电路 → circuit-switched。这是常考的对比项。</p>
+      <p><strong>易错提醒：</strong>不要把"分组"与"电路"混淆——前者按需共享，后者独占线路。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q4 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">选择</span>
+    <span class="tag tag-difficulty-mid">进阶</span>
+    <span>题 4 · 引文网络性质</span>
+  </div>
+  <div class="question-stem">为什么引文网络（citation networks）必然是<strong>无环（acyclic）</strong>的？</div>
+  <ul class="options" data-correct="B">
+    <li data-letter="A"><span class="opt-letter">A.</span> 因为论文数量有限</li>
+    <li data-letter="B"><span class="opt-letter">B.</span> 因为论文只能引用比自己更早发表的论文，时间方向单一</li>
+    <li data-letter="C"><span class="opt-letter">C.</span> 因为有出版社规定不允许循环引用</li>
+    <li data-letter="D"><span class="opt-letter">D.</span> 因为引文网络是无向图</li>
+  </ul>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>答案：B</strong></p>
+      <p><strong>解析：</strong>时间单向是核心原因。若 A 引用 B，则 A 发表时间晚于 B；要形成环就需要某篇论文引用了一篇晚于自己的论文，这违背时间因果。WWW 没有这种时间约束，因此可以有环。</p>
+      <p><strong>易错提醒：</strong>D 选项错误——引文网络是<strong>有向图</strong>（边代表"谁引用谁"）。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q5 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">选择</span>
+    <span class="tag tag-difficulty-mid">进阶</span>
+    <span>题 5 · 铁路网络表示</span>
+  </div>
+  <div class="question-stem">研究某地铁系统时，你希望分析"乘客需要换乘几次"的问题。下列哪种网络表示<strong>最合适</strong>？</div>
+  <ul class="options" data-correct="C">
+    <li data-letter="A"><span class="opt-letter">A.</span> L-空间表示（边连接相邻停靠站）</li>
+    <li data-letter="B"><span class="opt-letter">B.</span> 无向加权图，权重为站间距</li>
+    <li data-letter="C"><span class="opt-letter">C.</span> P-空间表示（边连接同一直达线路上的任意两站）</li>
+    <li data-letter="D"><span class="opt-letter">D.</span> 二部图，节点为站与线路</li>
+  </ul>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>答案：C</strong></p>
+      <p><strong>解析：</strong>P-空间下，同一直达线路上的所有站两两相连，因此"乘客在 P-空间中走过的边数"就近似等于"换乘次数 + 1"。L-空间更适合算"旅行时间"或"经过几站"。</p>
+      <p><strong>核心记忆：</strong> L-空间 ↔ 站数/时间；P-空间 ↔ 换乘。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q6 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">判断</span>
+    <span class="tag tag-difficulty-easy">基础</span>
+    <span>题 6 · 网络与图</span>
+  </div>
+  <div class="question-stem">"图（graph）"和"网络（network）"在严格意义上是同一个概念，可以无差别地互换使用。</div>
+  <ul class="options" data-correct="B">
+    <li data-letter="A"><span class="opt-letter">A.</span> 正确</li>
+    <li data-letter="B"><span class="opt-letter">B.</span> 错误</li>
+  </ul>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>答案：B（错误）</strong></p>
+      <p><strong>解析：</strong>严格地讲：图是抽象数学对象，网络是用图来表示真实世界系统。网络中的节点/边常带<strong>属性</strong>。日常使用中两者常常互换，但"严格意义上等同"是错误的。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q7 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">填空</span>
+    <span class="tag tag-difficulty-easy">基础</span>
+    <span>题 7 · 互联网三层结构</span>
+  </div>
+  <div class="question-stem">互联网的三层节点结构从顶到底分别是：① _______、② _______、③ _______ 。路由器之间自动协商路由所使用的协议简称是 _______ 。</div>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>答案：</strong></p>
+      <p>① 骨干 Backbone（由 NBPs 等大型电信公司/政府管理）<br>
+      ② ISP（互联网服务提供商）<br>
+      ③ 消费者 Consumers（企业、办公室、个人）<br>
+      路由协议简称：<strong>BGP</strong>（Border Gateway Protocol，边界网关协议）</p>
+      <p><strong>易错提醒：</strong>"无中央权威"+"BGP"→ 两个后果：对变化有韧性、无完整地图。这是常考的因果链。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q8 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">填空</span>
+    <span class="tag tag-difficulty-mid">进阶</span>
+    <span>题 8 · 复杂网络性质</span>
+  </div>
+  <div class="question-stem">真实复杂网络常具备两个跨领域通用的结构性质：一是 _______（节点间平均距离很短），二是 _______，其度分布服从幂律，公式为 $P(k)\propto$ _______ 。</div>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>答案：</strong></p>
+      <p>① <strong>小世界（small-world）</strong><br>
+      ② <strong>无标度（scale-free）</strong><br>
+      ③ $k^{-\alpha}$</p>
+      <p><strong>解析：</strong>无标度网络的核心特征：少数节点拥有非常多的连接（"枢纽"），而绝大多数节点连接很少。指数 $\alpha$ 通常在 2 到 3 之间，但 L1 只要求记住幂律形式。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q9 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">简答</span>
+    <span class="tag tag-difficulty-mid">进阶</span>
+    <span>题 9 · WWW 探索方法</span>
+  </div>
+  <div class="question-stem">说明如何通过爬虫（crawler）探索 WWW 的结构，并指出该方法的一个根本局限。</div>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>参考答案：</strong></p>
+      <p><strong>方法（广度优先 BFS）：</strong></p>
+      <ol>
+        <li>从某个起始网页开始；</li>
+        <li>提取该网页上的所有 URL（统一资源定位符），加入一个集合；</li>
+        <li>从集合中选取一个 URL，访问对应网页，将上面所有<em>未见过</em>的 URL 加入集合；</li>
+        <li>不断重复，直到集合中没有新的 URL 可访问。</li>
+      </ol>
+      <p><strong>根本局限：</strong>爬虫只能找到与起点<strong>同处一个连通分量（具体是"巨大分量 giant component"）</strong>的页面，独立或被孤立的网页群无法被发现。因此尽管巨大分量约占网页总数一半，仍有相当数量的网页"看不见"。</p>
+      <p><strong>易错提醒：</strong>很多同学只说"爬不到所有页面"，但没说清原因是"连通性"——一定要点出 giant component / 主连通分量这一概念。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q10 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">简答</span>
+    <span class="tag tag-difficulty-mid">进阶</span>
+    <span>题 10 · 道路 vs 航空</span>
+  </div>
+  <div class="question-stem">道路网络与航空网络都是交通网络，但它们的度分布差异显著。请从"空间维度"角度解释原因。</div>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>参考答案：</strong></p>
+      <p>道路网络"生活在" 2D 表面上：物理空间限制了一个路口能连出去的道路数量——大多数路口连出去 3 到 4 条路，极少有非常高度数的节点。</p>
+      <p>航空网络"生活在" 3D 空间中（飞机不受地面拓扑限制），一个机场可以与全球数百个其他机场直接相连，因此出现度数极高的<strong>枢纽（hubs）</strong>。</p>
+      <p><strong>结论：</strong>空间维度差异 → 度数上限差异 → 道路网度分布集中在小度数，航空网度分布拖尾很长（接近无标度）。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q11 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">简答</span>
+    <span class="tag tag-difficulty-easy">基础</span>
+    <span>题 11 · 网络度量层级</span>
+  </div>
+  <div class="question-stem">网络度量（network measures）可按其作用范围分为哪四个层级？每层各举一个例子。</div>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>参考答案：</strong></p>
+      <ol>
+        <li><strong>个体（individual）</strong>：单个节点或单条边的属性。例：<em>度（degree）</em>。</li>
+        <li><strong>集合（sets）</strong>：节点集合的结构。例：<em>社区结构（community structures）</em>。</li>
+        <li><strong>成对（pairs）</strong>：两节点间的关系。例：<em>距离（distance）</em>。</li>
+        <li><strong>全局（global）</strong>：整张网络的综合指标。例：<em>聚类系数（clustering coefficient）</em>。</li>
+      </ol>
+    </div>
+  </details>
+</div>
+
+<!-- Q12 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">论述</span>
+    <span class="tag tag-difficulty-hard">综合</span>
+    <span>题 12 · 综合论述</span>
+  </div>
+  <div class="question-stem">请综合论述：什么是"复杂网络"？它与"普通图"、与"随机/规则网络"分别有什么区别？为什么说网络科学是"多学科"的？（请使用至少 4 个 L1 中的概念。）</div>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>参考答案要点（按踩分点组织）：</strong></p>
+      <p><strong>① 定义层：</strong>复杂网络是把<em>复杂系统</em>（由许多互相连接的不同对象组成、连接结构影响行为）用<em>图</em> $G=(V,E)$ 表示出来的<em>数学表示</em>。节点（vertices/nodes）和边（edges/links）可携带<em>属性</em>（attributes）。</p>
+      <p><strong>② 与普通图的区别：</strong>普通图是纯抽象数学对象；复杂网络强调它<strong>对应一个真实系统</strong>，节点和边带有现实意义和属性。</p>
+      <p><strong>③ 与规则/随机网络的区别：</strong>真实复杂网络具有<strong>非平凡结构</strong>——既不像规则格子那样高度对称，也不像 Erdős-Rényi 随机图那样均匀。它们普遍呈现：</p>
+      <ul>
+        <li><strong>小世界（small-world）</strong>：平均路径长度很短；</li>
+        <li><strong>无标度（scale-free）</strong>：度分布服从幂律 $P(k)\propto k^{-\alpha}$，存在少量高度数的<em>枢纽</em>。</li>
+      </ul>
+      <p><strong>④ 多学科性的依据：</strong>看似截然不同的系统都能被网络刻画——互联网（technological）、WWW 和引文（information）、社交关系（social）、生化反应/食物网（biological）。这些研究分别来自计算机科学、信息学、社会学、生物/生态学，但都共用同一套度量与建模工具（度、社区、距离、聚类系数等），因此网络科学天然<strong>跨学科</strong>。</p>
+      <p><strong>得分要点（建议至少覆盖）：</strong>复杂系统/网络定义 + $G=(V,E)$ + 小世界 + 无标度（幂律公式）+ 至少两类应用领域 + 共用度量工具。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q13 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">判断</span>
+    <span class="tag tag-difficulty-mid">进阶</span>
+    <span>题 13 · 电话网络</span>
+  </div>
+  <div class="question-stem">在课件所述的传统电话网络中，本地交换（local exchanges）之间永远不会直接相连，整个网络是一棵严格的树。</div>
+  <ul class="options" data-correct="B">
+    <li data-letter="A"><span class="opt-letter">A.</span> 正确</li>
+    <li data-letter="B"><span class="opt-letter">B.</span> 错误</li>
+  </ul>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>答案：B（错误）</strong></p>
+      <p><strong>解析：</strong>课件明确指出：<em>"Sometimes local exchanges are connected directly (so not a tree). Why? Because most people talk locally."</em>。即由于大多数人打的是本地电话，本地交换之间常常直接互联，导致整体并非纯粹的树结构。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q14 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">简答</span>
+    <span class="tag tag-difficulty-easy">基础</span>
+    <span>题 14 · 社交网络构造</span>
+  </div>
+  <div class="question-stem">列出课件中提到的两种社交网络构造方式，并指出第二种构造对应的图论术语。</div>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>参考答案：</strong></p>
+      <ol>
+        <li><strong>方式一：</strong>节点 = 人，边 = 社交关系（友谊、爱情、信件等）。</li>
+        <li><strong>方式二：</strong>两类节点（人 + 社交事件），边 = 人参与了某个事件。该结构在图论中称为<strong>二部图（bipartite graph）</strong>。</li>
+      </ol>
+      <p><strong>经典例子：</strong>Zachary 空手道俱乐部、佛罗伦萨权势家族（Medici 家族）。</p>
+    </div>
+  </details>
+</div>
+
+<!-- Q15 -->
+<div class="question" data-question>
+  <div class="question-header">
+    <span class="tag tag-type">选择</span>
+    <span class="tag tag-difficulty-hard">综合</span>
+    <span>题 15 · 综合辨析</span>
+  </div>
+  <div class="question-stem">以下关于 L1 概念的描述中，<strong>错误</strong>的一项是：</div>
+  <ul class="options" data-correct="D">
+    <li data-letter="A"><span class="opt-letter">A.</span> WWW 可以包含有向环，而引文网络不能</li>
+    <li data-letter="B"><span class="opt-letter">B.</span> 网络科学是多学科的，且基于经验数据</li>
+    <li data-letter="C"><span class="opt-letter">C.</span> 复杂网络的度分布通常服从 $P(k)\propto k^{-\alpha}$</li>
+    <li data-letter="D"><span class="opt-letter">D.</span> 路由器之间通过 BGP 协议协商路由意味着互联网拥有一份完整、权威的网络地图</li>
+  </ul>
+  <details class="answer-block"><summary>显示答案与解析 ▼</summary>
+    <div class="answer-content">
+      <p><strong>答案：D</strong></p>
+      <p><strong>解析：</strong>正好相反！课件强调：由于无中央权威、BGP 自动协商，互联网具有两个后果——<strong>对变化的韧性</strong> 与 <strong>没有完整地图</strong>。这两点常被一起考查，注意因果关系。</p>
+      <p>A、B、C 均为正确陈述。</p>
+    </div>
+  </details>
+</div>
+
+</section>
+
+</main>
+
+<button id="back-to-top" title="回到顶部">↑</button>
+
+<script>
+(function(){
+  // Initialize stats total
+  const questionsWithOptions = document.querySelectorAll('.question .options[data-correct]');
+  const totalEl = document.getElementById('stat-total');
+  const answeredEl = document.getElementById('stat-answered');
+  const correctEl = document.getElementById('stat-correct');
+  totalEl.textContent = questionsWithOptions.length;
+
+  let answered = 0;
+  let correct = 0;
+
+  function updateStats(){
+    answeredEl.textContent = answered;
+    correctEl.textContent = correct;
+  }
+
+  // Event delegation for option clicks, button clicks, back-to-top
+  document.addEventListener('click', function(e){
+    // Option click
+    const opt = e.target.closest('.options li');
+    if (opt) {
+      const ul = opt.parentElement;
+      if (ul.classList.contains('locked')) return;
+      const correctLetter = ul.getAttribute('data-correct');
+      const chosen = opt.getAttribute('data-letter');
+      // mark all options
+      Array.from(ul.children).forEach(li => {
+        const letter = li.getAttribute('data-letter');
+        if (letter === correctLetter) {
+          li.classList.add('correct');
+        }
+      });
+      if (chosen !== correctLetter) {
+        opt.classList.add('wrong');
+      }
+      ul.classList.add('locked');
+      // open the details
+      const question = opt.closest('.question');
+      const det = question.querySelector('details.answer-block');
+      if (det) det.open = true;
+      // update stats
+      answered += 1;
+      if (chosen === correctLetter) correct += 1;
+      updateStats();
+      return;
+    }
+
+    // Expand all
+    if (e.target && e.target.id === 'btn-expand') {
+      document.querySelectorAll('details.answer-block').forEach(d => { d.open = true; });
+      return;
+    }
+    if (e.target && e.target.id === 'btn-collapse') {
+      document.querySelectorAll('details.answer-block').forEach(d => { d.open = false; });
+      return;
+    }
+    if (e.target && e.target.id === 'btn-reset') {
+      // reset all option states
+      document.querySelectorAll('.options[data-correct]').forEach(ul => {
+        ul.classList.remove('locked');
+        Array.from(ul.children).forEach(li => {
+          li.classList.remove('correct','wrong');
+        });
+      });
+      document.querySelectorAll('details.answer-block').forEach(d => { d.open = false; });
+      answered = 0;
+      correct = 0;
+      updateStats();
+      return;
+    }
+    if (e.target && e.target.id === 'back-to-top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+  });
+
+  // Back-to-top visibility
+  const btt = document.getElementById('back-to-top');
+  window.addEventListener('scroll', function(){
+    if (window.scrollY > 400) btt.classList.add('visible');
+    else btt.classList.remove('visible');
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 13 复习 · MCMC: Metropolis–Hastings Algorithm</title>
+
+<!-- ===== MathJax 配置（必须在加载脚本前设置）===== -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<!-- ===== 字体（CDN；加载失败自动回退系统字体）===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    /* —— Convergence 主题配色 —— */
+    --bg:#eceef2;            /* 冷调石灰纸 */
+    --surface:#ffffff;
+    --surface-2:#f5f6f9;
+    --ink:#1b2230;           /* 深石板 */
+    --ink-soft:#414b5c;
+    --muted:#79838f;
+    --line:#dce0e7;
+    --line-strong:#c7cdd6;
+
+    --primary:#3949ab;       /* Markov 靛蓝 */
+    --primary-d:#2c3893;
+    --primary-tint:#e7e9f6;
+    --gold:#bd7d12;          /* 目标 / 稳态金（signature）*/
+    --gold-tint:#f6ecd6;
+    --teal:#0e8585;
+
+    --green:#2e7d44; --green-bg:#e6f4ea;
+    --red:#c0392b;   --red-bg:#fbeae8;
+    --amber:#a8650a; --amber-bg:#f9efda;
+    --blue:#2456c4;  --blue-bg:#e8eefb;
+
+    --r:14px; --r-sm:9px;
+    --shadow:0 1px 2px rgba(27,34,48,.05), 0 8px 24px rgba(27,34,48,.06);
+    --display:'Space Grotesk', ui-sans-serif, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --body:'Inter', ui-sans-serif, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:78px}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--body); font-size:16.5px; line-height:1.72;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none!important} }
+
+  /* ——— 顶部导航 ——— */
+  .nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(236,238,242,.86); backdrop-filter:saturate(160%) blur(10px);
+    border-bottom:1px solid var(--line); 
+  }
+  .nav-inner{
+    max-width:1060px; margin:0 auto; padding:11px 22px;
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  }
+  .brand{font-family:var(--display); font-weight:700; font-size:15px; letter-spacing:.2px; color:var(--primary-d); display:flex; align-items:center; gap:9px; white-space:nowrap}
+  .brand .dot{width:10px;height:10px;border-radius:2px;background:var(--primary); box-shadow:3px 3px 0 var(--gold)}
+  .nav-links{display:flex; gap:4px; flex-wrap:wrap; margin-left:auto}
+  .nav-links a{
+    font-family:var(--display); font-size:13.5px; font-weight:500; text-decoration:none;
+    color:var(--ink-soft); padding:6px 11px; border-radius:8px; white-space:nowrap;
+  }
+  .nav-links a:hover{background:var(--primary-tint); color:var(--primary-d)}
+  .nav-tools{display:flex; gap:7px}
+  .btn{
+    font-family:var(--display); font-size:12.5px; font-weight:600; cursor:pointer;
+    border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft);
+    padding:6px 11px; border-radius:8px; transition:.15s;
+  }
+  .btn:hover{border-color:var(--primary); color:var(--primary-d); background:var(--primary-tint)}
+
+  /* ——— 容器 ——— */
+  .wrap{max-width:1060px; margin:0 auto; padding:0 22px}
+  section{padding:46px 0 8px}
+
+  /* ——— Hero ——— */
+  .hero{padding:52px 0 30px}
+  .eyebrow{font-family:var(--mono); font-size:12px; font-weight:500; letter-spacing:2.5px; text-transform:uppercase; color:var(--gold)}
+  .hero h1{
+    font-family:var(--display); font-weight:700; letter-spacing:-.5px;
+    font-size:clamp(28px,5vw,46px); line-height:1.1; margin:.35em 0 .25em;
+  }
+  .hero h1 .em{color:var(--primary-d)}
+  .hero .sub{font-size:clamp(15px,2.3vw,18px); color:var(--ink-soft); max-width:60ch; margin:0}
+  .hero-meta{display:flex; gap:10px; flex-wrap:wrap; margin-top:22px}
+  .chip{font-family:var(--mono); font-size:12px; color:var(--ink-soft); background:var(--surface); border:1px solid var(--line); border-radius:30px; padding:5px 13px}
+  .chip b{color:var(--primary-d)}
+
+  .conv{margin:30px 0 4px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px 20px; box-shadow:var(--shadow); display:flex; gap:20px; align-items:center; flex-wrap:wrap}
+  .conv svg{display:block; flex:0 0 auto}
+  .conv .cap{font-size:14px; color:var(--ink-soft); margin:0; max-width:46ch}
+  .conv .cap b{color:var(--ink)}
+
+  /* ——— 区块标题（矩阵单元格编号）——— */
+  .sec-head{display:flex; align-items:center; gap:16px; margin-bottom:8px}
+  .sec-num{
+    font-family:var(--mono); font-weight:700; font-size:18px; color:var(--primary-d);
+    width:46px; height:46px; flex:0 0 auto; display:grid; place-items:center;
+    border:1.5px solid var(--primary); border-radius:8px; background:var(--primary-tint);
+    box-shadow:4px 4px 0 var(--gold-tint);
+  }
+  .sec-head h2{font-family:var(--display); font-weight:700; font-size:clamp(21px,3.4vw,28px); margin:0; letter-spacing:-.3px}
+  .sec-sub{color:var(--muted); margin:.4em 0 26px; font-size:15px}
+
+  /* ——— Part 1：模块 + 贯穿的“链”竖线 ——— */
+  .chain{position:relative; padding-left:38px}
+  .chain::before{content:""; position:absolute; left:13px; top:8px; bottom:8px; width:2px;
+    background:linear-gradient(var(--primary), var(--gold)); opacity:.35}
+  .mod{position:relative; margin:0 0 22px}
+  .mod::before{content:""; position:absolute; left:-31.5px; top:7px; width:13px; height:13px; border-radius:3px;
+    background:var(--surface); border:2.5px solid var(--primary); }
+  .mod.gold::before{border-color:var(--gold)}
+  .mod-tag{font-family:var(--mono); font-size:11.5px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted)}
+  .mod h3{font-family:var(--display); font-weight:600; font-size:19.5px; margin:.15em 0 .4em; color:var(--ink)}
+  .mod p{margin:.55em 0}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:20px 22px; box-shadow:var(--shadow)}
+
+  /* ——— 强调框 ——— */
+  .box{border-radius:var(--r-sm); padding:13px 16px; margin:14px 0; font-size:15.3px; border:1px solid transparent}
+  .box .lab{font-family:var(--display); font-weight:700; font-size:12.5px; letter-spacing:.6px; text-transform:uppercase; display:block; margin-bottom:5px}
+  .def{background:var(--blue-bg); border-color:#cfdcf7}            .def .lab{color:var(--blue)}
+  .note{background:var(--green-bg); border-color:#c9e7d3}          .note .lab{color:var(--green)}
+  .warn{background:var(--red-bg); border-color:#f3cfca}            .warn .lab{color:var(--red)}
+  .key{background:var(--gold-tint); border-color:#e7d3a4}          .key .lab{color:var(--gold)}
+  .box p{margin:.4em 0}
+
+  .formula{background:var(--surface-2); border:1px solid var(--line); border-left:3px solid var(--primary); border-radius:var(--r-sm); padding:6px 16px; margin:14px 0; overflow-x:auto}
+
+  /* ——— Part 2：考点卡 ——— */
+  .legend{display:flex; gap:16px; flex-wrap:wrap; background:var(--surface); border:1px dashed var(--line-strong); border-radius:var(--r-sm); padding:12px 16px; margin-bottom:24px; font-size:13.5px; color:var(--ink-soft)}
+  .legend b{color:var(--ink)}
+  .badge{font-family:var(--display); font-weight:600; font-size:11.5px; padding:3px 9px; border-radius:30px; display:inline-flex; align-items:center; gap:3px; white-space:nowrap}
+  .imp3{background:var(--red-bg); color:var(--red); border:1px solid #f0c4be}
+  .imp2{background:var(--amber-bg); color:var(--amber); border:1px solid #ead3a8}
+  .imp1{background:var(--surface-2); color:var(--muted); border:1px solid var(--line-strong)}
+  .tag{font-family:var(--mono); font-size:11px; padding:3px 8px; border-radius:6px; white-space:nowrap}
+  .t-mem{background:#efe7f8; color:#6b3fa0}
+  .t-calc{background:#e0f1f1; color:#0c6e6e}
+
+  .kpt{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); padding:20px 22px; margin-bottom:18px}
+  .kpt-head{display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:6px}
+  .kpt-no{font-family:var(--mono); font-weight:700; color:var(--primary-d); font-size:14px; border:1px solid var(--line-strong); border-radius:6px; padding:2px 8px; background:var(--surface-2)}
+  .kpt-head h3{font-family:var(--display); font-weight:600; font-size:18.5px; margin:0; flex:1 1 240px; line-height:1.3}
+  .kpt-meta{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+
+  /* ——— Part 3：题目 ——— */
+  .progress{position:sticky; top:60px; z-index:30; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); padding:13px 18px; margin-bottom:26px; display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+  .progress .stat{font-family:var(--display); font-size:14px; color:var(--ink-soft)}
+  .progress .stat b{font-family:var(--mono); font-size:17px; color:var(--primary-d)}
+  .progress .stat .ok{color:var(--green)}
+  .pbar{flex:1 1 160px; height:9px; min-width:120px; background:var(--surface-2); border:1px solid var(--line); border-radius:30px; overflow:hidden}
+  #progress-fill{height:100%; width:0; background:linear-gradient(90deg,var(--primary),var(--gold)); border-radius:30px; transition:width .35s ease}
+
+  .q{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); padding:20px 22px; margin-bottom:18px}
+  .q-head{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px}
+  .qt{font-family:var(--mono); font-size:11px; font-weight:500; padding:3px 8px; border-radius:6px; background:var(--primary-tint); color:var(--primary-d)}
+  .qd{font-family:var(--mono); font-size:11px; padding:3px 8px; border-radius:6px}
+  .d-base{background:var(--green-bg); color:var(--green)}
+  .d-mid{background:var(--amber-bg); color:var(--amber)}
+  .d-adv{background:#efe7f8; color:#6b3fa0}
+  .qpt{font-family:var(--mono); font-size:11px; color:var(--muted); padding:3px 8px; border:1px solid var(--line); border-radius:6px}
+  .q-no{font-family:var(--display); font-weight:700; color:var(--ink); font-size:15px; margin-right:2px}
+  .q-text{margin:.2em 0 .8em; font-size:16px}
+  .q-text b{color:var(--primary-d)}
+
+  .options{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px}
+  .option{
+    border:1px solid var(--line-strong); border-radius:var(--r-sm); padding:11px 14px; cursor:pointer;
+    background:var(--surface); font-size:15.3px; transition:.13s; display:flex; gap:10px; align-items:flex-start;
+  }
+  .option .ol{font-family:var(--mono); font-weight:700; color:var(--primary); flex:0 0 auto}
+  .option:hover{border-color:var(--primary); background:var(--primary-tint)}
+  .option.locked{cursor:default}
+  .option.locked:hover{background:var(--surface)}
+  .option.opt-correct{background:var(--green-bg); border-color:var(--green)}
+  .option.opt-correct .ol{color:var(--green)}
+  .option.opt-correct:hover{background:var(--green-bg)}
+  .option.opt-wrong{background:var(--red-bg); border-color:var(--red)}
+  .option.opt-wrong .ol{color:var(--red)}
+  .option.opt-wrong:hover{background:var(--red-bg)}
+  .option.opt-correct::after{content:"✓ 正确"; margin-left:auto; font-family:var(--display); font-weight:600; font-size:12.5px; color:var(--green); white-space:nowrap}
+  .option.opt-wrong::after{content:"✗ 你的选择"; margin-left:auto; font-family:var(--display); font-weight:600; font-size:12.5px; color:var(--red); white-space:nowrap}
+
+  /* ——— 答案折叠（原生 details/summary）——— */
+  details.answer-block{margin-top:14px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface-2); overflow:hidden}
+  details.answer-block > summary{
+    list-style:none; cursor:pointer; padding:11px 16px; font-family:var(--display); font-weight:600; font-size:14px;
+    color:var(--primary-d); background:var(--primary-tint); user-select:none; display:flex; align-items:center; gap:8px;
+  }
+  details.answer-block > summary::-webkit-details-marker{display:none}
+  details.answer-block > summary::before{content:"▸"; font-size:12px; transition:transform .2s; color:var(--primary)}
+  details.answer-block[open] > summary::before{transform:rotate(90deg)}
+  details.answer-block > summary:hover{background:#dde0f3}
+  .answer-content{padding:15px 18px; font-size:15.2px; border-top:1px solid var(--line)}
+  .answer-content p{margin:.5em 0}
+  .answer-content .pt{font-family:var(--display); font-weight:700; font-size:12px; letter-spacing:.5px; text-transform:uppercase; color:var(--gold); display:block; margin:.9em 0 .2em}
+  .answer-content .pt:first-child{margin-top:0}
+  .answer-content code{font-family:var(--mono); font-size:13.5px; background:#eceef3; padding:1px 6px; border-radius:5px}
+
+  .steps{counter-reset:s; list-style:none; padding-left:0; margin:.4em 0}
+  .steps li{position:relative; padding-left:30px; margin:.45em 0}
+  .steps li::before{counter-increment:s; content:counter(s); position:absolute; left:0; top:1px;
+    font-family:var(--mono); font-size:11px; font-weight:700; color:#fff; background:var(--primary);
+    width:20px; height:20px; border-radius:5px; display:grid; place-items:center}
+
+  /* ——— 杂项 ——— */
+  .to-top{position:fixed; right:20px; bottom:20px; z-index:60; width:46px; height:46px; border-radius:12px;
+    border:1px solid var(--line-strong); background:var(--surface); color:var(--primary-d); cursor:pointer;
+    box-shadow:var(--shadow); font-size:20px; font-family:var(--display); transition:.15s}
+  .to-top:hover{background:var(--primary); color:#fff; border-color:var(--primary)}
+  #mathjax-warning{display:none; max-width:1060px; margin:14px auto 0; padding:11px 16px; border-radius:var(--r-sm);
+    background:var(--amber-bg); border:1px solid #ead3a8; color:var(--amber); font-size:14px}
+  footer{max-width:1060px; margin:40px auto; padding:24px 22px; border-top:1px solid var(--line); color:var(--muted); font-size:13.5px}
+  hr.soft{border:none; border-top:1px dashed var(--line-strong); margin:30px 0}
+
+  /* 行内 mono 强调 */
+  .mono{font-family:var(--mono); font-size:.92em}
+  .u{border-bottom:2px solid var(--gold); padding:0 2px}
+
+  @media (max-width:640px){
+    body{font-size:16px}
+    .wrap{padding:0 16px} .nav-inner{padding:10px 16px}
+    .nav-links{order:3; width:100%; margin-left:0}
+    .nav-tools{margin-left:auto}
+    .sec-num{width:40px;height:40px;font-size:16px}
+    .chain{padding-left:30px} .chain::before{left:9px} .mod::before{left:-27.5px}
+    .conv{flex-direction:column; align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 顶部导航 ============ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <span class="brand"><span class="dot"></span>Lecture&nbsp;13 · MCMC</span>
+    <div class="nav-links">
+      <a href="#part1">① 课程讲解</a>
+      <a href="#part2">② 考点梳理</a>
+      <a href="#part3">③ 复习题目</a>
+    </div>
+    <div class="nav-tools">
+      <button class="btn" data-action="expand-all">展开全部</button>
+      <button class="btn" data-action="collapse-all">收起全部</button>
+    </div>
+  </div>
+</nav>
+
+<div id="mathjax-warning">
+  ⚠ 数学公式渲染库（MathJax）未能从网络加载。页面文字与功能不受影响；公式将以源码形式（如 <span class="mono">$\alpha=g(\theta^*)/g(\theta_{i-1})$</span>）显示。联网后刷新即可正常渲染。
+</div>
+
+<!-- ============ Hero ============ -->
+<header class="wrap hero" id="top">
+  <span class="eyebrow">Bayesian Statistics · 期末复习</span>
+  <h1>MCMC：<span class="em">Metropolis–Hastings</span><br>构造一条收敛到后验的马尔可夫链</h1>
+  <p class="sub">当后验的归一化积分算不出来时，我们不再硬算——而是让一条 Markov chain 在状态间游走，使它的长期分布恰好等于目标后验，再从中抽样做推断。本页把这一讲"重新讲懂 + 全考点 + 带解析的复习题"一站打包。</p>
+  <div class="hero-meta">
+    <span class="chip"><b>6</b> 条 Learning Outcomes</span>
+    <span class="chip">点名习题 <b>Ex 1(a–e) · 2 · 4</b></span>
+    <span class="chip"><b>13</b> 个考点卡 · <b>16</b> 道复习题</span>
+  </div>
+
+  <div class="conv">
+    <svg width="300" height="92" viewBox="0 0 300 92" aria-hidden="true">
+      <!-- 目标稳态金线 -->
+      <line x1="6" y1="40" x2="294" y2="40" stroke="#bd7d12" stroke-width="1.4" stroke-dasharray="4 4" opacity=".75"/>
+      <text x="246" y="34" font-family="JetBrains Mono, monospace" font-size="9" fill="#bd7d12">target g(θ)</text>
+      <!-- 左：抖动的 trace -->
+      <polyline fill="none" stroke="#3949ab" stroke-width="1.7"
+        points="6,78 16,30 24,66 33,22 42,70 51,33 60,58 69,28 78,62 88,38 98,52 110,42 124,44 140,40"/>
+      <!-- 右：收敛后的平滑密度（钟形）-->
+      <path d="M140,40 C160,40 168,16 186,16 C204,16 212,40 232,40 L232,82 L140,82 Z" fill="#e7e9f6" stroke="none"/>
+      <path d="M140,40 C160,40 168,16 186,16 C204,16 212,40 232,40" fill="none" stroke="#2c3893" stroke-width="2"/>
+      <line x1="140" y1="10" x2="140" y2="86" stroke="#c7cdd6" stroke-width="1" stroke-dasharray="2 3"/>
+    </svg>
+    <p class="cap"><b>"链本身就是后验。"</b> 左边链值剧烈抖动（依赖起点 → burn-in），稳定后样本的直方图（右）逐渐贴合目标密度 <span class="mono">g(θ)</span>。全程<b>不需要积分</b>。</p>
+  </div>
+</header>
+
+<!-- ============================================================= -->
+<!-- ====================== PART 1：课程讲解 ====================== -->
+<!-- ============================================================= -->
+<section class="wrap" id="part1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>课程讲解</h2></div>
+  <p class="sec-sub">面向第一次接触的同学：先看整体脉络，再沿"链"逐模块讲懂（是什么 / 为什么 / 直觉）。</p>
+
+  <!-- 整体脉络 -->
+  <div class="card" style="margin-bottom:26px">
+    <div class="box key" style="margin-top:0">
+      <span class="lab">整体知识脉络</span>
+      <p><b>要解决的问题：</b>Bayes' Theorem（贝叶斯定理）给出后验 $p(\theta\mid\text{data})=\dfrac{p(\theta)\,p(\text{data}\mid\theta)}{\int p(\theta)\,p(\text{data}\mid\theta)\,d\theta}$。用 conjugate prior（共轭先验）时分母能算；可一旦先验不共轭，这个<b>归一化积分往往算不出来</b>。</p>
+      <p><b>本讲的解法：</b>不去算积分，而是构造一条 <b>Markov chain</b>，让它的 <b>long-run distribution（长期分布）= 目标后验</b>，再从链里抽样（Monte Carlo）做后验分析。</p>
+    </div>
+    <p style="margin-bottom:0"><b>逻辑链条（也是本讲顺序）：</b>后验只知形状 → 积分难 → 改为抽样（Monte Carlo）→ 需要一条会收敛到后验的链 → 先补 Markov chain 工具（状态 / 转移矩阵 / $n$ 步 / 长期分布 / 稳态方程）→ 用 <b>Metropolis–Hastings algorithm</b> 把"目标后验"装进链里 → 实践中丢掉 burn-in。</p>
+  </div>
+
+  <div class="chain">
+
+    <div class="mod">
+      <span class="mod-tag">Module 1 · 动机</span>
+      <h3>为什么需要 MCMC？</h3>
+      <p>课件的 motivation 例子：数据 $Y_1,\dots,Y_n\stackrel{iid}{\sim}N(\mu,\sigma^2{=}1)$，先验 $\mu\sim t(0,1,1)$。后验只能写成 $p(\mu\mid Y)\propto \dfrac{\exp\!\big(n(\bar y\mu-\mu^2/2)\big)}{1+\mu^2}$，<b>不是任何常见分布</b>，归一化常数 $\int(\cdots)d\mu$ 很难求。</p>
+      <div class="box note"><span class="lab">直觉类比</span><p>想求一条怪形状曲线下的"占比"。与其精确积分，不如<b>派一个人在曲线上随机游走</b>，让他停留过的点自动"画"出形状——访问得越多的地方密度越高。这就是用样本逼近后验的思路。</p></div>
+      <p class="mono" style="color:var(--muted); font-size:13.5px">⚠ 这个积分课件没有真算，只用来说明"为什么要 MCMC"——是概念点，不是计算点。</p>
+    </div>
+
+    <div class="mod">
+      <span class="mod-tag">Module 2 · 框架</span>
+      <h3>Monte Carlo 与 MCMC 的路线图</h3>
+      <p><b>Monte Carlo（蒙特卡洛）</b>：用计算机模拟、抽大量样本来估计某个量。<b>MCMC = Markov Chain + Monte Carlo</b>：用一条马尔可夫链来产生这些样本。课件给的 rough idea 四步：① 构造一条以后验为 long-run distribution 的 Markov chain；② 让它跑足够久接近极限分布；③ 之后开始抽样（这一步是 Monte Carlo）；④ 在间隔较大的时间点抽样，使样本近似独立。</p>
+    </div>
+
+    <div class="mod">
+      <span class="mod-tag">Module 3 · 基础</span>
+      <h3>Stochastic process / state / state space</h3>
+      <p><b>Stochastic process（随机过程）</b>：随时间按某种概率规律演化、带随机性的过程；从相同初始条件重跑不会得到一样轨迹。本讲<b>只管离散时间、有限状态</b>。$X^{(n)}$ 记过程在时刻 $n$ 的取值。</p>
+      <p><b>State（状态）</b>=某时刻的取值；<b>State space（状态空间）</b>=所有可能取值的集合。例：掷骰子 $X^{(n)}$ 为第 $n$ 次结果，状态空间 $\{1,2,3,4,5,6\}$。</p>
+    </div>
+
+    <div class="mod">
+      <span class="mod-tag">Module 4 · 概率搭建</span>
+      <h3>用条件概率搭联合概率</h3>
+      <p>要理解过程长期行为，需要各时刻状态的联合概率。它可以"逐层往上搭"：后一层 = (这一步的条件概率) × (上一层的联合概率)。</p>
+      <div class="formula">$$P(X^{(2)}{=}x_2,X^{(1)}{=}x_1,X^{(0)}{=}x_0)=P(X^{(2)}{=}x_2\mid X^{(1)}{=}x_1,X^{(0)}{=}x_0)\cdot P(X^{(1)}{=}x_1,X^{(0)}{=}x_0)$$</div>
+    </div>
+
+    <div class="mod gold">
+      <span class="mod-tag">Module 5 · 核心性质</span>
+      <h3>Markov property（马尔可夫性质）</h3>
+      <p>天气例子里你会注意到：<b>明天只取决于今天</b>，与昨天、上周无关。这就是 Markov property——下一个状态只依赖当前状态，与"如何到达当前状态"无关。</p>
+      <div class="formula">$$P\big(X^{(n)}\mid X^{(n-1)},\dots,X^{(0)}\big)=P\big(X^{(n)}\mid X^{(n-1)}\big)$$</div>
+      <div class="box note"><span class="lab">直觉类比</span><p>像《飞行棋 / 蛇梯棋》：你下一步走到哪，只看现在停在哪格，不看你是怎么走到这格的。"无记忆性"让上面的联合概率链大幅简化——条件里只留前一个状态。</p></div>
+    </div>
+
+    <div class="mod gold">
+      <span class="mod-tag">Module 6 · 转移矩阵</span>
+      <h3>Transition probability matrix（转移概率矩阵）</h3>
+      <p>把所有一步转移概率排成矩阵 $P$，元素 $P_{ij}=P(X^{(n+1)}{=}j\mid X^{(n)}{=}i)$：从状态 $i$（<b>行</b>）一步走到 $j$（<b>列</b>）的概率。本讲假设 <b>time invariant（时齐）</b>：只看 $i,j$，不看时刻。</p>
+      <div class="box key"><span class="lab">关键约定</span><p><b>每一行加起来必须等于 1</b>（从 $i$ 出发总要去某个状态，含留在原地）。天气例子（行/列：第 1=Rainy R、第 2=Sunny S；下雨后明天晴 0.7，晴后明天雨 0.6）：</p>
+      <div class="formula" style="background:var(--surface); border-left-color:var(--gold)">$$P=\begin{bmatrix}0.3 & 0.7\\ 0.6 & 0.4\end{bmatrix}\quad(P_{RR}=1-0.7=0.3,\ \text{etc.})$$</div></div>
+    </div>
+
+    <div class="mod">
+      <span class="mod-tag">Module 7 · 多步</span>
+      <h3>n 步转移：矩阵幂</h3>
+      <p>有限状态下，$n$ 步转移矩阵就是矩阵 $n$ 次方：$P^{(n)}=P^n$，并满足 $P^{[m+n]}=P^{[m]}P^{[n]}$。</p>
+      <div class="formula">$$P^2=\begin{bmatrix}0.3&0.7\\0.6&0.4\end{bmatrix}^2=\begin{bmatrix}0.51&0.49\\0.42&0.58\end{bmatrix}\ \Rightarrow\ p\big(X^{(3)}{=}R\mid X^{(1)}{=}R\big)=0.51$$</div>
+    </div>
+
+    <div class="mod gold">
+      <span class="mod-tag">Module 8 · 长期行为</span>
+      <h3>初始分布演化 &amp; long-run distribution</h3>
+      <p>设初始分布（<b>行向量</b>）$\pi^{(0)}$，$\pi^{(0)}_i=P(X^{(0)}{=}i)$。则时刻 $n$ 的分布 $\pi^{(n)}=\pi^{(0)}P^{n}$（<b>行向量左乘</b>矩阵幂）。若它收敛到一个<b>与初始状态无关</b>的极限，就叫 <b>long-run distribution</b>：$\pi=\lim_{n\to\infty}\pi^{(n)}$。</p>
+      <div class="box note"><span class="lab">直觉</span><p>无论从哪儿出发，游走足够久后，你在各状态停留的"时间占比"趋于固定——像游客最终在各街区停留的天数比例稳定下来。天气例子从 $(0.5,0.5)$ 迭代，收敛到 $\pi\approx(0.461,0.539)$。</p></div>
+    </div>
+
+    <div class="mod gold">
+      <span class="mod-tag">Module 9 · 稳态</span>
+      <h3>Steady-state equation 与一个易错陷阱</h3>
+      <p>满足 $\hat\pi=\hat\pi P$ 的分布叫 <b>steady-state distribution（稳态分布）</b>：走一步后分布不变。</p>
+      <div class="box warn"><span class="lab">最爱考的区别</span><p>long-run distribution 一定满足稳态方程；<b>但反过来不成立</b>——满足稳态方程的不一定是长期分布。反例 $P=\begin{bmatrix}0&1\\1&0\end{bmatrix}$ 在两态间来回跳，$P^n$ 在奇偶步之间振荡，<b>没有极限分布</b>；但 $(0.5,0.5)$ 仍满足 $\pi=\pi P$。</p></div>
+      <div class="box note"><span class="lab">直觉类比</span><p>像节拍器 A-B-A-B 永远摆动：平均下来是 50/50（满足稳态），但它从未"安定"到某个分布（无极限）。</p></div>
+    </div>
+
+    <div class="mod gold">
+      <span class="mod-tag">Module 10 · 主算法</span>
+      <h3>Simplified Metropolis–Hastings（两状态 / 对称提议）</h3>
+      <p>设后验只知<b>正比于</b> $g(\theta)$（即 $p(\theta)\propto g(\theta)$）。每步从当前 $\theta_{i-1}$ 提一个不同候选 $\theta^*$，算 <b>acceptance ratio（接受比）</b> $\alpha=\dfrac{g(\theta^*)}{g(\theta_{i-1})}$，然后：$\alpha\ge1$ 必接受；$0<\alpha<1$ 以概率 $\alpha$ 接受、以 $1-\alpha$ 留原地。</p>
+      <div class="box key"><span class="lab">为什么能绕开难积分（核心）</span><p>算法只用到<b>比值</b> $g(\theta^*)/g(\theta_{i-1})$，那个算不出来的归一化常数在分子分母里<b>约掉了</b>——所以 $g$ 只需知道正比于后验即可。这正是 MCMC 的威力。</p></div>
+      <div class="box note"><span class="lab">直觉类比</span><p>像爬山者：总是迈向后验更高的地方；偶尔（以概率 $\alpha$）也往低处走一步以继续探索。而他<b>只需比较两处高度</b>，从不需要知道"整座山的总面积"（常数）。</p></div>
+    </div>
+
+    <div class="mod gold">
+      <span class="mod-tag">Module 11 · 主算法（完整版）</span>
+      <h3>已知任意转移矩阵：Metropolis Algorithm</h3>
+      <p>若除了目标 $\pi$，还另外给了一个<b>任意</b>提议转移矩阵 $P$（元素 $p_{i,j}$），要把它"改造"成 $P^*$ 使 $\pi=\pi P^*$。逐对 $(i,j)$：</p>
+      <div class="formula">$$\alpha_{i,j}=\min\!\Big(\frac{\pi_j\,p_{j,i}}{\pi_i\,p_{i,j}},\,1\Big),\qquad p^*_{i,j}=\alpha_{i,j}\,p_{i,j}\ (i\ne j),\qquad p^*_{i,i}=1-\sum_{j\ne i}p^*_{i,j}$$</div>
+      <p>Module 10 是它的特例：当提议对称（$p_{i,j}=p_{j,i}$，两状态"必去对方"即属此类），$\alpha_{i,j}=\min(\pi_j/\pi_i,1)=\min\!\big(g(\theta^*)/g(\theta_\text{当前}),1\big)$。</p>
+    </div>
+
+    <div class="mod">
+      <span class="mod-tag">Module 12 · 实践</span>
+      <h3>Burn-in（预烧期）</h3>
+      <p>在电脑上模拟时，<b>最初的样本严重依赖起点 $\theta_0$</b>，还没到稳态。把前 $m_0$ 步（burn-in）样本<b>丢掉</b>，只用之后的 $\{\theta_{m_0+1},\dots,\theta_m\}$ 当作后验近似样本（例 $m{=}10{,}000$，丢 $m_0{=}1000$）。$m_0$ 多大没有万能答案：多起点跑多条链看是否收敛到相近区域，或看 <b>trace plot（轨迹图）</b>（画 $\theta_i$ 对 $i$）是否稳定。</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- ====================== PART 2：考点梳理 ===================== -->
+<!-- ============================================================= -->
+<section class="wrap" id="part2">
+  <div class="sec-head"><span class="sec-num">02</span><h2>考点梳理</h2></div>
+  <p class="sec-sub">按主题分类，逐条给：定义 / 公式 / 易混点。依据课件强调 + Learning Outcomes + 点名习题判断重要度。</p>
+
+  <div class="legend">
+    <span><span class="badge imp3">★★★ 高频</span> <span class="badge imp2">★★ 中等</span> <span class="badge imp1">★ 低频</span></span>
+    <span><b>标签：</b><span class="tag t-mem">记忆</span> 需背 &nbsp; <span class="tag t-calc">理解/计算</span> 需会算/会解释</span>
+  </div>
+
+  <!-- KP1 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP1</span><h3>MCMC 的动机：难算的归一化积分</h3>
+      <div class="kpt-meta"><span class="badge imp2">★★</span><span class="tag t-calc">理解</span></div></div>
+    <div class="box def"><span class="lab">定义/要点</span><p>后验 $p(\theta\mid\text{data})=\dfrac{p(\theta)p(\text{data}\mid\theta)}{\int p(\theta)p(\text{data}\mid\theta)\,d\theta}$。Bayes 只给出后验的<b>形状（shape）</b>；非共轭先验下分母积分常常算不出，故改用 MCMC 抽样逼近后验。</p></div>
+    <div class="box warn"><span class="lab">易错</span><p>误以为"必须先算出归一化常数才能做推断"。恰相反——M-H 用比值，常数会约掉。motivation 的 $t$-先验例子<b>不要求把积分算出来</b>。</p></div>
+  </div>
+
+  <!-- KP2 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP2</span><h3>Monte Carlo 与 MCMC 的基本思路</h3>
+      <div class="kpt-meta"><span class="badge imp2">★★</span><span class="tag t-calc">理解</span></div></div>
+    <div class="box def"><span class="lab">定义</span><p><b>Monte Carlo</b>：用计算机模拟抽大量样本来估计量/参数。<b>MCMC</b>：构造一条以后验为 long-run distribution 的 Markov chain，跑久后抽样、并在间隔较大的时间点取样使样本近似独立，再做后验分析。</p></div>
+    <div class="box warn"><span class="lab">易错</span><p>"样本量足够大时"才近似真后验；且要在<b>接近极限分布之后</b>再取样（呼应 burn-in）。</p></div>
+  </div>
+
+  <!-- KP3 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP3</span><h3>Stochastic process / state / state space（LO1）</h3>
+      <div class="kpt-meta"><span class="badge imp2">★★</span><span class="tag t-mem">记忆</span><span class="tag t-calc">理解</span></div></div>
+    <div class="box def"><span class="lab">定义</span><p><b>随机过程</b>：随时间按概率规律演化、含随机性的过程。<b>离散时间</b>（$t=1,2,\dots$）vs <b>连续时间</b>（$t\ge0$ 任意）。<b>State</b>=时刻取值 $X^{(n)}$；<b>State space</b>=所有可能取值集合。本讲只做离散时间、有限状态。</p></div>
+    <div class="box warn"><span class="lab">易错</span><p>本讲不处理 continuous-time；判断"是否随机过程/状态空间是什么"时按离散有限作答。</p></div>
+  </div>
+
+  <!-- KP4 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP4</span><h3>联合概率的条件分解（LO3）</h3>
+      <div class="kpt-meta"><span class="badge imp2">★★</span><span class="tag t-calc">计算</span></div></div>
+    <div class="box def"><span class="lab">公式</span>
+      <div class="formula" style="margin:6px 0">$$P(X^{(n)}{=}x_n)=\sum_{x_{n-1}}P\big(X^{(n)}{=}x_n\mid X^{(n-1)}{=}x_{n-1}\big)P\big(X^{(n-1)}{=}x_{n-1}\big)$$</div>
+      <p>联合概率"逐层搭"：后一层 = 这一步条件概率 × 上一层联合概率。</p></div>
+    <div class="box warn"><span class="lab">易错</span><p>求 $p(X^{(1)}{=}\cdot)$ 这类边缘量时，别忘了<b>对所有初始状态求和</b>。</p></div>
+  </div>
+
+  <!-- KP5 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP5</span><h3>Markov property</h3>
+      <div class="kpt-meta"><span class="badge imp3">★★★</span><span class="tag t-mem">记忆</span><span class="tag t-calc">理解</span></div></div>
+    <div class="box def"><span class="lab">定义</span><p>下一状态只依赖当前状态：$P(X^{(n)}\mid X^{(n-1)},\dots,X^{(0)})=P(X^{(n)}\mid X^{(n-1)})$。借此条件概率与联合概率大幅简化。</p></div>
+    <div class="box warn"><span class="lab">易错</span><p>不是"与历史无关地独立"，而是"给定<b>当前</b>状态后与更早历史条件独立"。</p></div>
+  </div>
+
+  <!-- KP6 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP6</span><h3>Transition probability matrix（LO2）</h3>
+      <div class="kpt-meta"><span class="badge imp3">★★★</span><span class="tag t-mem">记忆</span><span class="tag t-calc">计算</span></div></div>
+    <div class="box def"><span class="lab">定义</span><p>$P_{ij}=P(X^{(n+1)}{=}j\mid X^{(n)}{=}i)$：从 $i$（<b>行</b>）一步到 $j$（<b>列</b>）。time invariant（时齐）。<b>每行和 = 1</b>。</p></div>
+    <div class="box warn"><span class="lab">易错（最常错）</span><p>① 行列方向：行=出发态、列=到达态；② 分布是<b>行向量左乘</b> $\pi P$；③ 把转移概率误当联合概率。</p></div>
+  </div>
+
+  <!-- KP7 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP7</span><h3>n 步转移 $P^n$（LO4 · Ex 1）</h3>
+      <div class="kpt-meta"><span class="badge imp3">★★★</span><span class="tag t-calc">计算</span></div></div>
+    <div class="box def"><span class="lab">公式</span><p>$P^{(n)}=\underbrace{P\cdots P}_{n}=P^n$，且 $P^{[m+n]}=P^{[m]}P^{[n]}$。$n$ 步从 $i$ 到 $j$ 的概率 = $P^n$ 的 $(i,j)$ 项。</p></div>
+    <div class="box warn"><span class="lab">易错</span><p>矩阵乘法<b>不可交换</b>；务必"行 × 列"逐项算，别把元素算串行。</p></div>
+  </div>
+
+  <!-- KP8 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP8</span><h3>分布演化 $\pi^{(n)}=\pi^{(0)}P^n$ 与 long-run distribution（LO5）</h3>
+      <div class="kpt-meta"><span class="badge imp3">★★★</span><span class="tag t-calc">计算</span></div></div>
+    <div class="box def"><span class="lab">定义/公式</span><p>$\pi^{(n)}=\pi^{(0)}P^{n}$（行向量左乘）。若极限 $\pi=\lim_{n\to\infty}\pi^{(n)}$ 存在且<b>与初值无关</b>，即 long-run distribution。</p></div>
+    <div class="box warn"><span class="lab">易错</span><p>写成 $P^n\pi^{(0)}$（右乘）方向错；long-run 要求"与初始分布无关"。</p></div>
+  </div>
+
+  <!-- KP9 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP9</span><h3>Steady-state equation & 与 long-run 的区别（LO5 · Ex 1e）</h3>
+      <div class="kpt-meta"><span class="badge imp3">★★★</span><span class="tag t-mem">记忆</span><span class="tag t-calc">理解</span></div></div>
+    <div class="box def"><span class="lab">定义</span><p>满足 $\hat\pi=\hat\pi P$ 的分布为 steady-state distribution。<b>long-run ⟹ steady-state，反之不一定。</b></p></div>
+    <div class="box warn"><span class="lab">易错（高频概念坑）</span><p>看到 $\pi=\pi P$ 别立刻断言它是极限分布。记住周期反例 $P=\begin{bmatrix}0&1\\1&0\end{bmatrix}$：有稳态解 $(0.5,0.5)$ 但无 long-run distribution。</p></div>
+  </div>
+
+  <!-- KP10 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP10</span><h3>Simplified Metropolis–Hastings（LO6 · Ex 2）<span class="badge imp3" style="margin-left:6px">重头</span></h3>
+      <div class="kpt-meta"><span class="badge imp3">★★★</span><span class="tag t-mem">记忆</span><span class="tag t-calc">计算</span></div></div>
+    <div class="box def"><span class="lab">算法</span><p>① 选初值 $\theta_0$；② 每步提候选 $\theta^*\ne\theta_{i-1}$，算 $\alpha=\dfrac{g(\theta^*)}{g(\theta_{i-1})}$：$\alpha\ge1$ 取 $\theta_i=\theta^*$；$0<\alpha<1$ 以 $\alpha$ 接受、$1-\alpha$ 留原地。据各方向移动概率填 $P$（<b>对角=1−同行其余</b>），最后验证 $g(\theta)P=g(\theta)$。</p></div>
+    <div class="box key"><span class="lab">核心</span><p>只用比值 → 归一化常数约掉；$g$ 只需正比于后验。</p></div>
+    <div class="box warn"><span class="lab">易错</span><p>接受比方向（候选在分子）；忘补对角使行和为 1；$\alpha\ge1$ 是"以概率 1 接受"。</p></div>
+  </div>
+
+  <!-- KP11 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP11</span><h3>完整 Metropolis：已知任意 $P$（LO6 · Ex 4）<span class="badge imp3" style="margin-left:6px">重头</span></h3>
+      <div class="kpt-meta"><span class="badge imp3">★★★</span><span class="tag t-mem">记忆</span><span class="tag t-calc">计算</span></div></div>
+    <div class="box def"><span class="lab">公式（三步）</span>
+      <div class="formula" style="margin:6px 0">$$\alpha_{i,j}=\min\!\Big(\frac{\pi_j p_{j,i}}{\pi_i p_{i,j}},1\Big);\quad p^*_{i,j}=\alpha_{i,j}p_{i,j}\,(i\ne j);\quad p^*_{i,i}=1-\sum_{j\ne i}p^*_{i,j}$$</div>
+      <p>给定目标 $\pi$ 与任意提议矩阵 $P$，输出以 $\pi$ 为稳态的 $P^*$；最后验证 $\pi P^*=\pi$。</p></div>
+    <div class="box warn"><span class="lab">易错（指标交换）</span><p>分子用<b>反向</b> $p_{j,i}$ 与 $\pi_j$，分母用 $p_{i,j}$ 与 $\pi_i$——极易写反；以及最后别忘补对角。</p></div>
+  </div>
+
+  <!-- KP12 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP12</span><h3>Burn-in</h3>
+      <div class="kpt-meta"><span class="badge imp2">★★</span><span class="tag t-calc">理解</span></div></div>
+    <div class="box def"><span class="lab">定义</span><p>链尚未接近稳态前的初始阶段；这些样本严重依赖起点 $\theta_0$、不代表后验，<b>分析前丢弃</b>。判断丢多少：多链多起点看收敛、或看 trace plot 是否稳定。</p></div>
+    <div class="box warn"><span class="lab">易错</span><p>burn-in 的样本反映的是"起点"而非后验（如疾病例从 mild 起步会早期 overshoot），所以才要丢。</p></div>
+  </div>
+
+  <!-- KP13 -->
+  <div class="kpt">
+    <div class="kpt-head"><span class="kpt-no">KP13</span><h3>明确的非考内容（划掉省时间）</h3>
+      <div class="kpt-meta"><span class="badge imp1">★ 跳过</span></div></div>
+    <div class="box note"><span class="lab">可跳过</span><p>① 正式收敛诊断 <b>Gelman-Rubin $\hat R$</b>——课件原话"本模块不讲"；Stan / PyMC 细节也只提一嘴。② <b>Gibbs Sampler</b> 本讲只点名"是 M-H 特例"、<b>未展开</b>，本讲不考其细节。③ motivation 那个 normal+t 后验积分只为动机、未真算。④ continuous-time process 只声明。（Ex 3 未被点名，按你的习题表确认即可。）</p></div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- ====================== PART 3：复习题目 ===================== -->
+<!-- ============================================================= -->
+<section class="wrap" id="part3">
+  <div class="sec-head"><span class="sec-num">03</span><h2>复习题目</h2></div>
+  <p class="sec-sub">基础 → 进阶 → 综合。选择/判断题点击作答即时判分；计算/简答题点"显示答案与解析"对照完整步骤。</p>
+
+  <div class="progress">
+    <span class="stat">已答 <b id="stat-answered">0</b> / <b id="stat-total">0</b></span>
+    <span class="stat">正确 <b class="ok" id="stat-correct">0</b></span>
+    <div class="pbar"><div id="progress-fill"></div></div>
+    <span class="stat" style="font-size:12.5px; color:var(--muted)">（仅统计选择/判断题）</span>
+  </div>
+
+  <!-- Q1 MCQ -->
+  <div class="q mcq" data-answer="B" data-locked="0">
+    <div class="q-head"><span class="qt">选择</span><span class="qd d-base">基础</span><span class="qpt">KP5 · Markov property</span></div>
+    <p class="q-text"><span class="q-no">Q1.</span>下列哪项最准确地描述 <b>Markov property</b>？</p>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="ol">A</span><span>未来状态依赖于全部历史状态</span></li>
+      <li class="option" data-opt="B"><span class="ol">B</span><span>未来状态只依赖当前状态，与如何到达当前状态无关</span></li>
+      <li class="option" data-opt="C"><span class="ol">C</span><span>过程必须在连续时间上演化</span></li>
+      <li class="option" data-opt="D"><span class="ol">D</span><span>转移概率随时间不断改变</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案：B</span>
+      <p>Markov property = 无记忆性：$P(X^{(n)}\mid X^{(n-1)},\dots,X^{(0)})=P(X^{(n)}\mid X^{(n-1)})$。A 恰是反面；C 错（本讲是离散时间）；D 是 time invariant 的反面。</p>
+    </div></details>
+  </div>
+
+  <!-- Q2 MCQ -->
+  <div class="q mcq" data-answer="B" data-locked="0">
+    <div class="q-head"><span class="qt">选择</span><span class="qd d-base">基础</span><span class="qpt">KP6 · 转移矩阵</span></div>
+    <p class="q-text"><span class="q-no">Q2.</span>转移矩阵 $P$ 的元素 $P_{ij}$ 表示什么，且<b>每一行之和</b>等于多少？</p>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="ol">A</span><span>$P(X^{(n+1)}{=}i\mid X^{(n)}{=}j)$；行和 = 1</span></li>
+      <li class="option" data-opt="B"><span class="ol">B</span><span>$P(X^{(n+1)}{=}j\mid X^{(n)}{=}i)$；行和 = 1</span></li>
+      <li class="option" data-opt="C"><span class="ol">C</span><span>$P(X^{(n+1)}{=}j\mid X^{(n)}{=}i)$；列和 = 1</span></li>
+      <li class="option" data-opt="D"><span class="ol">D</span><span>联合概率 $P(X^{(n+1)}{=}j,\,X^{(n)}{=}i)$；行和 = 1</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案：B</span>
+      <p>$P_{ij}$ 是从 $i$（行）到 $j$（列）的一步转移概率；每行是"给定当前态"的条件分布，故<b>行和为 1</b>。C 把行/列搞反，A 把 $i,j$ 方向搞反，D 误为联合概率。</p>
+    </div></details>
+  </div>
+
+  <!-- Q3 判断 -->
+  <div class="q mcq" data-answer="F" data-locked="0">
+    <div class="q-head"><span class="qt">判断</span><span class="qd d-base">基础</span><span class="qpt">KP9 · steady vs long-run</span></div>
+    <p class="q-text"><span class="q-no">Q3.</span>判断："任何满足稳态方程 $\hat\pi=\hat\pi P$ 的分布，都是该链的 long-run distribution。"</p>
+    <ul class="options">
+      <li class="option" data-opt="T"><span class="ol">T</span><span>正确</span></li>
+      <li class="option" data-opt="F"><span class="ol">F</span><span>错误</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案：错误</span>
+      <p>long-run ⟹ steady-state，但<b>反之不成立</b>。反例 $P=\begin{bmatrix}0&1\\1&0\end{bmatrix}$ 在两态间振荡、无极限分布，但 $(0.5,0.5)$ 满足 $\pi=\pi P$。这是高频概念坑。</p>
+    </div></details>
+  </div>
+
+  <!-- Q4 判断 -->
+  <div class="q mcq" data-answer="F" data-locked="0">
+    <div class="q-head"><span class="qt">判断</span><span class="qd d-mid">进阶</span><span class="qpt">KP1 · KP10 · 归一化常数</span></div>
+    <p class="q-text"><span class="q-no">Q4.</span>判断："使用 Metropolis–Hastings 时，必须先算出后验的归一化常数（那个难积分）才能计算接受比 $\alpha$。"</p>
+    <ul class="options">
+      <li class="option" data-opt="T"><span class="ol">T</span><span>正确</span></li>
+      <li class="option" data-opt="F"><span class="ol">F</span><span>错误</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案：错误</span>
+      <p>接受比只用比值 $\alpha=g(\theta^*)/g(\theta_{i-1})$，未知常数在分子分母<b>约掉</b>——这正是 MCMC 绕开难积分的关键。$g$ 只需知道正比于后验。</p>
+    </div></details>
+  </div>
+
+  <!-- Q5 选择：MCMC思路 -->
+  <div class="q mcq" data-answer="C" data-locked="0">
+    <div class="q-head"><span class="qt">选择</span><span class="qd d-base">基础</span><span class="qpt">KP2 · MCMC 思路</span></div>
+    <p class="q-text"><span class="q-no">Q5.</span>关于 MCMC 的基本思路，下列哪项<b>错误</b>？</p>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="ol">A</span><span>构造一条以后验为 long-run distribution 的 Markov chain</span></li>
+      <li class="option" data-opt="B"><span class="ol">B</span><span>让链运行足够久、接近极限分布后再抽样</span></li>
+      <li class="option" data-opt="C"><span class="ol">C</span><span>必须先解析地算出后验的归一化常数</span></li>
+      <li class="option" data-opt="D"><span class="ol">D</span><span>在间隔较大的时间点抽样，使样本近似独立</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案：C</span>
+      <p>MCMC 正是为<b>避免</b>算归一化常数而生；A、B、D 都是课件列出的 rough idea。</p>
+    </div></details>
+  </div>
+
+  <!-- Q6 选择：接受比 -->
+  <div class="q mcq" data-answer="B" data-locked="0">
+    <div class="q-head"><span class="qt">选择</span><span class="qd d-mid">进阶</span><span class="qpt">KP10 · 接受比</span></div>
+    <p class="q-text"><span class="q-no">Q6.</span>简化 M-H（两状态）中，从当前 $\theta_{i-1}$ 提议候选 $\theta^*$，接受比 $\alpha$ 为：</p>
+    <ul class="options">
+      <li class="option" data-opt="A"><span class="ol">A</span><span>$\alpha=g(\theta_{i-1})/g(\theta^*)$</span></li>
+      <li class="option" data-opt="B"><span class="ol">B</span><span>$\alpha=g(\theta^*)/g(\theta_{i-1})$</span></li>
+      <li class="option" data-opt="C"><span class="ol">C</span><span>$\alpha=g(\theta^*)\cdot g(\theta_{i-1})$</span></li>
+      <li class="option" data-opt="D"><span class="ol">D</span><span>$\alpha=g(\theta^*)-g(\theta_{i-1})$</span></li>
+    </ul>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案：B</span>
+      <p><b>候选在分子、当前在分母</b>。$\alpha\ge1$ 以概率 1 接受；$0<\alpha<1$ 以 $\alpha$ 接受、$1-\alpha$ 留原地。A 把分子分母搞反——这是常见失分点。</p>
+    </div></details>
+  </div>
+
+  <!-- Q7 填空 -->
+  <div class="q">
+    <div class="q-head"><span class="qt">填空</span><span class="qd d-base">基础</span><span class="qpt">KP8 · 分布演化</span></div>
+    <p class="q-text"><span class="q-no">Q7.</span>给定初始分布行向量 $\pi^{(0)}$ 与转移矩阵 $P$，时刻 $n$ 的分布为 $\pi^{(n)}=\underline{\phantom{XXXXXX}}$；若它收敛到与初值无关的极限，则该极限称为 $\underline{\phantom{XXXXXX}}$。</p>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案</span>
+      <p>$\pi^{(n)}=\pi^{(0)}P^{n}$（<b>行向量左乘</b>，不是 $P^n\pi^{(0)}$）；极限称为 <b>long-run distribution（长期/极限分布）</b>。</p>
+    </div></details>
+  </div>
+
+  <!-- Q8 计算：P^2 -->
+  <div class="q">
+    <div class="q-head"><span class="qt">计算</span><span class="qd d-base">基础</span><span class="qpt">KP7 · n 步转移</span></div>
+    <p class="q-text"><span class="q-no">Q8.</span>学生学习习惯：状态 $S$（学）、$N$（不学），转移矩阵 $P=\begin{bmatrix}0.8&0.2\\0.4&0.6\end{bmatrix}$（$S$ 为第一行/列）。若周一学习（$X^{(0)}{=}S$），求周三也学习的概率 $p(X^{(2)}{=}S\mid X^{(0)}{=}S)$。</p>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案：0.72</span>
+      <ol class="steps">
+        <li>两天 = 2 步，求 $P^2$ 的 $(S,S)$ 项。</li>
+        <li>第一行：$[\,0.8\cdot0.8+0.2\cdot0.4,\ 0.8\cdot0.2+0.2\cdot0.6\,]=[\,0.72,\ 0.28\,]$。</li>
+        <li>故 $p(X^{(2)}{=}S\mid X^{(0)}{=}S)=0.72$。（完整 $P^2=\begin{bmatrix}0.72&0.28\\0.56&0.44\end{bmatrix}$）</li>
+      </ol>
+      <p><b>易错：</b>"行 × 列"逐项算；取的是第一行第一列项。</p>
+    </div></details>
+  </div>
+
+  <!-- Q9 计算：联合概率 -->
+  <div class="q">
+    <div class="q-head"><span class="qt">计算</span><span class="qd d-mid">进阶</span><span class="qpt">KP4 · 联合概率</span></div>
+    <p class="q-text"><span class="q-no">Q9.</span>天气链：$R$（雨）、$S$（晴），$P=\begin{bmatrix}0.3&0.7\\0.6&0.4\end{bmatrix}$（$R$ 第一行/列），初始 $p(X^{(0)}{=}R)=p(X^{(0)}{=}S)=0.5$。求联合概率 $p\big(X^{(2)}{=}R,\,X^{(1)}{=}R\big)$。</p>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案：0.135</span>
+      <ol class="steps">
+        <li>分解：$p(X^{(2)}{=}R,X^{(1)}{=}R)=p(X^{(2)}{=}R\mid X^{(1)}{=}R)\,p(X^{(1)}{=}R)$。</li>
+        <li>$p(X^{(2)}{=}R\mid X^{(1)}{=}R)=P_{RR}=0.3$。</li>
+        <li>$p(X^{(1)}{=}R)=p(R\mid S)p(S)+p(R\mid R)p(R)=0.6\cdot0.5+0.3\cdot0.5=0.45$。</li>
+        <li>相乘：$0.3\times0.45=\mathbf{0.135}$。</li>
+      </ol>
+      <p><b>易错：</b>第 3 步要<b>对所有初始状态求和</b>才能得到 $p(X^{(1)}{=}R)$。</p>
+    </div></details>
+  </div>
+
+  <!-- Q10 计算：steady/long-run -->
+  <div class="q">
+    <div class="q-head"><span class="qt">计算</span><span class="qd d-mid">进阶</span><span class="qpt">KP8 · KP9 · long-run</span></div>
+    <p class="q-text"><span class="q-no">Q10.</span>天气链 $P=\begin{bmatrix}0.3&0.7\\0.6&0.4\end{bmatrix}$。通过求解稳态方程 $\pi=\pi P$（设 $\pi=(a,\,1-a)$）求 long-run distribution。</p>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案：$\pi\approx(0.461,\ 0.539)$</span>
+      <ol class="steps">
+        <li>取第一分量方程：$a=0.3a+0.6(1-a)$。</li>
+        <li>整理：$a=0.3a+0.6-0.6a\Rightarrow 1.3a=0.6$。</li>
+        <li>解得 $a=0.6/1.3=0.4615$，故 $\pi\approx(0.4615,\ 0.5385)\approx(0.461,\ 0.539)$。</li>
+      </ol>
+      <p>课件用迭代 $\pi^{(0)}P^n$ 也收敛到同一结果——体现"long-run 满足稳态方程"。<b>易错：</b>用 $a+(1-a)=1$ 降维，只需解一个方程。</p>
+    </div></details>
+  </div>
+
+  <!-- Q11 综合：coin toss 全流程 -->
+  <div class="q">
+    <div class="q-head"><span class="qt">计算</span><span class="qd d-adv">综合</span><span class="qpt">KP1 · KP10 · 全流程</span></div>
+    <p class="q-text"><span class="q-no">Q11.</span>硬币：fair $\theta{=}0.5$、unfair $\theta{=}0.7$；先验 $p(0.5){=}0.4,\ p(0.7){=}0.6$。掷 5 次得 2 正 3 反。<b>(a)</b> 求后验 $g(\theta)$；<b>(b)</b> 用简化 M-H 构造转移矩阵 $P$（状态序 $0.5,0.7$）；<b>(c)</b> 验证 $g(\theta)P=g(\theta)$。</p>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">(a) 后验</span>
+      <p>似然 $L=\binom{5}{2}\theta^2(1-\theta)^3$。</p>
+      <p>$p(0.5\mid Y)=\dfrac{0.4\cdot\binom52(0.5)^5}{0.4\cdot\binom52(0.5)^5+0.6\cdot\binom52(0.7)^2(0.3)^3}=\dfrac{0.125}{0.125+0.0794}=0.612$；故 $p(0.7\mid Y)=0.388$。$\;g(\theta)=(0.612,\,0.388)$。</p>
+      <span class="pt">(b) 构造 P</span>
+      <ol class="steps">
+        <li>当前 $0.5$ 提 $0.7$：$\alpha=\dfrac{0.388}{0.612}=0.634<1$ ⟹ $P(0.5\!\to\!0.7)=0.634,\ P(0.5\!\to\!0.5)=1-0.634=0.366$。</li>
+        <li>当前 $0.7$ 提 $0.5$：$\alpha=\dfrac{0.612}{0.388}=1.577\ge1$ ⟹ $P(0.7\!\to\!0.5)=1,\ P(0.7\!\to\!0.7)=0$。</li>
+        <li>$P=\begin{bmatrix}0.366&0.634\\ 1&0\end{bmatrix}$。</li>
+      </ol>
+      <span class="pt">(c) 验证</span>
+      <p>$(0.612,\,0.388)\begin{bmatrix}0.366&0.634\\1&0\end{bmatrix}=(0.612\cdot0.366+0.388,\ \ 0.612\cdot0.634)=(0.612,\,0.388)\ \checkmark$</p>
+      <p><b>易错：</b>接受比方向；构造行时对角 = 1 − 同行其余。</p>
+    </div></details>
+  </div>
+
+  <!-- Q12 综合：disease 全流程 -->
+  <div class="q">
+    <div class="q-head"><span class="qt">计算</span><span class="qd d-adv">综合</span><span class="qpt">KP10 · 平行例</span></div>
+    <p class="q-text"><span class="q-no">Q12.</span>罕见病严重度：mild $p{=}0.7$、severe $p{=}0.3$。血标记阳性似然 $p(+\mid\text{mild}){=}0.3,\ p(+\mid\text{severe}){=}0.9$。检测<b>阳性</b>。<b>(a)</b> 求后验；<b>(b)</b> 构造 $P^*$（序 mild, severe）；<b>(c)</b> 验证。</p>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">(a) 后验</span>
+      <p>$p(+)=0.7\cdot0.3+0.3\cdot0.9=0.21+0.27=0.48$。<br>$p(\text{mild}\mid+)=0.21/0.48=0.4375$，$p(\text{severe}\mid+)=0.27/0.48=0.5625$。$\;g(\theta)=(0.4375,\,0.5625)$。</p>
+      <span class="pt">(b) 构造 P*</span>
+      <ol class="steps">
+        <li>mild→severe：$\alpha=\dfrac{0.5625}{0.4375}=1.2857\ge1$ ⟹ 概率 1。</li>
+        <li>severe→mild：$\alpha=\dfrac{0.4375}{0.5625}=0.7778<1$ ⟹ 接受 $0.7778$，留 severe $0.2222$。</li>
+        <li>$P^*=\begin{bmatrix}0&1\\0.7778&0.2222\end{bmatrix}$。</li>
+      </ol>
+      <span class="pt">(c) 验证</span>
+      <p>$(0.4375,\,0.5625)P^*=(0.5625\cdot0.7778,\ \ 0.4375+0.5625\cdot0.2222)=(0.4375,\,0.5625)\ \checkmark$</p>
+    </div></details>
+  </div>
+
+  <!-- Q13 综合：4-state Metropolis -->
+  <div class="q">
+    <div class="q-head"><span class="qt">计算</span><span class="qd d-adv">综合</span><span class="qpt">KP11 · 完整 Metropolis · Ex 4</span></div>
+    <p class="q-text"><span class="q-no">Q13.</span>已知提议矩阵 $P=\begin{bmatrix}.1&.2&.3&.4\\.1&.2&.3&.4\\.3&.4&.2&.1\\.3&.4&.2&.1\end{bmatrix}$，目标 $\pi=(.2,.3,.4,.1)$。求改造后 $P^*$ 的<b>第一行</b> $(p^*_{1,1},p^*_{1,2},p^*_{1,3},p^*_{1,4})$。</p>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案：第一行 $=(0.4,\ 0.15,\ 0.3,\ 0.15)$</span>
+      <p>公式 $\alpha_{i,j}=\min\!\big(\frac{\pi_j p_{j,i}}{\pi_i p_{i,j}},1\big),\ p^*_{i,j}=\alpha_{i,j}p_{i,j}$。</p>
+      <ol class="steps">
+        <li>$\alpha_{1,2}=\min\!\big(\frac{.3\cdot.1}{.2\cdot.2},1\big)=\min(0.75,1)=0.75\Rightarrow p^*_{1,2}=0.75\cdot.2=0.15$。</li>
+        <li>$\alpha_{1,3}=\min\!\big(\frac{.4\cdot.3}{.2\cdot.3},1\big)=\min(2,1)=1\Rightarrow p^*_{1,3}=1\cdot.3=0.3$。</li>
+        <li>$\alpha_{1,4}=\min\!\big(\frac{.1\cdot.3}{.2\cdot.4},1\big)=\min(0.375,1)=0.375\Rightarrow p^*_{1,4}=0.375\cdot.4=0.15$。</li>
+        <li>对角补足：$p^*_{1,1}=1-(0.15+0.3+0.15)=0.4$。</li>
+      </ol>
+      <p><b>易错：</b>分子用<b>反向</b> $p_{j,i}$ 与 $\pi_j$（极易写反）；最后别忘补对角使行和为 1。完整 $P^*$ 第一行即上式。</p>
+    </div></details>
+  </div>
+
+  <!-- Q14 简答：burn-in -->
+  <div class="q">
+    <div class="q-head"><span class="qt">简答</span><span class="qd d-mid">进阶</span><span class="qpt">KP12 · Burn-in</span></div>
+    <p class="q-text"><span class="q-no">Q14.</span>什么是 <b>burn-in</b>？为什么要丢弃这部分样本？实践中如何判断丢多少？</p>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案要点</span>
+      <p><b>是什么：</b>链尚未接近 stationary distribution 之前的初始阶段。</p>
+      <p><b>为何丢：</b>这些样本严重依赖起点 $\theta_0$，反映的是起始状态而非后验（如疾病例从 mild 起步会早期 overshoot），故在后验分析前丢弃。</p>
+      <p><b>丢多少：</b>没有万能公式；常用 ① 多起点跑多条链，看是否收敛到相近区域；② 看 trace plot（$\theta_i$ 对 $i$）是否稳定。课件示例 $m{=}10{,}000$ 丢 $m_0{=}1000$。</p>
+    </div></details>
+  </div>
+
+  <!-- Q15 简答：为什么MCMC -->
+  <div class="q">
+    <div class="q-head"><span class="qt">简答</span><span class="qd d-mid">进阶</span><span class="qpt">KP1 · 动机</span></div>
+    <p class="q-text"><span class="q-no">Q15.</span>为什么在非共轭先验下需要 MCMC？用一两句说明它如何"绕开"困难。</p>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案要点</span>
+      <p>后验 $p(\theta\mid\text{data})=\dfrac{p(\theta)p(\text{data}\mid\theta)}{\int p(\theta)p(\text{data}\mid\theta)\,d\theta}$，分母归一化积分在非共轭先验下常算不出。</p>
+      <p>MCMC <b>不算积分</b>，而是构造一条以后验为 long-run distribution 的 Markov chain，从中抽样近似后验；而 M-H <b>只用后验比值</b>，难算的归一化常数被约掉，因此 $g$ 只需知道正比于后验即可。</p>
+    </div></details>
+  </div>
+
+  <!-- Q16 论述：steady vs long-run -->
+  <div class="q">
+    <div class="q-head"><span class="qt">论述</span><span class="qd d-adv">综合</span><span class="qpt">KP9 · 概念辨析</span></div>
+    <p class="q-text"><span class="q-no">Q16.</span>解释为什么"满足稳态方程"不等于"是 long-run distribution"，并给出课件中的反例及其行为。</p>
+    <details class="answer-block"><summary>显示答案与解析</summary><div class="answer-content">
+      <span class="pt">答案要点</span>
+      <p><b>定义层面：</b>long-run distribution 是 $\pi^{(n)}=\pi^{(0)}P^n$ 的极限，且<b>与初值无关</b>；它必满足 $\pi=\pi P$。但稳态方程可能<b>有解而极限不存在</b>，所以满足稳态方程是<b>必要不充分</b>条件。</p>
+      <p><b>反例：</b>$P=\begin{bmatrix}0&1\\1&0\end{bmatrix}$。$P^n$ 在奇数步为 $\begin{bmatrix}0&1\\1&0\end{bmatrix}$、偶数步为 $I$ 之间振荡，链在两态间来回跳，<b>无极限分布</b>；但 $(0.5,0.5)$ 满足 $\pi=\pi P$。可见二者不等价。</p>
+      <p><b>易错：</b>不要由"解出稳态分布"直接断言"找到长期分布"；周期性会破坏极限存在。</p>
+    </div></details>
+  </div>
+
+</section>
+
+<button class="to-top" data-action="to-top" title="回到顶部" aria-label="回到顶部">↑</button>
+
+<footer>
+  <p>内容严格基于所提供的 Lecture 13（MCMC: Metropolis–Hastings Algorithm）课件整理。重要度依据课件强调程度、Session Outcomes 与点名习题（Ex 1(a–e)、2、4）综合判断；标"推测/跳过"处已注明。公式由 MathJax 渲染，离线时以源码显示不影响阅读。</p>
+  <p style="margin-bottom:0; color:var(--line-strong)">复习愉快 · 祝考试顺利 🎯</p>
+</footer>
+
+<!-- ================= 交互脚本（事件委托；不挂 window；纯增强） ================= -->
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- 进度统计 ---------- */
+  var mcqEls = Array.prototype.slice.call(document.querySelectorAll('.mcq'));
+  var totalQ = mcqEls.length;
+  var answered = 0, correct = 0;
+
+  function renderStats() {
+    var a = document.getElementById('stat-answered');
+    var c = document.getElementById('stat-correct');
+    var t = document.getElementById('stat-total');
+    var bar = document.getElementById('progress-fill');
+    if (a) a.textContent = String(answered);
+    if (c) c.textContent = String(correct);
+    if (t) t.textContent = String(totalQ);
+    if (bar) bar.style.width = (totalQ ? (answered / totalQ * 100) : 0) + '%';
+  }
+
+  /* ---------- 选择/判断题点击 ---------- */
+  function handleOption(optionEl) {
+    var mcq = optionEl.closest('.mcq');
+    if (!mcq) return;
+    if (mcq.getAttribute('data-locked') === '1') return; /* 已作答则锁定 */
+    mcq.setAttribute('data-locked', '1');
+
+    var ans = mcq.getAttribute('data-answer');
+    var chosen = optionEl.getAttribute('data-opt');
+    var opts = mcq.querySelectorAll('.option');
+    Array.prototype.forEach.call(opts, function (o) {
+      o.classList.add('locked');
+      var v = o.getAttribute('data-opt');
+      if (v === ans) o.classList.add('opt-correct');
+      if (v === chosen && chosen !== ans) o.classList.add('opt-wrong');
+    });
+
+    var det = mcq.querySelector('details.answer-block');
+    if (det) det.open = true;           /* 直接设 open 属性，不依赖 class 切换 */
+
+    answered += 1;
+    if (chosen === ans) correct += 1;
+    renderStats();
+  }
+
+  /* ---------- 展开/收起全部：直接操作 details.open ---------- */
+  function setAllDetails(open) {
+    var all = document.querySelectorAll('details');
+    Array.prototype.forEach.call(all, function (d) { d.open = open; });
+  }
+
+  /* ---------- 统一事件委托 ---------- */
+  document.addEventListener('click', function (e) {
+    var opt = e.target.closest('.option');
+    if (opt) { handleOption(opt); return; }
+
+    var act = e.target.closest('[data-action]');
+    if (act) {
+      var a = act.getAttribute('data-action');
+      if (a === 'expand-all') { setAllDetails(true); return; }
+      if (a === 'collapse-all') { setAllDetails(false); return; }
+      if (a === 'to-top') {
+        var smooth = !window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+        return;
+      }
+    }
+  });
+
+  /* ---------- MathJax 加载失败提示 ---------- */
+  window.addEventListener('load', function () {
+    setTimeout(function () {
+      var ok = window.MathJax && (window.MathJax.typesetPromise ||
+               (window.MathJax.startup && window.MathJax.startup.document));
+      if (!ok) {
+        var note = document.getElementById('mathjax-warning');
+        if (note) note.style.display = 'block';
+      }
+    }, 3500);
+  });
+
+  renderStats();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>L9 随机网络模型 · 期末复习</title>
+
+<!-- MathJax 加载 -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
+  };
+</script>
+<script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+        onerror="(function(){var el=document.getElementById('mathjax-fallback');if(el){el.style.display='block';}})();"></script>
+
+<style>
+  /* ===================== 基础重置 ===================== */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.75;
+    color: #2c3e50;
+    background: #f5f7fa;
+    font-size: 16px;
+  }
+
+  /* ===================== 顶部导航 ===================== */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e1e8ed;
+    padding: 12px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .topbar .brand {
+    font-weight: 700;
+    color: #d95a2b;
+    margin-right: auto;
+    font-size: 1.05rem;
+  }
+  .topbar a {
+    color: #34495e;
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 18px;
+    font-size: 0.92rem;
+    transition: all 0.2s ease;
+  }
+  .topbar a:hover { background: #fff1ea; color: #d95a2b; }
+
+  /* ===================== 容器布局 ===================== */
+  .container { max-width: 980px; margin: 0 auto; padding: 30px 20px 80px; }
+  section.block { margin-bottom: 50px; scroll-margin-top: 80px; }
+
+  /* ===================== 标题层级 ===================== */
+  h1 {
+    font-size: 2.1rem;
+    color: #1a2733;
+    border-left: 6px solid #d95a2b;
+    padding-left: 16px;
+    margin: 0 0 14px;
+  }
+  h2 {
+    font-size: 1.55rem;
+    color: #1a2733;
+    margin: 38px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #ffe0d2;
+  }
+  h3 {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    margin: 26px 0 10px;
+  }
+  h4 {
+    font-size: 1.05rem;
+    color: #34495e;
+    margin: 20px 0 8px;
+  }
+
+  p, li { color: #2c3e50; }
+
+  /* ===================== 高亮框 ===================== */
+  .callout {
+    background: #fff7f2;
+    border-left: 4px solid #d95a2b;
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-radius: 4px;
+  }
+  .callout.def {
+    background: #eef6ff;
+    border-left-color: #2b7fd9;
+  }
+  .callout.warn {
+    background: #fff8e6;
+    border-left-color: #e6a700;
+  }
+  .callout.formula {
+    background: #f3f0ff;
+    border-left-color: #6f42c1;
+    font-family: "Cambria Math", Georgia, serif;
+  }
+  .callout strong { color: inherit; }
+
+  /* 易错提醒 */
+  .pitfall {
+    background: #fdecea;
+    border-left: 4px solid #d9534f;
+    padding: 10px 14px;
+    margin: 12px 0;
+    border-radius: 4px;
+    font-size: 0.95rem;
+  }
+  .pitfall::before {
+    content: "⚠️ 易错点：";
+    font-weight: 700;
+    color: #c0392b;
+  }
+
+  /* ===================== 重要度星标 ===================== */
+  .stars {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 0.9rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    vertical-align: middle;
+  }
+  .stars.s3 { background: #ffe0d2; color: #c0392b; }
+  .stars.s2 { background: #fff4d6; color: #b87b00; }
+  .stars.s1 { background: #e6f1ff; color: #2b6cb0; }
+
+  .tag {
+    display: inline-block;
+    background: #ecf0f1;
+    color: #56636e;
+    padding: 1px 8px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    margin-right: 6px;
+  }
+  .tag.mem { background: #fdecf0; color: #b03060; }
+  .tag.und { background: #e2f5e8; color: #2a7a4f; }
+
+  /* ===================== 表格 ===================== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    background: #fff;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #ecf0f1;
+    font-size: 0.95rem;
+  }
+  th { background: #fff7f2; color: #1a2733; font-weight: 600; }
+  tbody tr:hover { background: #fafbfc; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ===================== 考点卡片 ===================== */
+  .knowledge-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 14px 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    border: 1px solid #ecf0f1;
+  }
+  .knowledge-card h4 { margin-top: 0; }
+
+  /* ===================== 题目区 ===================== */
+  .question {
+    background: #fff;
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 18px 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border: 1px solid #ecf0f1;
+  }
+  .q-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+  }
+  .q-header .qtype, .q-header .qpoint, .q-header .qdiff {
+    background: #f4f6f8;
+    color: #56636e;
+    padding: 2px 9px;
+    border-radius: 10px;
+  }
+  .q-header .qtype { background: #e6f1ff; color: #2b6cb0; }
+  .q-header .qpoint { background: #fdecf0; color: #b03060; }
+  .q-header .qdiff.easy { background: #e2f5e8; color: #2a7a4f; }
+  .q-header .qdiff.mid { background: #fff4d6; color: #b87b00; }
+  .q-header .qdiff.hard { background: #fdecea; color: #c0392b; }
+
+  .qstem { font-weight: 500; margin: 8px 0 14px; }
+
+  /* 选项 */
+  .options { list-style: none; padding: 0; margin: 12px 0; }
+  .options li {
+    padding: 9px 14px;
+    margin: 6px 0;
+    background: #f8f9fb;
+    border-radius: 6px;
+    border: 1px solid #e1e8ed;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .options li:hover { background: #eef2f6; }
+  .options li.correct {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+    font-weight: 500;
+  }
+  .options li.wrong {
+    background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+  }
+  .options.locked li { cursor: not-allowed; }
+  .options.locked li:hover { background: inherit; }
+  .options.locked li.correct:hover { background: #d4edda; }
+  .options.locked li.wrong:hover { background: #f8d7da; }
+  /* 锁定后仍标示正确答案，即使未被点击 */
+  .options.locked li.reveal-correct {
+    background: #e8f7ed;
+    border-color: #5cb85c;
+    color: #155724;
+  }
+
+  /* details 折叠答案 */
+  details.answer-block {
+    margin-top: 12px;
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    background: #fafbfc;
+    overflow: hidden;
+  }
+  details.answer-block > summary {
+    cursor: pointer;
+    padding: 10px 14px;
+    background: #eef4fb;
+    color: #2b6cb0;
+    font-weight: 500;
+    user-select: none;
+    list-style: none;
+    transition: background 0.15s;
+  }
+  details.answer-block > summary::-webkit-details-marker { display: none; }
+  details.answer-block > summary::before {
+    content: "▶ ";
+    display: inline-block;
+    transition: transform 0.2s;
+    margin-right: 4px;
+  }
+  details.answer-block[open] > summary::before {
+    transform: rotate(90deg);
+  }
+  details.answer-block > summary:hover { background: #dde9f6; }
+  .answer-content {
+    padding: 14px 18px;
+    border-top: 1px solid #e1e8ed;
+    background: #fdfdfd;
+  }
+  .answer-content p:first-child { margin-top: 0; }
+
+  /* 控件按钮 */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 0;
+    margin-bottom: 18px;
+    border-bottom: 1px dashed #d1dbe5;
+  }
+  .controls button {
+    padding: 8px 16px;
+    border: none;
+    background: #d95a2b;
+    color: #fff;
+    border-radius: 18px;
+    cursor: pointer;
+    font-size: 0.92rem;
+    transition: background 0.2s;
+  }
+  .controls button:hover { background: #b8481f; }
+  .controls button.ghost {
+    background: #fff;
+    color: #d95a2b;
+    border: 1px solid #d95a2b;
+  }
+  .controls button.ghost:hover { background: #fff1ea; }
+
+  .stat-bar {
+    background: #fff;
+    padding: 12px 18px;
+    border-radius: 8px;
+    margin: 10px 0 20px;
+    border: 1px solid #ecf0f1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    font-size: 0.95rem;
+    color: #34495e;
+  }
+  .stat-bar strong { color: #d95a2b; }
+
+  /* 回到顶部 */
+  #back-to-top {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: #d95a2b;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.2rem;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 99;
+  }
+  #back-to-top.visible { opacity: 1; pointer-events: auto; }
+
+  /* MathJax 加载失败提示 */
+  #mathjax-fallback {
+    display: none;
+    background: #fff8e6;
+    border-left: 4px solid #e6a700;
+    padding: 10px 14px;
+    margin: 14px 0;
+    border-radius: 4px;
+    font-size: 0.92rem;
+  }
+
+  /* 概念解释卡片（讲解部分） */
+  .concept {
+    background: linear-gradient(135deg, #fff7f2 0%, #fff 100%);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 18px 0;
+    border: 1px solid #ffe0d2;
+  }
+  .concept h4 { color: #d95a2b; margin-top: 0; }
+
+  /* 类比块 */
+  .analogy {
+    background: #f0fff5;
+    border-left: 4px solid #28a745;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 4px;
+    font-size: 0.96rem;
+  }
+  .analogy::before {
+    content: "💡 类比：";
+    font-weight: 700;
+    color: #1e7e34;
+  }
+
+  /* 步骤块 */
+  ol.steps { padding-left: 22px; }
+  ol.steps li { margin: 6px 0; }
+
+  /* 响应式 */
+  @media (max-width: 640px) {
+    body { font-size: 15px; }
+    h1 { font-size: 1.65rem; }
+    h2 { font-size: 1.3rem; }
+    h3 { font-size: 1.1rem; }
+    .container { padding: 20px 14px 80px; }
+    .knowledge-card, .question { padding: 14px 16px; }
+    .topbar { padding: 10px 12px; }
+    .topbar .brand { width: 100%; margin-bottom: 6px; text-align: center; }
+    #back-to-top { right: 14px; bottom: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<nav class="topbar">
+  <span class="brand">L9 · 随机网络模型</span>
+  <a href="#part1">课程讲解</a>
+  <a href="#part2">考点梳理</a>
+  <a href="#part3">复习题目</a>
+</nav>
+
+<main class="container">
+
+<div id="mathjax-fallback">
+  ⚠️ 数学公式渲染服务（MathJax）未能加载。公式将以源代码形式显示，但其余内容仍可正常阅读。可以尝试刷新页面或检查网络。
+</div>
+
+<!-- ========================= 第一部分：课程讲解 ========================= -->
+<section id="part1" class="block">
+  <h1>第一部分 · 课程讲解</h1>
+
+  <h2>0. 整体脉络：我们在解决什么问题？</h2>
+
+  <p>本讲（L9）是 L7「随机网络模型入门」的延续。要理解这一讲，先回顾一下整门课在这一块的<strong>主线</strong>：</p>
+
+  <div class="callout">
+    <p><strong>问题：</strong>我们想用「随机网络模型」来近似描述真实世界的网络（社交网络、论文引用网络、互联网…）。但已经学过的两个最基础模型 —— $G(n,m)$ 和 $G(n,p)$ —— 虽然简单好分析，却<strong>不能同时</strong>再现真实网络的三大关键性质：</p>
+    <ol>
+      <li><strong>小直径 / 小平均路径长度</strong>（"六度分隔"）</li>
+      <li><strong>大聚类系数</strong>（"朋友的朋友也是朋友"）</li>
+      <li><strong>无标度度分布</strong>（少数节点是「hub」，度分布服从幂律）</li>
+    </ol>
+    <p>L9 的任务就是引入三个更精细的模型，分别解决其中一部分性质：</p>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>模型</th><th>核心思想</th><th>能再现什么</th><th>仍欠缺什么</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>配置模型</strong><br>(Configuration Model)</td><td>固定整条<strong>度序列</strong>，然后随机匹配 stubs</td><td>任意度分布 + 小世界路径长度</td><td>聚类系数仍偏低</td></tr>
+      <tr><td><strong>Watts–Strogatz</strong></td><td>规则环 + 以概率 $p$ 随机重连</td><td>同时具备<strong>大聚类系数 + 小路径长度</strong></td><td>度分布太均匀，不无标度</td></tr>
+      <tr><td><strong>Barabási–Albert</strong></td><td>逐步加点，按度<strong>优先连接</strong></td><td><strong>幂律</strong>度分布 + hubs</td><td>聚类系数偏低</td></tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top: 14px;">结论是：<strong>没有哪个模型是「完美」的</strong>，但理解它们的构造和性质，让我们对真实网络有了一组互补的视角。</p>
+
+  <h2>1. 模块一：配置模型 (Configuration Model)</h2>
+
+  <div class="concept">
+    <h4>核心定义</h4>
+    <p>给定一个<strong>度序列</strong> $(k_1, k_2, \ldots, k_n)$（每个节点的度是固定的），按下面的步骤构造一个网络：</p>
+    <ol class="steps">
+      <li>固定 $n$ 个节点；</li>
+      <li>给节点 $i$ 配上度 $k_i$；</li>
+      <li>在每个节点 $i$ 周围画出 $k_i$ 个 <strong>"stubs"（半条边 / 边的端点）</strong>；</li>
+      <li>把 $2m = \sum_i k_i$ 个 stubs 随机两两配对，每对连成一条完整的边。</li>
+    </ol>
+  </div>
+
+  <div class="analogy">
+    把每个节点想象成一只章鱼，度 $k_i$ 就是它伸出来的触手数量。配置模型就是把所有章鱼的触手在桌子上摊开，然后蒙着眼睛随机抓两只触手就握手成边。最后得到的网络的"度"是预先安排好的，但具体谁连谁是随机的。</div>
+
+  <h4>1.1 关键计数：匹配数 $M$</h4>
+
+  <p>$2m$ 个 stub 排成一个向量 $(1A, 1B, \ldots, nA, nB, \ldots)$。所有可能的匹配数为：</p>
+
+  <div class="callout formula">
+    $$M = \frac{(2m)!}{m! \, 2^m} = (2m-1)(2m-3)\cdots 1 = (2m-1)!!$$
+  </div>
+
+  <p>推导思路：先全排列 $(2m)!$ 种；把序列两两分组 $m$ 对 → 对内顺序无关除以 $2^m$；对之间顺序无关除以 $m!$。</p>
+
+  <h4>1.2 不同网络不等概率</h4>
+
+  <p>关键事实：一个 stub 匹配对应一个具体的"配对方案"，但<strong>多个不同的 stub 匹配可能产生同一个网络</strong>（图同构）。所以：</p>
+
+  <div class="callout formula">
+    $$P(G) = \frac{K(G)}{(2m-1)!!}$$
+    其中 $K(G)$ 是产生网络 $G$ 的不同 stub 匹配数。
+  </div>
+
+  <p>更具体地，可以推导出：</p>
+
+  <div class="callout formula">
+    $$\boxed{\,P(G) = \frac{\prod_i k_i!}{(2m-1)!! \cdot \prod_{i<j} m_{ij}! \cdot \prod_i (2s_i)!!}\,}$$
+  </div>
+
+  <p>各因子含义：</p>
+  <ul>
+    <li>$\prod_i k_i!$：每个节点 $i$ 周围的 $k_i$ 个 stub 任意置换都得到同一网络，贡献 $k_i!$；</li>
+    <li>$\prod_{i<j} m_{ij}!$：若 $i,j$ 之间有 $m_{ij}$ 条<strong>多重边</strong>，这 $m_{ij}$ 条边之间互换不算新匹配，需除以 $m_{ij}!$；</li>
+    <li>$\prod_i (2s_i)!!$：若节点 $i$ 上有 $s_i$ 个<strong>自环</strong>，每个自环内 2 个 stub 可互换（贡献 $2^s$），$s$ 个自环之间也可互换（贡献 $s!$），最后这一项就是更正系数 $(2s)!!$。</li>
+  </ul>
+
+  <div class="pitfall">配置模型<strong>允许自环和多重边</strong>！这是它与"简单图"模型最大的不同。</div>
+
+  <h4>1.3 友谊悖论 (Friendship Paradox)</h4>
+
+  <p>问题：在配置模型里，一个节点的<strong>邻居</strong>的度分布是怎样的？</p>
+
+  <p>直觉上你可能以为是 $p_k$（度分布本身）。但<strong>不是</strong>！想想 $p_0$ —— 度为 0 的孤立节点根本没人能成为它的邻居。</p>
+
+  <p>一个 stub 命中度为 $k$ 的某节点的概率正比于 $k$（度大的节点 stub 多）：</p>
+
+  <div class="callout formula">
+    $$P(\text{邻居度为 } k) = \frac{k p_k}{\langle k\rangle}$$
+    $$\langle k_{\text{邻}}\rangle = \sum_k k \cdot \frac{kp_k}{\langle k\rangle} = \frac{\langle k^2\rangle}{\langle k\rangle}$$
+  </div>
+
+  <p>由方差非负 $\sigma_k^2 = \langle k^2\rangle - \langle k\rangle^2 \ge 0$，可得：</p>
+
+  <div class="callout">
+    $$\frac{\langle k^2\rangle}{\langle k\rangle} - \langle k\rangle = \frac{\sigma_k^2}{\langle k\rangle} \ge 0$$
+    <strong>结论：你的朋友平均比你朋友更多。</strong>这就是友谊悖论。
+  </div>
+
+  <div class="analogy">
+    朋友多的人天然更容易被随机抽到当作"某人的朋友"。所以"被抽中的朋友"不是普通人的随机样本，而是<strong>偏向社交达人</strong>的样本。</div>
+
+  <h4>1.4 配置模型的应用 & 性质</h4>
+  <ul>
+    <li><strong>模块度（Modularity）的"零模型"：</strong>边 $(i,j)$ 在配置模型中存在的概率约为 $\dfrac{k_i k_j}{2m}$，正是模块度公式 $Q = \dfrac{1}{2m}\sum_{i,j}\left(A_{ij}-\dfrac{k_ik_j}{2m}\right)\delta_{g_ig_j}$ 中减去的"期望"项；</li>
+    <li><strong>小世界性质：</strong>对任意度分布，配置模型的平均路径长度都是 $O(\ln n)$；</li>
+    <li><strong>幂律度分布 + 巨型连通分支：</strong>取 $p_k \propto k^{-\alpha}$（$2 < \alpha \le 3$）时，配置模型中大部分节点会形成单一连通分支，与真实网络一致。</li>
+  </ul>
+
+  <h2>2. 模块二：Watts–Strogatz 小世界模型</h2>
+
+  <div class="concept">
+    <h4>构造过程</h4>
+    <ol class="steps">
+      <li>固定 $n$，选偶数 $k \ll n$；</li>
+      <li>把节点排成一个圆环，每个节点和它左右各 $k/2$ 个邻居连边 → 得到 <strong>$k$-正则环格</strong>；</li>
+      <li>给定参数 $p \in [0,1]$。对每条"通向右侧邻居"的边 $(i, j)$，以概率 $p$ 把它<strong>重连</strong>成 $(i, k)$，其中 $k \ne i$，且避免自环和重边。</li>
+    </ol>
+  </div>
+
+  <h4>2.1 两个极端</h4>
+  <table>
+    <thead>
+      <tr><th>$p$</th><th>网络结构</th><th>聚类系数 $C_{WS}$</th><th>平均路径 $\ell$</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>$p=0$</td><td>$k$-正则环格</td><td>$\dfrac{3(k-2)}{4(k-1)} \approx \dfrac{3}{4}$<br>（<strong>大</strong>）</td><td>$\approx \dfrac{n}{2k}$<br>（<strong>大</strong>）</td></tr>
+      <tr><td>$p=1$</td><td>类似 $G(n,p)$<br>（$p = \dfrac{k}{n-1}$）</td><td>$\approx \dfrac{k}{n-1} \ll 1$<br>（<strong>小</strong>）</td><td>$\approx \dfrac{\ln n}{\ln k}$<br>（<strong>小</strong>）</td></tr>
+    </tbody>
+  </table>
+
+  <h4>2.2 中间区间的"魔法"</h4>
+
+  <div class="callout">
+    Watts & Strogatz 的<strong>关键发现</strong>：当 $p$ 取一个<strong>小的正值</strong>（如 $10^{-3} \sim 10^{-1}$）时：
+    <ul>
+      <li>仅少量边被"长程重连"成"捷径"，已经把路径长度 $\ell(p)/\ell(0)$ <strong>大幅下降</strong>；</li>
+      <li>但因为绝大多数本地结构未变，聚类系数 $C(p)/C(0)$ <strong>几乎不变</strong>。</li>
+    </ul>
+    在这一中间区域，网络<strong>同时具备</strong>大聚类系数 + 小平均路径长度 = <strong>小世界性质</strong>。
+  </div>
+
+  <div class="analogy">
+    像一个城市内每个人主要和邻居走动（局部抱团 → 高 $C$），但因为偶尔有人坐飞机去远方（长程捷径 → 短 $\ell$），整个城市仍然两步之内能联系到任何人。</div>
+
+  <h4>2.3 局限</h4>
+  <p>所有节点度都接近 $k$，<strong>没有 hubs</strong>，度分布<strong>不是幂律</strong>。所以 WS 模型只是"部分满意"。</p>
+
+  <h2>3. 模块三：Barabási–Albert (BA) 模型</h2>
+
+  <div class="concept">
+    <h4>构造过程</h4>
+    <p>这是<strong>优先连接（Preferential Attachment）</strong>类模型中最经典的一个。</p>
+    <ol class="steps">
+      <li>从一个小的初始网络开始；</li>
+      <li>每一步，加入一个<strong>新节点</strong>，其度恒为 $c$；</li>
+      <li>新节点连向已有节点 $i$ 的概率正比于 $i$ 当前的度 $k_i$。</li>
+    </ol>
+  </div>
+
+  <p>关键效应：<strong>富者愈富 (rich get richer)</strong>。早期度高的节点更容易被新来者选中，从而度持续增长，形成 <strong>hubs</strong>。</p>
+
+  <div class="analogy">
+    像论文引用：一篇论文被引得越多，它就越容易被新文章看到并引用。少数"经典论文"被引用次数极高 → hubs。</div>
+
+  <h4>3.1 BA 模型的关键性质</h4>
+  <ul>
+    <li>度分布<strong>服从幂律</strong> $P(k) \propto k^{-\alpha}$ → <strong>无标度网络 (scale-free)</strong>；</li>
+    <li>少数节点（hubs）的度远高于平均；</li>
+    <li>但聚类系数偏低，与真实网络仍不完全吻合。</li>
+  </ul>
+
+  <h2>4. 三种模型大比拼</h2>
+  <table>
+    <thead>
+      <tr><th>性质</th><th>$G(n,p)$</th><th>配置模型</th><th>Watts–Strogatz</th><th>Barabási–Albert</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>小直径 / 短路径</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+      <tr><td>大聚类系数</td><td>❌</td><td>❌（一般）</td><td>✅</td><td>❌</td></tr>
+      <tr><td>幂律度分布 / hubs</td><td>❌</td><td>✅（如指定幂律度序列）</td><td>❌</td><td>✅</td></tr>
+      <tr><td>固定的是…</td><td>$n, p$</td><td>$n$ 和整条度序列</td><td>$n, k, p$</td><td>过程参数 $c$</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <strong>记忆口诀：</strong>WS 给你<strong>小世界但无明星</strong>；BA 给你<strong>明星但小世界不够"抱团"</strong>；配置模型给你<strong>任意度分布</strong>但聚类一般低。
+  </div>
+</section>
+
+<!-- ========================= 第二部分：考点梳理 ========================= -->
+<section id="part2" class="block">
+  <h1>第二部分 · 考点梳理</h1>
+  <p style="color:#56636e;">
+    <span class="stars s3">★★★ 高频</span>
+    <span class="stars s2">★★ 中等</span>
+    <span class="stars s1">★ 低频</span>
+    <span class="tag mem">记忆</span>
+    <span class="tag und">理解/计算</span>
+  </p>
+
+  <h2>A. 随机网络模型总览</h2>
+
+  <div class="knowledge-card">
+    <h4>A1. 随机网络模型的定义 <span class="stars s2">★★</span> <span class="tag mem">记忆</span></h4>
+    <p><strong>定义：</strong>一组具有固定性质的网络集合 + 该集合上的概率分布函数。"模型"既是集合也是分布。</p>
+    <p><strong>已学模型一览：</strong></p>
+    <ul>
+      <li>$G(n,m)$：固定 $n$ 个节点，均匀地从所有 $\binom{n}{2}$ 个潜在边中随机选 $m$ 条；</li>
+      <li>$G(n,p)$：固定 $n$ 个节点，每对节点独立以概率 $p$ 连边；</li>
+      <li>配置模型：固定 $n$ 和度序列；</li>
+      <li>Watts–Strogatz：规则环 + 概率 $p$ 重连；</li>
+      <li>Barabási–Albert：逐步加点 + 度优先连接。</li>
+    </ul>
+    <div class="pitfall">"模型 = 集合 + 概率"是双重结构，别只记住其中一个。配置模型里不同网络的<strong>概率不相等</strong>，这是高频陷阱。</div>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>A2. 为什么需要更复杂的模型？<span class="stars s3">★★★</span> <span class="tag und">理解</span></h4>
+    <p>真实网络的"小世界 + 无标度"特征，$G(n,p)$ 都<strong>不能同时</strong>复现：</p>
+    <ul>
+      <li>$G(n,p)$ 有小直径 ✅，但聚类系数 $\approx p$ 偏小 ❌；</li>
+      <li>$G(n,p)$ 度分布近似泊松，<strong>没有 hubs</strong> ❌。</li>
+    </ul>
+  </div>
+
+  <h2>B. 配置模型 (Configuration Model)</h2>
+
+  <div class="knowledge-card">
+    <h4>B1. 配置模型的定义与构造 <span class="stars s3">★★★</span> <span class="tag mem">记忆</span></h4>
+    <p><strong>定义：</strong>给定度序列 $(k_1, k_2, \ldots, k_n)$ 的随机网络模型。</p>
+    <p><strong>构造：</strong>每个节点 $i$ 配 $k_i$ 个 stubs → 把 $2m = \sum_i k_i$ 个 stubs 两两均匀随机匹配。</p>
+    <ul>
+      <li>$\sum_i k_i$ 必须是<strong>偶数</strong>，否则模型无法构造；</li>
+      <li>得到的网络可能含<strong>自环</strong>和<strong>多重边</strong>。</li>
+    </ul>
+    <div class="pitfall">很多人误以为配置模型生成的总是简单图。其实自环和多重边是允许的，且在计算概率时要特别处理！</div>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>B2. Stub 匹配总数 $M$ <span class="stars s3">★★★</span> <span class="tag und">计算</span></h4>
+    <div class="callout formula">
+      $$M = \frac{(2m)!}{m! \, 2^m} = (2m-1)!! = (2m-1)(2m-3)\cdots 3 \cdot 1$$
+    </div>
+    <p><strong>推导核心：</strong>全排列 $(2m)!$ → 除掉 $m$ 对内部 2 个 stub 的顺序（$2^m$）→ 除掉 $m$ 对之间的顺序（$m!$）。</p>
+    <p><strong>双阶乘 (double factorial) 记忆法：</strong>$(2m-1)!! = $ 从 $1$ 到 $2m-1$ 的所有奇数相乘。如 $5!! = 5 \cdot 3 \cdot 1 = 15$。</p>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>B3. 网络概率公式（一般情形）<span class="stars s3">★★★</span> <span class="tag und">计算</span></h4>
+    <div class="callout formula">
+      $$P(G) = \frac{\prod_i k_i!}{(2m-1)!! \cdot \prod_{i<j} m_{ij}! \cdot \prod_i (2s_i)!!}$$
+    </div>
+    <p><strong>分子：</strong>每个节点 $i$ 的 $k_i$ 个 stubs 互换都得到同一网络。</p>
+    <p><strong>分母三项：</strong></p>
+    <ul>
+      <li>$(2m-1)!!$ = 全部匹配数 $M$；</li>
+      <li>$m_{ij}!$ = 节点 $i, j$ 间 $m_{ij}$ 条多重边的相互置换；</li>
+      <li>$(2s_i)!!$ = 节点 $i$ 上 $s_i$ 个自环的"内部 stub 互换 + 自环间互换"的总更正。</li>
+    </ul>
+    <div class="pitfall">求 $(2s_i)!!$ 时不要漏！例如 $s_i = 1$（1 个自环）对应 $(2 \cdot 1)!! = 2$，<strong>不是</strong> 1。</div>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>B4. 配置模型作为 $G(n,m)$ 的推广 <span class="stars s2">★★</span> <span class="tag und">理解</span></h4>
+    <p>$\sum_i k_i = 2m$ 蕴含配置模型固定了 $n$ 和 $m$，所以它<strong>"包含" $G(n,m)$ 作为特例</strong>，但增加了"度序列"的约束。</p>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>B5. 友谊悖论 (Friendship Paradox) <span class="stars s3">★★★</span> <span class="tag und">理解/计算</span></h4>
+    <p><strong>邻居度分布：</strong>$P(\text{邻居度为 } k) = \dfrac{kp_k}{\langle k\rangle}$（<strong>不是</strong> $p_k$）。</p>
+    <p><strong>邻居平均度：</strong></p>
+    <div class="callout formula">
+      $$\langle k_{\text{邻}}\rangle = \frac{\langle k^2\rangle}{\langle k\rangle}$$
+    </div>
+    <p><strong>大于平均度</strong>的证明：</p>
+    <div class="callout formula">
+      $$\frac{\langle k^2\rangle}{\langle k\rangle} - \langle k\rangle = \frac{\langle k^2\rangle - \langle k\rangle^2}{\langle k\rangle} = \frac{\sigma_k^2}{\langle k\rangle} \ge 0$$
+    </div>
+    <p><strong>结论（"悖论"）：</strong>平均而言，你的朋友比你更受欢迎。</p>
+    <div class="pitfall">这并非真悖论，只是"按邻居采样"会偏向度高的节点。理解这一<strong>采样偏差</strong>是关键。</div>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>B6. 配置模型的应用：模块度的"零模型" <span class="stars s2">★★</span> <span class="tag und">理解</span></h4>
+    <p>一条 stub 接到节点 $j$ 的概率约为 $\dfrac{k_j}{2m}$。对节点 $i$ 的每一条 stub，连向 $j$ 的概率约为 $\dfrac{k_j}{2m-1}\approx \dfrac{k_j}{2m}$。乘上 $i$ 的 $k_i$ 条 stubs：</p>
+    <div class="callout formula">
+      $$p_{ij} = \frac{k_i k_j}{2m-1} \approx \frac{k_i k_j}{2m}$$
+    </div>
+    <p>这恰恰是模块度公式</p>
+    <div class="callout formula">
+      $$Q = \frac{1}{2m}\sum_{i,j}\left(A_{ij} - \frac{k_i k_j}{2m}\right)\delta_{g_i g_j}$$
+    </div>
+    <p>中减去的"期望"项。所以配置模型是衡量"是否存在社区结构"的<strong>零模型</strong>。</p>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>B7. 配置模型的小世界性质 <span class="stars s2">★★</span> <span class="tag mem">记忆</span></h4>
+    <p>对<strong>任意度分布</strong>，配置模型的节点间路径长度都是 $O(\ln n)$，即"短"。</p>
+    <p>若取 $p_k \propto k^{-\alpha}$（$2 < \alpha \le 3$），还会出现<strong>巨型连通分支</strong>。</p>
+  </div>
+
+  <h2>C. Watts–Strogatz 小世界模型</h2>
+
+  <div class="knowledge-card">
+    <h4>C1. WS 模型的构造 <span class="stars s3">★★★</span> <span class="tag mem">记忆</span></h4>
+    <ol class="steps">
+      <li>固定 $n$，选偶数 $k \ll n$；</li>
+      <li>构造 $k$-正则环格：节点排成环，每节点与其两侧最近的各 $k/2$ 个节点相连；</li>
+      <li>对每条向右连接的边 $(i, j)$，以概率 $p \in [0, 1]$ 重连到另一节点（避免自环、重边）。</li>
+    </ol>
+    <p><strong>重连</strong>≠ 删边后任选，需保留 $i$ 端固定，只换另一端。</p>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>C2. 极端情形 <span class="stars s3">★★★</span> <span class="tag und">理解/计算</span></h4>
+    <table>
+      <thead><tr><th>$p$</th><th>退化为</th><th>$C_{WS}$</th><th>$\ell$</th></tr></thead>
+      <tbody>
+        <tr><td>$0$</td><td>$k$-正则环格</td><td>$\dfrac{3(k-2)}{4(k-1)} \approx \dfrac{3}{4}$（大）</td><td>$\approx \dfrac{n}{2k}$（大）</td></tr>
+        <tr><td>$1$</td><td>类 $G(n,p)$，$p=\dfrac{k}{n-1}$</td><td>$\dfrac{k}{n-1} \ll 1$（小）</td><td>$\approx \dfrac{\ln n}{\ln k}$（小）</td></tr>
+      </tbody>
+    </table>
+    <p>对 $p = 1$ 的特别注意：所有节点至少保留 $k/2$ 个原始邻居，所以并不<strong>完全等于</strong> $G(n,p)$，只是<strong>"类似"</strong>。</p>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>C3. 中间 $p$：小世界性质 <span class="stars s3">★★★</span> <span class="tag und">理解</span></h4>
+    <p>关键发现：存在一个<strong>较宽的 $p$ 区间</strong>，使得：</p>
+    <ul>
+      <li>归一化路径长度 $\dfrac{\ell(p)}{\ell(0)}$ 已经<strong>显著下降</strong>；</li>
+      <li>归一化聚类系数 $\dfrac{C(p)}{C(0)}$ <strong>仍然接近 1</strong>。</li>
+    </ul>
+    <p>这就是<strong>小世界性质</strong>（large $C$ + small $\ell$）。</p>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>C4. WS 模型的局限 <span class="stars s2">★★</span> <span class="tag mem">记忆</span></h4>
+    <p>所有节点度都接近 $k$，<strong>没有大度的 hubs</strong>，度分布不是幂律。仅"部分"再现真实网络。</p>
+  </div>
+
+  <h2>D. Barabási–Albert (BA) 模型</h2>
+
+  <div class="knowledge-card">
+    <h4>D1. 优先连接的核心思想 <span class="stars s3">★★★</span> <span class="tag mem">记忆</span></h4>
+    <p><strong>idea：</strong>逐步加节点；新节点连向已有节点的概率正比于该节点的<strong>当前度</strong>。</p>
+    <p><strong>效果：</strong>富者愈富 → 出现 hubs。</p>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>D2. BA 模型构造（无向）<span class="stars s3">★★★</span> <span class="tag mem">记忆</span></h4>
+    <p>每步：</p>
+    <ol class="steps">
+      <li>生成一个新节点（度恒为 $c$，常数）；</li>
+      <li>连向已有节点 $i$ 的概率 $\propto k_i$（$i$ 的当前度）。</li>
+    </ol>
+    <p>性质：</p>
+    <ul>
+      <li>每个节点构造时已有度至少 $c$；</li>
+      <li>新节点的度 $c$ 在 BA 模型里是<strong>常数</strong>（更一般模型可放宽）。</li>
+    </ul>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>D3. BA 模型 → 无标度网络 <span class="stars s3">★★★</span> <span class="tag und">理解</span></h4>
+    <p>稳态下度分布服从幂律 $P(k) \propto k^{-\alpha}$：</p>
+    <ul>
+      <li>有 <strong>hubs</strong>（少数节点度极高）；</li>
+      <li>这种网络称为 <strong>scale-free（无标度）</strong>。</li>
+    </ul>
+    <p><strong>例子：</strong>引文网络、网页超链接网络。</p>
+  </div>
+
+  <div class="knowledge-card">
+    <h4>D4. BA vs. WS：互补的不足 <span class="stars s2">★★</span> <span class="tag und">理解</span></h4>
+    <table>
+      <thead><tr><th></th><th>小世界（大 $C$ + 小 $\ell$）</th><th>无标度（幂律 + hubs）</th></tr></thead>
+      <tbody>
+        <tr><td>WS</td><td>✅</td><td>❌</td></tr>
+        <tr><td>BA</td><td>仅小 $\ell$；$C$ 不大</td><td>✅</td></tr>
+      </tbody>
+    </table>
+    <p>所以两者<strong>各擅胜场，但都不完美</strong>。这是 L9 最重要的"结论"。</p>
+  </div>
+
+  <h2>E. 真实世界网络的关键性质（总结）</h2>
+
+  <div class="knowledge-card">
+    <h4>E1. 真实网络三大性质 <span class="stars s3">★★★</span> <span class="tag mem">记忆</span></h4>
+    <ol>
+      <li><strong>大聚类系数</strong>（朋友的朋友互为朋友）；</li>
+      <li><strong>小平均距离 / 直径 $\propto \ln n$</strong>（六度分隔）；</li>
+      <li><strong>无标度</strong>：度分布 $P(k) \propto k^{-\alpha}$，有 hubs。</li>
+    </ol>
+    <p>性质 1+2 合称<strong>小世界性质</strong>。</p>
+  </div>
+</section>
+
+<!-- ========================= 第三部分：复习题目 ========================= -->
+<section id="part3" class="block">
+  <h1>第三部分 · 复习题目</h1>
+
+  <div class="controls">
+    <button type="button" data-action="expand-all">展开全部答案</button>
+    <button type="button" class="ghost" data-action="collapse-all">收起全部答案</button>
+    <button type="button" class="ghost" data-action="reset-mcq">重置选择题</button>
+  </div>
+
+  <div class="stat-bar" id="stat-bar">
+    选择题进度：<strong><span id="stat-answered">0</span></strong> / <span id="stat-total">0</span>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    正确：<strong><span id="stat-correct">0</span></strong>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    正确率：<strong><span id="stat-rate">—</span></strong>
+  </div>
+
+  <!-- ============ 选择题 ============ -->
+  <h2>一、选择题</h2>
+
+  <!-- Q1 -->
+  <div class="question" data-qid="mcq1">
+    <div class="q-header">
+      <span class="qtype">选择题</span>
+      <span class="qpoint">考点：A1 / B1</span>
+      <span class="qdiff easy">基础</span>
+    </div>
+    <p class="qstem">1. 关于配置模型（Configuration Model），下列说法<strong>错误</strong>的是：</p>
+    <ul class="options" data-correct="C">
+      <li data-opt="A">A. 它固定了节点数 $n$ 和度序列 $(k_1, \ldots, k_n)$。</li>
+      <li data-opt="B">B. 它可能产生自环（self-loop）和多重边（multi-edge）。</li>
+      <li data-opt="C">C. 模型中的每个不同网络出现的概率都相等。</li>
+      <li data-opt="D">D. $\sum_i k_i$ 必须是偶数，否则模型无法构造。</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：C</strong></p>
+        <p><strong>解析：</strong>配置模型中不同网络的概率<strong>一般不相等</strong>。课件示例（度序列 (1,1,0,2,2)）就给出了 $P(G) \in \{1/15, 2/15, 4/15\}$ 等不同概率。 A、B、D 均为定义/性质。</p>
+        <p><strong>易错提醒：</strong>"模型 = 集合 + 概率分布"，配置模型在 6 个不同网络上分布是<strong>非均匀</strong>的，这是与 $G(n,m)$（均匀分布）的关键区别。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q2 -->
+  <div class="question" data-qid="mcq2">
+    <div class="q-header">
+      <span class="qtype">选择题</span>
+      <span class="qpoint">考点：B2</span>
+      <span class="qdiff easy">基础</span>
+    </div>
+    <p class="qstem">2. 设配置模型的总度为 $2m = 8$，则不同 stub 匹配的总数 $M$ 等于：</p>
+    <ul class="options" data-correct="C">
+      <li data-opt="A">A. $8! = 40320$</li>
+      <li data-opt="B">B. $4! = 24$</li>
+      <li data-opt="C">C. $7!! = 7 \cdot 5 \cdot 3 \cdot 1 = 105$</li>
+      <li data-opt="D">D. $\binom{8}{2} = 28$</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：C</strong></p>
+        <p><strong>解析：</strong>$M = (2m-1)!! = (8-1)!! = 7!! = 7 \cdot 5 \cdot 3 \cdot 1 = 105$。等价地 $M = \dfrac{8!}{4! \cdot 2^4} = \dfrac{40320}{24 \cdot 16} = 105$。</p>
+        <p><strong>记忆要点：</strong>$(2m-1)!!$ 是所有<strong>奇数</strong>到 $2m-1$ 的连乘，而不是 $(2m-1)!$ 的另一种写法。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q3 -->
+  <div class="question" data-qid="mcq3">
+    <div class="q-header">
+      <span class="qtype">选择题</span>
+      <span class="qpoint">考点：B5</span>
+      <span class="qdiff mid">进阶</span>
+    </div>
+    <p class="qstem">3. 在一个度分布为 $p_k$、平均度为 $\langle k\rangle$ 的网络中，一个随机选取节点的随机邻居的<strong>平均度</strong>等于：</p>
+    <ul class="options" data-correct="B">
+      <li data-opt="A">A. $\langle k\rangle$</li>
+      <li data-opt="B">B. $\dfrac{\langle k^2\rangle}{\langle k\rangle}$</li>
+      <li data-opt="C">C. $\dfrac{\langle k\rangle^2}{\langle k^2\rangle}$</li>
+      <li data-opt="D">D. $\sigma_k^2$（度的方差）</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：B</strong></p>
+        <p><strong>解析：</strong>邻居度分布为 $\dfrac{kp_k}{\langle k\rangle}$（按 stub 采样、与度成正比），所以邻居平均度为</p>
+        <p>$$\sum_k k \cdot \frac{kp_k}{\langle k\rangle} = \frac{\langle k^2\rangle}{\langle k\rangle}.$$</p>
+        <p>这等价于"友谊悖论"的核心式子，比 $\langle k\rangle$ 大 $\sigma_k^2 / \langle k\rangle \ge 0$。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q4 -->
+  <div class="question" data-qid="mcq4">
+    <div class="q-header">
+      <span class="qtype">选择题</span>
+      <span class="qpoint">考点：C2</span>
+      <span class="qdiff easy">基础</span>
+    </div>
+    <p class="qstem">4. Watts–Strogatz 模型在 $p = 0$ 时退化为：</p>
+    <ul class="options" data-correct="A">
+      <li data-opt="A">A. $k$-正则环格（regular ring lattice）</li>
+      <li data-opt="B">B. $G(n,p)$ Erdős–Rényi 网络</li>
+      <li data-opt="C">C. Barabási–Albert 无标度网络</li>
+      <li data-opt="D">D. 完全图 $K_n$</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：A</strong></p>
+        <p><strong>解析：</strong>WS 模型起始即 $k$-正则环格；$p = 0$ 表示<strong>不重连任何边</strong>，所以保持环格。$p = 1$ 才趋近"类 $G(n,p)$"的随机结构。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q5 -->
+  <div class="question" data-qid="mcq5">
+    <div class="q-header">
+      <span class="qtype">选择题</span>
+      <span class="qpoint">考点：D1 / D3</span>
+      <span class="qdiff easy">基础</span>
+    </div>
+    <p class="qstem">5. Barabási–Albert 模型中最关键的机制是：</p>
+    <ul class="options" data-correct="B">
+      <li data-opt="A">A. 边的均匀随机选择</li>
+      <li data-opt="B">B. 优先连接：新节点连向已有节点的概率正比于其度</li>
+      <li data-opt="C">C. 以固定概率 $p$ 重连每条边</li>
+      <li data-opt="D">D. 固定一条度序列</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：B</strong></p>
+        <p><strong>解析：</strong>BA 是<strong>优先连接（preferential attachment）</strong>类模型的代表：新节点更倾向于连"已经很受欢迎"的旧节点，从而出现 hubs，度分布成幂律。</p>
+        <p>A 描述 $G(n,m)$，C 描述 WS，D 描述配置模型。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q6 -->
+  <div class="question" data-qid="mcq6">
+    <div class="q-header">
+      <span class="qtype">选择题</span>
+      <span class="qpoint">考点：E1 / D3</span>
+      <span class="qdiff mid">进阶</span>
+    </div>
+    <p class="qstem">6. 下面哪一个模型能<strong>同时</strong>产生 (i) 大聚类系数和 (ii) 幂律度分布？</p>
+    <ul class="options" data-correct="D">
+      <li data-opt="A">A. $G(n,p)$</li>
+      <li data-opt="B">B. Watts–Strogatz 模型</li>
+      <li data-opt="C">C. Barabási–Albert 模型</li>
+      <li data-opt="D">D. 以上模型都<strong>不能</strong>同时做到</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：D</strong></p>
+        <p><strong>解析：</strong>课件结论部分明确指出：WS 给出小世界（大 $C$，小 $\ell$）但<strong>不是无标度</strong>；BA 给出无标度但<strong>聚类系数偏低</strong>。所以两者各擅胜场，<strong>都不能同时</strong>做到。这正是当前研究的开放性问题之一。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q7 -->
+  <div class="question" data-qid="mcq7">
+    <div class="q-header">
+      <span class="qtype">选择题</span>
+      <span class="qpoint">考点：C2</span>
+      <span class="qdiff mid">进阶</span>
+    </div>
+    <p class="qstem">7. 在 $k$-正则环格（即 WS 模型 $p=0$）中，当 $k$ 较大时聚类系数 $C_{WS}$ 约为：</p>
+    <ul class="options" data-correct="B">
+      <li data-opt="A">A. $0$</li>
+      <li data-opt="B">B. $3/4$</li>
+      <li data-opt="C">C. $1/k$</li>
+      <li data-opt="D">D. $\ln k / k$</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：B</strong></p>
+        <p><strong>解析：</strong>课件给出公式 $C_{WS} = \dfrac{3(k-2)}{4(k-1)}$，当 $k \to \infty$ 时极限为 $\dfrac{3}{4}$。这反映了规则环格的局部高度聚集性质。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q8 -->
+  <div class="question" data-qid="mcq8">
+    <div class="q-header">
+      <span class="qtype">选择题</span>
+      <span class="qpoint">考点：B6</span>
+      <span class="qdiff mid">进阶</span>
+    </div>
+    <p class="qstem">8. 模块度（Modularity）公式 $Q = \dfrac{1}{2m}\sum_{i,j}\left(A_{ij} - \dfrac{k_i k_j}{2m}\right)\delta_{g_i g_j}$ 中扣除的"期望边数"$\dfrac{k_i k_j}{2m}$ 对应的"零模型"是：</p>
+    <ul class="options" data-correct="C">
+      <li data-opt="A">A. $G(n,p)$</li>
+      <li data-opt="B">B. WS 模型</li>
+      <li data-opt="C">C. 配置模型</li>
+      <li data-opt="D">D. BA 模型</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：C</strong></p>
+        <p><strong>解析：</strong>配置模型中边 $(i, j)$ 出现的概率约为 $\dfrac{k_i k_j}{2m}$（每对 stubs 匹配的概率）。模块度比较"实际邻接矩阵 $A_{ij}$"与"在<strong>保持每个节点度</strong>的随机模型下的期望"，因此其零模型就是配置模型。</p>
+        <p><strong>易错提醒：</strong>$G(n,p)$ 不保持度序列，因此不能作为模块度的零模型。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ============ 判断题 ============ -->
+  <h2>二、判断题</h2>
+
+  <!-- Q9 -->
+  <div class="question" data-qid="mcq9">
+    <div class="q-header">
+      <span class="qtype">判断题</span>
+      <span class="qpoint">考点：B1</span>
+      <span class="qdiff easy">基础</span>
+    </div>
+    <p class="qstem">9. 配置模型生成的网络一定是简单图（即无自环、无重边）。</p>
+    <ul class="options" data-correct="B">
+      <li data-opt="A">A. 正确</li>
+      <li data-opt="B">B. 错误</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：B（错误）</strong></p>
+        <p><strong>解析：</strong>课件明确指出配置模型可能产生自环和多重边。事实上在概率公式中，正是这两种情况需要额外的更正因子 $m_{ij}!$ 和 $(2s_i)!!$。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q10 -->
+  <div class="question" data-qid="mcq10">
+    <div class="q-header">
+      <span class="qtype">判断题</span>
+      <span class="qpoint">考点：B5</span>
+      <span class="qdiff easy">基础</span>
+    </div>
+    <p class="qstem">10. 在任何度分布的网络中，邻居的平均度严格大于节点平均度。</p>
+    <ul class="options" data-correct="B">
+      <li data-opt="A">A. 正确</li>
+      <li data-opt="B">B. 错误</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：B（错误）</strong></p>
+        <p><strong>解析：</strong>课件结论是 $\langle k_{\text{邻}}\rangle - \langle k\rangle = \dfrac{\sigma_k^2}{\langle k\rangle} \ge 0$，即<strong>大于或等于</strong>。当度方差为 0（即所有节点度相同的正则图）时，邻居平均度恰等于节点平均度，并不严格大于。</p>
+        <p><strong>易错提醒：</strong>不严格 vs. 严格大于，是常见的细节陷阱。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q11 -->
+  <div class="question" data-qid="mcq11">
+    <div class="q-header">
+      <span class="qtype">判断题</span>
+      <span class="qpoint">考点：C3</span>
+      <span class="qdiff mid">进阶</span>
+    </div>
+    <p class="qstem">11. 在 WS 模型中，只要 $p > 0$，平均路径长度就会迅速下降到近似 $\ln n$ 量级，而聚类系数在 $p$ 较小时几乎保持不变。</p>
+    <ul class="options" data-correct="A">
+      <li data-opt="A">A. 正确</li>
+      <li data-opt="B">B. 错误</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：A（正确）</strong></p>
+        <p><strong>解析：</strong>这是 WS 模型的核心实验观察：少量"长程捷径"足以大幅降低 $\ell$；而绝大多数边仍保留本地结构 → $C$ 几乎不变。中间这段区间就是<strong>小世界区域</strong>。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q12 -->
+  <div class="question" data-qid="mcq12">
+    <div class="q-header">
+      <span class="qtype">判断题</span>
+      <span class="qpoint">考点：D3</span>
+      <span class="qdiff easy">基础</span>
+    </div>
+    <p class="qstem">12. Barabási–Albert 模型能很好地再现真实网络的大聚类系数。</p>
+    <ul class="options" data-correct="B">
+      <li data-opt="A">A. 正确</li>
+      <li data-opt="B">B. 错误</li>
+    </ul>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案：B（错误）</strong></p>
+        <p><strong>解析：</strong>课件总结：BA 模型再现了无标度性质（hubs、幂律度分布），但<strong>聚类系数偏低</strong>，与真实社会网络不符。这正是 BA 与 WS 互补、但都不完美的根源。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ============ 计算题 ============ -->
+  <h2>三、计算题</h2>
+
+  <div class="question">
+    <div class="q-header">
+      <span class="qtype">计算题</span>
+      <span class="qpoint">考点：B2</span>
+      <span class="qdiff easy">基础</span>
+    </div>
+    <p class="qstem">13. 给定配置模型的度序列为 $(2, 2, 2)$，计算 (a) 总度 $2m$；(b) Stub 匹配总数 $M$；(c) $\prod_i k_i!$。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>解答：</strong></p>
+        <p>(a) $2m = 2 + 2 + 2 = 6$，所以 $m = 3$。</p>
+        <p>(b) $M = (2m - 1)!! = 5!! = 5 \cdot 3 \cdot 1 = 15$。</p>
+        <p>(c) $\prod_i k_i! = 2! \cdot 2! \cdot 2! = 8$。</p>
+        <p><strong>考查点：</strong>双阶乘的计算 + 节点 stub 排列因子。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-header">
+      <span class="qtype">计算题</span>
+      <span class="qpoint">考点：B3</span>
+      <span class="qdiff mid">进阶</span>
+    </div>
+    <p class="qstem">14. 在度序列 $(2, 2, 2)$ 的配置模型中，请通过直接枚举找出所有<strong>不同</strong>的网络（同构等价的算同一个），并用公式
+      $$P(G) = \frac{\prod_i k_i!}{(2m-1)!! \prod_{i<j} m_{ij}! \prod_i (2s_i)!!}$$
+      计算每个网络的概率。
+    </p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>解答：</strong></p>
+        <p>分母中 $(2m-1)!! = 15$，分子 $\prod_i k_i! = 8$。</p>
+        <p>设节点为 $\{1, 2, 3\}$。所有不同的、满足度均为 2 的网络（可含自环 / 多重边）共有 4 种：</p>
+        <p><strong>网络 G₁：三角形</strong> $\{1\text{-}2,\, 2\text{-}3,\, 3\text{-}1\}$。</p>
+        <ul>
+          <li>无自环、无多重边：$\prod_{i<j} m_{ij}! = 1$，$\prod_i (2s_i)!! = 1$。</li>
+          <li>$P(G_1) = \dfrac{8}{15 \cdot 1 \cdot 1} = \dfrac{8}{15}$。</li>
+        </ul>
+        <p><strong>网络 G₂：$1, 2$ 间有双重边 + 节点 $3$ 自环</strong>（$m_{12} = 2$，$s_3 = 1$）。</p>
+        <ul>
+          <li>$\prod_{i<j} m_{ij}! = m_{12}! = 2! = 2$；$\prod_i (2s_i)!! = (2 \cdot 1)!! = 2$。</li>
+          <li>$P(G_2) = \dfrac{8}{15 \cdot 2 \cdot 2} = \dfrac{8}{60} = \dfrac{2}{15}$。</li>
+        </ul>
+        <p><strong>网络 G₃：$1, 3$ 间双重边 + 节点 $2$ 自环</strong>。与 G₂ 同构计算：$P(G_3) = \dfrac{2}{15}$。</p>
+        <p><strong>网络 G₄：$2, 3$ 间双重边 + 节点 $1$ 自环</strong>。同样 $P(G_4) = \dfrac{2}{15}$。</p>
+        <p><strong>验算：</strong>$\dfrac{8}{15} + 3 \cdot \dfrac{2}{15} = \dfrac{8 + 6}{15} = \dfrac{14}{15}$。</p>
+        <p>还差 $\dfrac{1}{15}$，对应 <strong>网络 G₅：三个节点各有一个自环（全自环）</strong>，$s_1 = s_2 = s_3 = 1$。</p>
+        <ul>
+          <li>$\prod_i (2s_i)!! = 2 \cdot 2 \cdot 2 = 8$；$\prod_{i<j} m_{ij}! = 1$。</li>
+          <li>$P(G_5) = \dfrac{8}{15 \cdot 1 \cdot 8} = \dfrac{1}{15}$。</li>
+        </ul>
+        <p><strong>合计：</strong>$\dfrac{8}{15} + 3 \cdot \dfrac{2}{15} + \dfrac{1}{15} = \dfrac{15}{15} = 1$。✓</p>
+        <p><strong>考查点：</strong>正确识别自环/重边的拓扑、套用一般概率公式、且验证概率之和为 1。</p>
+        <p><strong>易错提醒：</strong>容易漏掉"全自环"这种"看起来奇怪"的拓扑，但它是合法的配置模型实现。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-header">
+      <span class="qtype">计算题</span>
+      <span class="qpoint">考点：B5</span>
+      <span class="qdiff mid">进阶</span>
+    </div>
+    <p class="qstem">15. 某网络度分布为：$p_0 = 0.1$，$p_1 = 0.4$，$p_2 = 0.3$，$p_3 = 0.2$。计算：(a) 节点平均度 $\langle k\rangle$；(b) $\langle k^2\rangle$；(c) 随机邻居的平均度 $\langle k_{\text{邻}}\rangle$；(d) 验证友谊悖论 $\langle k_{\text{邻}}\rangle > \langle k\rangle$。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>解答：</strong></p>
+        <p>(a) $\langle k\rangle = 0 \cdot 0.1 + 1 \cdot 0.4 + 2 \cdot 0.3 + 3 \cdot 0.2 = 0 + 0.4 + 0.6 + 0.6 = 1.6$。</p>
+        <p>(b) $\langle k^2\rangle = 0^2 \cdot 0.1 + 1^2 \cdot 0.4 + 2^2 \cdot 0.3 + 3^2 \cdot 0.2 = 0 + 0.4 + 1.2 + 1.8 = 3.4$。</p>
+        <p>(c) $\langle k_{\text{邻}}\rangle = \dfrac{\langle k^2\rangle}{\langle k\rangle} = \dfrac{3.4}{1.6} = 2.125$。</p>
+        <p>(d) $2.125 > 1.6$，差值为 $\dfrac{\sigma_k^2}{\langle k\rangle} = \dfrac{3.4 - 1.6^2}{1.6} = \dfrac{3.4 - 2.56}{1.6} = \dfrac{0.84}{1.6} = 0.525$。</p>
+        <p>故 $\langle k_{\text{邻}}\rangle - \langle k\rangle = 0.525 > 0$，友谊悖论得到验证。</p>
+        <p><strong>考查点：</strong>度矩计算 + 友谊悖论数值理解。</p>
+        <p><strong>易错提醒：</strong>是 $\langle k^2\rangle$（先平方再平均）而非 $\langle k\rangle^2$（先平均再平方）！前者总是 $\ge$ 后者。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-header">
+      <span class="qtype">计算题</span>
+      <span class="qpoint">考点：C2</span>
+      <span class="qdiff mid">进阶</span>
+    </div>
+    <p class="qstem">16. 考虑一个 $n = 1000$ 节点、$k = 10$ 的 Watts–Strogatz 模型。(a) 在 $p = 0$（正则环格）时，平均路径长度近似为多少？(b) 聚类系数近似为多少？(c) 在 $p = 1$ 时，平均路径长度近似为多少？</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>解答：</strong></p>
+        <p>(a) 正则环格平均路径 $\ell \approx \dfrac{n}{2k} = \dfrac{1000}{20} = 50$。</p>
+        <p>(b) 聚类系数 $C_{WS} = \dfrac{3(k - 2)}{4(k - 1)} = \dfrac{3 \cdot 8}{4 \cdot 9} = \dfrac{24}{36} = \dfrac{2}{3} \approx 0.667$。</p>
+        <p>(c) 类 $G(n, p)$ 直径估计 $\ell \approx \dfrac{\ln n}{\ln k} = \dfrac{\ln 1000}{\ln 10} = \dfrac{6.908}{2.303} \approx 3$。</p>
+        <p><strong>对比：</strong>$\ell$ 从 50 锐减到约 3，量级差异巨大。这正是 WS 模型展示"小世界效应"的核心。</p>
+        <p><strong>考查点：</strong>WS 极端情形下 $\ell$、$C$ 的公式应用。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-header">
+      <span class="qtype">计算题</span>
+      <span class="qpoint">考点：B3</span>
+      <span class="qdiff hard">综合</span>
+    </div>
+    <p class="qstem">17. 给定度序列 $(1, 1, 0, 2, 2)$（即课件的示例）。请验证下列两个网络的概率：(a) 边为 $\{1\text{-}2, 4\text{-}5, 4\text{-}5\}$（即 $4, 5$ 间双重边）；(b) 边为 $\{1\text{-}4, 2\text{-}5\} +$ 节点 $4$ 自环（即 $s_4 = 1$，$\{1,4\}, \{2,5\}, \{4,4\}$）。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>解答：</strong></p>
+        <p>基础量：$2m = 6$，$m = 3$，$(2m-1)!! = 15$；$\prod_i k_i! = 1! \cdot 1! \cdot 0! \cdot 2! \cdot 2! = 4$。</p>
+        <p><strong>(a)：</strong>$m_{45} = 2$（4、5 间双重边），无自环。</p>
+        <ul>
+          <li>$\prod_{i<j} m_{ij}! = m_{45}! = 2$，$\prod_i (2s_i)!! = 1$。</li>
+          <li>$P = \dfrac{4}{15 \cdot 2 \cdot 1} = \dfrac{4}{30} = \dfrac{2}{15}$。✓</li>
+        </ul>
+        <p><strong>(b)：</strong>$s_4 = 1$，其余无自环、无重边。</p>
+        <ul>
+          <li>$\prod_{i<j} m_{ij}! = 1$，$\prod_i (2s_i)!! = (2 \cdot 1)!! = 2$。</li>
+          <li>$P = \dfrac{4}{15 \cdot 1 \cdot 2} = \dfrac{4}{30} = \dfrac{2}{15}$。</li>
+        </ul>
+        <p><strong>提醒：</strong>结果与课件第七页给出的数值一致。</p>
+        <p><strong>考查点：</strong>正确识别 $m_{ij}$ 和 $s_i$；正确套用 $(2s_i)!!$ 的双阶乘。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ============ 简答题 ============ -->
+  <h2>四、简答题</h2>
+
+  <div class="question">
+    <div class="q-header">
+      <span class="qtype">简答题</span>
+      <span class="qpoint">考点：A2 / E1</span>
+      <span class="qdiff easy">基础</span>
+    </div>
+    <p class="qstem">18. 为什么需要在 $G(n,p)$ 模型之外引入配置模型、WS 模型和 BA 模型？请用真实网络的性质来说明。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案要点：</strong></p>
+        <p>真实网络通常具有三大关键性质：(1) 大聚类系数；(2) 小直径 / 平均路径长度 $\propto \ln n$（"小世界"）；(3) 度分布服从幂律，有 hubs（"无标度"）。</p>
+        <p>$G(n,p)$ 模型虽然具备小直径，但聚类系数 $\approx p$ 偏小，且度分布近似泊松（无 hubs）。所以它<strong>同时缺失</strong>大聚类与幂律两大性质。</p>
+        <ul>
+          <li>配置模型：通过<strong>固定度序列</strong>赋予我们任意度分布的能力，可获幂律。</li>
+          <li>WS 模型：通过<strong>规则环 + 少量重连</strong>同时实现大聚类与小路径长度，即"小世界"。</li>
+          <li>BA 模型：通过<strong>优先连接</strong>动力学，自然生成幂律度分布与 hubs。</li>
+        </ul>
+        <p><strong>关键提醒：</strong>三个模型分别解决一部分性质，没有哪个能<strong>同时再现全部</strong>。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-header">
+      <span class="qtype">简答题</span>
+      <span class="qpoint">考点：B3</span>
+      <span class="qdiff mid">进阶</span>
+    </div>
+    <p class="qstem">19. 解释配置模型的概率公式
+      $$P(G) = \frac{\prod_i k_i!}{(2m-1)!! \prod_{i<j} m_{ij}! \prod_i (2s_i)!!}$$
+      中每一个因子的来源。
+    </p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案要点：</strong></p>
+        <ul>
+          <li><strong>分母 $(2m-1)!!$：</strong>所有可能的 stub 匹配数 $M$，作为概率分母（每个匹配等概率）。</li>
+          <li><strong>分子 $\prod_i k_i!$：</strong>同一网络 $G$ 对应的 stub 匹配的"上界估计"。对节点 $i$ 上的 $k_i$ 个 stub，任意置换得到的匹配也产生 $G$，所以贡献 $k_i!$。</li>
+          <li><strong>更正 $\prod_{i<j} m_{ij}!$：</strong>若 $i, j$ 间有 $m_{ij}$ 条多重边，则这 $m_{ij}$ 条平行边之间互换不算新匹配，必须除掉重复计数 $m_{ij}!$。</li>
+          <li><strong>更正 $\prod_i (2s_i)!!$：</strong>若节点 $i$ 上有 $s_i$ 个自环。每个自环内 2 个 stub 互换不算新匹配（贡献 $2^{s_i}$），$s_i$ 个自环之间也可互换（贡献 $s_i!$）。两者合并后剩下因子 $\dfrac{(2s_i)!}{(2s_i)!!} = \dfrac{1}{(2s_i)!!} \cdot (2s_i)!$。具体推导：$\prod_i k_i!$ 已经包含 $(2s_i)!$，需除以 $s_i! \cdot 2^{s_i}$ 才正确，等价于乘以 $\dfrac{1}{(2s_i)!!}$。</li>
+        </ul>
+        <p><strong>核心思路：</strong>分子 $\prod_i k_i!$ "过量计数"了简单边的情形；自环和重边对应的额外对称必须用 $m_{ij}!$ 和 $(2s_i)!!$ 进一步除掉。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-header">
+      <span class="qtype">简答题</span>
+      <span class="qpoint">考点：B5</span>
+      <span class="qdiff easy">基础</span>
+    </div>
+    <p class="qstem">20. 用通俗的话解释友谊悖论（friendship paradox）的含义、数学原理与它的现实意义。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案要点：</strong></p>
+        <p><strong>含义：</strong>"平均而言，你的朋友比你拥有更多朋友。"</p>
+        <p><strong>数学原理：</strong>"随机一个节点的度"按 $p_k$ 分布、平均度为 $\langle k\rangle$；但"随机选一条边走过去到一个邻居的度"，被选中的概率与度成正比，所以分布是 $\dfrac{kp_k}{\langle k\rangle}$，平均为</p>
+        <p>$$\langle k_{\text{邻}}\rangle = \frac{\langle k^2\rangle}{\langle k\rangle} = \langle k\rangle + \frac{\sigma_k^2}{\langle k\rangle} \ge \langle k\rangle.$$</p>
+        <p><strong>现实意义：</strong></p>
+        <ul>
+          <li>解释了为何在社交媒体上人们感觉"别人都更受欢迎"；</li>
+          <li>在<strong>疾病传播监测</strong>中：随机选一些人的朋友监测，能更早发现疫情；</li>
+          <li>采样分析里要特别小心"邻居样本"和"节点样本"的差别。</li>
+        </ul>
+        <p><strong>易错提醒：</strong>这并不是真正的"悖论"，而是按邻居采样自然偏向高度节点导致的<strong>统计偏差</strong>。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-header">
+      <span class="qtype">简答题</span>
+      <span class="qpoint">考点：C1 / C3</span>
+      <span class="qdiff mid">进阶</span>
+    </div>
+    <p class="qstem">21. 简述 Watts–Strogatz 模型的构造步骤，并说明为什么在小的 $p > 0$ 区间它能同时拥有大聚类系数和小平均路径长度。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>构造步骤：</strong></p>
+        <ol class="steps">
+          <li>取 $n$ 个节点排成环；</li>
+          <li>每节点与左右最近的 $k/2$ 个节点连边 → $k$-正则环格；</li>
+          <li>对每条向右的边 $(i, j)$，以概率 $p$ 将其另一端重连成 $(i, k)$，避免自环与重边。</li>
+        </ol>
+        <p><strong>原理：</strong></p>
+        <ul>
+          <li>当 $p$ 较小时，绝大部分本地"三角形"结构未被破坏，所以 $C(p) \approx C(0)$ 仍然大；</li>
+          <li>但只要有少量边被"长程重连"，就在远距离节点间引入了"捷径"，导致路径长度 $\ell(p)$ 迅速降低到 $\ln n$ 量级。</li>
+          <li>两者效应曲线对 $p$ 的依赖速度差异很大：$\ell$ 对 $p$ 极敏感，$C$ 对 $p$ 不敏感。</li>
+        </ul>
+        <p>这就形成了一个"<strong>$\ell$ 已经小，但 $C$ 还很大</strong>"的中间区间，即<strong>小世界区</strong>。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-header">
+      <span class="qtype">简答题</span>
+      <span class="qpoint">考点：D1 / D3</span>
+      <span class="qdiff mid">进阶</span>
+    </div>
+    <p class="qstem">22. 解释 Barabási–Albert 模型中的"优先连接"机制如何导致幂律度分布与 hubs 的出现。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案要点：</strong></p>
+        <ul>
+          <li>BA 模型每步加入一个新节点，新节点连向已有节点 $i$ 的概率正比于 $k_i$；</li>
+          <li>这意味着<strong>"度高的节点更可能继续获得新连接"</strong> —— 即"富者愈富 (rich get richer)"机制；</li>
+          <li>越早加入网络的节点有越多机会积累连接，所以越早加入者通常度越高，最终形成<strong>极少数极高度的 hubs</strong>；</li>
+          <li>对该动力学求解（如平均场方法）可得稳态度分布服从幂律 $P(k) \propto k^{-\alpha}$。</li>
+        </ul>
+        <p><strong>现实例子：</strong>论文引用网络 — 被引用越多的论文越容易被新文章发现并继续引用，从而部分论文成为"经典"hubs。</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- ============ 论述题 ============ -->
+  <h2>五、论述题</h2>
+
+  <div class="question">
+    <div class="q-header">
+      <span class="qtype">论述题</span>
+      <span class="qpoint">考点：A / B / C / D / E（综合）</span>
+      <span class="qdiff hard">综合</span>
+    </div>
+    <p class="qstem">23. 试从真实世界网络的三大性质（大聚类系数、小直径、无标度度分布）的角度，全面比较 $G(n,p)$、配置模型、Watts–Strogatz 模型和 Barabási–Albert 模型四种随机网络模型的优劣，并指出每个模型最适合的应用情境。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案要点：</strong></p>
+        <p><strong>(1) 三大性质回顾：</strong></p>
+        <ul>
+          <li>大聚类系数（"我的朋友互相认识"）；</li>
+          <li>小直径 / 平均路径长度 $\propto \ln n$（"六度分隔"）；</li>
+          <li>无标度：度分布服从幂律 $P(k) \propto k^{-\alpha}$，存在 hubs。</li>
+        </ul>
+        <p><strong>(2) 四种模型的优劣对比：</strong></p>
+        <table>
+          <thead><tr><th>模型</th><th>大 $C$</th><th>小 $\ell$</th><th>幂律 / hubs</th></tr></thead>
+          <tbody>
+            <tr><td>$G(n,p)$</td><td>❌ ($C \approx p$)</td><td>✅ ($\ell \approx \frac{\ln n}{\ln \langle k\rangle}$)</td><td>❌（泊松）</td></tr>
+            <tr><td>配置模型</td><td>❌ 一般偏小</td><td>✅ ($O(\ln n)$)</td><td>✅（若指定幂律度序列）</td></tr>
+            <tr><td>WS</td><td>✅</td><td>✅</td><td>❌（度近 $k$）</td></tr>
+            <tr><td>BA</td><td>❌ 偏低</td><td>✅</td><td>✅</td></tr>
+          </tbody>
+        </table>
+        <p><strong>(3) 应用情境：</strong></p>
+        <ul>
+          <li><strong>$G(n,p)$：</strong>最简单的随机基线/零模型，用于教学和初步对比。</li>
+          <li><strong>配置模型：</strong>需要任意指定度序列且作为"控制度序列"的零模型时使用 —— 例如<strong>模块度计算</strong>的零模型。</li>
+          <li><strong>WS 模型：</strong>适合分析具有<strong>局部抱团 + 长程捷径</strong>的网络（如局部社群活跃的社交网络），重点研究"小世界"现象。</li>
+          <li><strong>BA 模型：</strong>适合刻画由<strong>动力学增长</strong>而成的无标度网络，如<strong>互联网、引文网络、WWW</strong>。</li>
+        </ul>
+        <p><strong>(4) 结论：</strong>四种模型互为补充，每个都仅再现了真实网络的部分性质。研究者通常根据要分析的具体性质来选择最合适的模型；当前的开放问题之一是构造一个<strong>能同时再现三大性质</strong>的简单可分析模型。</p>
+        <p><strong>考查点：</strong>对四种模型核心机制、关键性质的全面理解；能用对比分析框架来回答开放性问题。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="question">
+    <div class="q-header">
+      <span class="qtype">论述题</span>
+      <span class="qpoint">考点：B5 / B6</span>
+      <span class="qdiff hard">综合</span>
+    </div>
+    <p class="qstem">24. 友谊悖论与模块度的零模型表面看似无关，但它们都基于配置模型的同一种"边期望概率"$\dfrac{k_i k_j}{2m}$。请分析两者之间的逻辑联系。</p>
+    <details class="answer-block">
+      <summary>显示答案与解析 ▼</summary>
+      <div class="answer-content">
+        <p><strong>答案要点：</strong></p>
+        <p><strong>共同的基础：</strong>配置模型里两条 stub 随机配对的概率分析。任一 stub 命中节点 $j$ 的概率约为 $\dfrac{k_j}{2m}$（与 $j$ 的度成正比）。</p>
+        <p><strong>友谊悖论：</strong>由"被邻居采样"过程的偏差导致 —— 顺着一个 stub 抽到的节点不是均匀样本，而是<strong>正比于度</strong>的样本。所以邻居度的期望 = $\sum k \cdot \dfrac{k p_k}{\langle k\rangle} = \dfrac{\langle k^2\rangle}{\langle k\rangle}$，必然 $\ge \langle k\rangle$。</p>
+        <p><strong>模块度的零模型：</strong>配置模型预期一条边在 $i$ 和 $j$ 间出现的概率约为 $\dfrac{k_i k_j}{2m}$（节点 $i$ 的 $k_i$ 条 stub 各以约 $\dfrac{k_j}{2m}$ 的概率命中 $j$）。这恰是模块度公式</p>
+        <p>$$Q = \frac{1}{2m}\sum_{i,j}\left(A_{ij} - \frac{k_i k_j}{2m}\right)\delta_{g_i g_j}$$</p>
+        <p>中减去的"在保持度序列的随机网络中的期望边数"。</p>
+        <p><strong>统一视角：</strong>这两个看似不同的现象，本质上都源于"在度异质的网络上，按 stub 进行的随机选择，自然会偏向度高的节点"。</p>
+        <ul>
+          <li>对<strong>节点采样</strong>而言，这种偏差产生友谊悖论；</li>
+          <li>对<strong>"是否有边"的零模型</strong>而言，这种偏差给出 $\dfrac{k_i k_j}{2m}$ 形式的期望边密度。</li>
+        </ul>
+        <p>所以可以说，配置模型既提供了"被采样的不均匀性"的理解（友谊悖论），又提供了"两节点间随机连边期望"的理解（模块度零模型）。这是配置模型的<strong>双重应用价值</strong>。</p>
+      </div>
+    </details>
+  </div>
+
+</section>
+
+</main>
+
+<!-- 回到顶部按钮 -->
+<button type="button" id="back-to-top" aria-label="回到顶部">↑</button>
+
+<!-- ===================== JavaScript（事件委托 + details 控制） ===================== -->
+<script>
+(function () {
+  'use strict';
+
+  // ============ 工具函数 ============
+  function getAllDetails() {
+    return Array.prototype.slice.call(document.querySelectorAll('details.answer-block'));
+  }
+
+  function getAllMcq() {
+    return Array.prototype.slice.call(document.querySelectorAll('.options'));
+  }
+
+  // ============ 控件按钮事件委托 ============
+  document.addEventListener('click', function (event) {
+    var target = event.target;
+    if (!(target instanceof Element)) return;
+
+    // 1. 选项点击
+    var li = target.closest('.options li');
+    if (li) {
+      var ul = li.parentElement;
+      if (ul && ul.classList.contains('options') && !ul.classList.contains('locked')) {
+        handleOptionClick(ul, li);
+      }
+      return;
+    }
+
+    // 2. 控件按钮
+    var btn = target.closest('button[data-action]');
+    if (btn) {
+      var action = btn.getAttribute('data-action');
+      if (action === 'expand-all') {
+        getAllDetails().forEach(function (d) { d.open = true; });
+      } else if (action === 'collapse-all') {
+        getAllDetails().forEach(function (d) { d.open = false; });
+      } else if (action === 'reset-mcq') {
+        resetAllMcq();
+      }
+      return;
+    }
+
+    // 3. 回到顶部
+    if (target.closest('#back-to-top')) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+  });
+
+  // ============ 选项点击逻辑 ============
+  function handleOptionClick(ul, li) {
+    var correct = ul.getAttribute('data-correct');
+    var picked = li.getAttribute('data-opt');
+
+    // 标记选择结果
+    if (picked === correct) {
+      li.classList.add('correct');
+    } else {
+      li.classList.add('wrong');
+      // 同时高亮正确答案
+      var correctLi = ul.querySelector('li[data-opt="' + correct + '"]');
+      if (correctLi) {
+        correctLi.classList.add('reveal-correct');
+      }
+    }
+
+    // 锁定该题，防止重复点击
+    ul.classList.add('locked');
+
+    // 展开对应答案
+    var question = ul.closest('.question');
+    if (question) {
+      var det = question.querySelector('details.answer-block');
+      if (det) det.open = true;
+    }
+
+    updateStats();
+  }
+
+  // ============ 重置全部选择题 ============
+  function resetAllMcq() {
+    getAllMcq().forEach(function (ul) {
+      ul.classList.remove('locked');
+      Array.prototype.slice.call(ul.querySelectorAll('li')).forEach(function (li) {
+        li.classList.remove('correct', 'wrong', 'reveal-correct');
+      });
+    });
+    updateStats();
+  }
+
+  // ============ 统计 ============
+  function updateStats() {
+    var all = getAllMcq();
+    var total = all.length;
+    var answered = 0;
+    var correctCount = 0;
+    all.forEach(function (ul) {
+      if (ul.classList.contains('locked')) {
+        answered += 1;
+        if (ul.querySelector('li.correct')) {
+          correctCount += 1;
+        }
+      }
+    });
+    var totalEl = document.getElementById('stat-total');
+    var ansEl = document.getElementById('stat-answered');
+    var corEl = document.getElementById('stat-correct');
+    var rateEl = document.getElementById('stat-rate');
+    if (totalEl) totalEl.textContent = total;
+    if (ansEl) ansEl.textContent = answered;
+    if (corEl) corEl.textContent = correctCount;
+    if (rateEl) {
+      rateEl.textContent = answered === 0
+        ? '—'
+        : ((correctCount / answered) * 100).toFixed(1) + '%';
+    }
+  }
+
+  // ============ 回到顶部按钮显隐 ============
+  var backBtn = document.getElementById('back-to-top');
+  function toggleBackBtn() {
+    if (!backBtn) return;
+    if (window.scrollY > 400) {
+      backBtn.classList.add('visible');
+    } else {
+      backBtn.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', toggleBackBtn, { passive: true });
+
+  // ============ MathJax 加载失败的检测 ============
+  setTimeout(function () {
+    if (!window.MathJax || !window.MathJax.typesetPromise) {
+      var fb = document.getElementById('mathjax-fallback');
+      if (fb) fb.style.display = 'block';
+    }
+  }, 6000);
+
+  // ============ 初始化 ============
+  document.addEventListener('DOMContentLoaded', function () {
+    updateStats();
+    toggleBackBtn();
+  });
+
+  // 兼容：如果 DOMContentLoaded 已触发
+  if (document.readyState !== 'loading') {
+    updateStats();
+    toggleBackBtn();
+  }
+})();
+</script>
+
+</body>
+</html>
